@@ -1,0 +1,53 @@
+/*******************************************************************
+ * File:     font
+ * Purpose:  Simple font manipulation for our calendar gadget
+ * Author:   Justin Fletcher
+ * Date:     16 Jan 2006
+ ******************************************************************/
+
+#ifndef FONT_H
+#define FONT_H
+
+typedef struct fontbounds_s {
+  int ascent, descent;
+  int lbearing, rbearing;
+  int xoffset;
+} fontbounds_t;
+
+typedef int font_t;
+
+/*************************************************** Gerph *********
+ Function:     font_findfont
+ Description:  Find a font
+ Parameters:   fontname-> the name of the font to find
+               xsize = the size (points * 16)
+               ysize = the size (points * 16)
+ Returns:      font handle, or -1 if could not claim
+ ******************************************************************/
+font_t font_findfont(const char *fontname, int xsize, int ysize);
+
+/*************************************************** Gerph *********
+ Function:     font_losefont
+ Description:  Lose a font we've claimed
+ Parameters:   handle = the handle to lose
+ Returns:      none
+ ******************************************************************/
+void font_losefont(font_t handle);
+
+/*************************************************** Gerph *********
+ Function:     font_paintattrib
+ Description:  Put a string, with the given attributes
+ Parameters:   fonthandle = the handle to plot with
+               x0,y0,x1,y1 = box to centre in
+               str-> the string to use
+               len = the length to use
+               bg,fg = colour to use
+               attrib = the attributes to use
+ Returns:      none
+ ******************************************************************/
+void font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
+                      const char *str, int len,
+                      unsigned long bg, unsigned long fg,
+                      unsigned long attrib);
+
+#endif

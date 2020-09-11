@@ -1,0 +1,13 @@
+# Build the test code
+
+COMPONENT  = test
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.font \
+             o.gcontext \
+             o.test
+
+include LibraryCommand

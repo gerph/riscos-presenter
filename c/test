@@ -1,0 +1,24 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "gcontext.h"
+
+#define FONT_SIZE 22*16
+#define FONT_NAME "HirukoPro.Regular"
+
+int main(int argc, char *argv[])
+{
+    void *f;
+    gcontext_initvdu(0);
+    rect_fill(0x4444FF00, 64, 64,  640, 320);
+
+    f = font_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
+    printf("Font handle: %p\n", f);
+    font_paint(f, 64+16, 320-128,  640-16, 320-16,
+               "hello", 5,
+               0x4444FF00, 0xFFFFFF00, 0);
+
+    font_lose(f);
+
+    getchar();
+}

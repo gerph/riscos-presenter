@@ -1,0 +1,213 @@
+/*******************************************************************
+ * File:     gcontext
+ * Purpose:  Graphics context operations
+ * Author:   Justin Fletcher
+ * Date:     11 Jun 2006
+ ******************************************************************/
+
+#include <stdlib.h>
+#include "gcontext.h"
+#include "graphics.h"
+#include "font.h"
+
+/* Define this to add the routines for 'fill' parameters so that the
+   region is outlined */
+/* #define DEBUG_FILL */
+
+/* Define this to draw rectangles as 'x' characters */
+/* #define DEBUG_RECTASX */
+
+gcontext_t gcontext;
+
+/*************************************************** Gerph *********
+ Function:     gcontext_vdu_rectfill
+ Description:  Fill a rectangle
+ Parameters:   col = the colour to fill with
+               x0,y0 = bottom left
+               x1,y1 = top right
+ Returns:      none
+ ******************************************************************/
+static void gcontext_vdu_rectfill(unsigned long colour,
+                                  int x0, int y0, int x1, int y1)
+{
+#ifdef DEBUG_RECTASX
+  line_start(colour);
+  line(x0,y0,x1,y1);
+  line(x0,y1,x1,y0);
+  line_end();
+#else
+  gcol(colour);
+  rect(x0,y0,x1,y1);
+#endif
+}
+
+/*************************************************** Gerph *********
+ Function:     gcontext_vdu_trifill
+ Description:  Fill a triangle
+ Parameters:   col = the colour to fill with
+               x0,y0 = first
+               x1,y1 = second
+               x2,y2 = third
+ Returns:      none
+ ******************************************************************/
+static void gcontext_vdu_trifill(unsigned long colour,
+                                 int x0, int y0, int x1, int y1, int x2, int y2)
+{
+  gcol(colour);
+  move(x0,y0);
+  move(x1,y1);
+  tri(x2,y2);
+}
+
+/*************************************************** Gerph *********
+ Function:     gcontext_vdu_linestart
+ Description:  Start a line group
+ Parameters:   col = the colour to draw with
+ Returns:      none
+ ******************************************************************/
+static void gcontext_vdu_linestart(unsigned long colour)
+{
+  gcol(colour);
+}
+
+/*************************************************** Gerph *********
+ Function:     gcontext_vdu_lineend
+ Description:  End a line group
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+static void gcontext_vdu_lineend(void)
+{
+  /* Nothing */
+}
+
+/*************************************************** Gerph *********
+ Function:     gcontext_vdu_lineend
+ Description:  End a line group
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+static void gcontext_vdu_line(int x0, int y0, int x1, int y1)
+{
+  move(x0,y0);
+  draw(x1,y1);
+}
+
+#ifdef DEBUG_FILL
+void gcontext_vdu_fill_start(unsigned long fill_colour)
+{
+  gcol(fill_colour);
+}
+void gcontext_vdu_fill_move(int x, int y)
+{
+  move(x,y);
+}
+void gcontext_vdu_fill_line(int x, int y)
+{
+  draw(x,y);
+}
+void gcontext_vdu_fill_close(void)
+{
+  /* None */
+}
+void gcontext_vdu_fill_end(void)
+{
+  /* None */
+}
+#endif
+
+void *vdu5_findfont(const char *name, int xsize, int ysize)
+{
+  unsigned long composite;
+  unsigned long xeig, yeig;
+#define POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS (8)
+  xsize = xsize * 8 / POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS / 16;
+  ysize = ysize * 8 / POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS / 16;
+  _swix(OS_ReadModeVariable, _INR(0,1)|_OUT(2), -1, 4, &xeig);
+  _swix(OS_ReadModeVariable, _INR(0,1)|_OUT(2), -1, 5, &yeig);
+  composite = (xeig<<28) | (yeig<<24) | (xsize << 12) | (ysize);
+  printf("Find VDU font: xeig=%i, yeig=%i, xsize=%i, ysize=%i\n", xeig, yeig, xsize, ysize);
+  return (void*)composite;
+}
+void vdu5_losefont(void *fh)
+{
+  /* Nothing to do to lose the font */
+}
+void vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1, const char *str, int strsize, unsigned long bg, unsigned long fg, unsigned long attr)
+{
+  unsigned long composite = (unsigned long) fh;
+  unsigned long xeig = (composite>>28) & 0xF;
+  unsigned long yeig = (composite>>24) & 0xF;
+  unsigned long xsize = (composite>>12) & 0xFFF;
+  unsigned long ysize = (composite>>0) & 0xFFF;
+  static char seq[] = {
+    5, 23,17, 7,6,0,0, 0,0,0,0, 0, 4
+  };
+  if (strsize == -1)
+    strsize = strlen(str);
+  if (strsize == 0)
+    return;
+
+  if (0)
+  { /* Fill the box */
+    xsize = ((x1-x0+1)>>xeig) / strsize;
+    ysize = ((y0-y1+1)>>yeig);
+  }
+
+  move(x0,y1);
+  gcol(fg);
+  seq[5] = xsize % 256;
+  seq[6] = xsize / 256;
+  seq[7] = ysize % 256;
+  seq[8] = ysize / 256;
+  if (strsize == 1)
+  {
+      seq[11] = *str;
+      _swix(OS_WriteN, _INR(0,1), seq, 13);
+  }
+  else
+  {
+      _swix(OS_WriteN, _INR(0,1), seq, 11);
+      _swix(OS_WriteN, _INR(0,1), str, strsize);
+      _swix(OS_WriteI + 4, 0);
+  }
+}
+
+/*************************************************** Gerph *********
+ Function:     gcontext_initvdu
+ Description:  Initialise the graphics context for the VDU system
+ Parameters:   fonts = 1 if we should use fonts
+ Returns:      none
+ ******************************************************************/
+void gcontext_initvdu(int fonts)
+{
+  gcontext.rectangle_fill = gcontext_vdu_rectfill;
+  gcontext.line_start = gcontext_vdu_linestart;
+  gcontext.line_line = gcontext_vdu_line;
+  gcontext.line_end = gcontext_vdu_lineend;
+  gcontext.fill_start = NULL; /* We don't have any 'fill' routines */
+  gcontext.triangle_fill = gcontext_vdu_trifill;
+  if (!fonts)
+  {
+    gcontext.font_find = (void*(*)(const char *, int, int))vdu5_findfont;
+    gcontext.font_lose = (void(*)(void *))vdu5_losefont;
+    gcontext.font_paint = (void(*)(void *,int,int,int,int,
+                                   const char *,int,unsigned long,unsigned long,
+                                   unsigned long))(vdu5_paintattrib);
+  }
+  else
+  {
+    gcontext.font_find = (void*(*)(const char *, int, int))font_findfont;
+    gcontext.font_lose = (void(*)(void *))font_losefont;
+    gcontext.font_paint = (void(*)(void *,int,int,int,int,
+                                   const char *,int,unsigned long,unsigned long,
+                                   unsigned long))(font_paintattrib);
+  }
+#ifdef DEBUG_FILL
+  gcontext.fill_start =gcontext_vdu_fill_start;
+  gcontext.fill_move =gcontext_vdu_fill_move;
+  gcontext.fill_line =gcontext_vdu_fill_line;
+  gcontext.fill_close =gcontext_vdu_fill_close;
+  gcontext.fill_end =gcontext_vdu_fill_end;
+#endif
+}

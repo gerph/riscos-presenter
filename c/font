@@ -1,0 +1,265 @@
+/*******************************************************************
+ * File:     font
+ * Purpose:  Simple font manipulation for our calendar gadget
+ * Author:   Justin Fletcher
+ * Date:     16 Jan 2006
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "font.h"
+#include "swis.h"
+#include "gcontext.h"
+
+/* Define this to debug this file */
+//#undef DEBUG
+#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+/*************************************************** Gerph *********
+ Function:     font_findfont
+ Description:  Find a font
+ Parameters:   fontname-> the name of the font to find
+               xsize = the size (points * 16)
+               ysize = the size (points * 16)
+ Returns:      font handle, or -1 if could not claim
+ ******************************************************************/
+font_t font_findfont(const char *fontname, int xsize, int ysize)
+{
+  _kernel_oserror *err;
+  font_t handle;
+  err = _swix(Font_FindFont, _INR(1,5)|_OUT(0), fontname, xsize, ysize, 0, 0,
+                                                &handle);
+  if (err)
+    return -1;
+  return handle;
+}
+
+/*************************************************** Gerph *********
+ Function:     font_losefont
+ Description:  Lose a font we've claimed
+ Parameters:   handle = the handle to lose
+ Returns:      none
+ ******************************************************************/
+void font_losefont(font_t handle)
+{
+  if (handle < 0)
+    return;
+  _swix(Font_LoseFont, _IN(0), handle);
+}
+
+/*************************************************** Gerph *********
+ Function:     font_paint
+ Description:  Paint our font somewhere
+ Parameters:   handle = the font handle
+               x = the x position to plot at (OS units)
+               y = the y position to plot at (OS units)
+                   (of the left base line)
+               bg,fg = colours to use
+               str-> the string to plot
+               len = the number of characters to plot, or -1 for all
+ Returns:      none
+ ******************************************************************/
+static void (font_paint)(font_t handle, int x, int y,
+                         unsigned long bg, unsigned long fg,
+                         const char *str, int len)
+{
+  _kernel_oserror *err;
+  if (len==-1)
+    len = strlen(str);
+
+  if (handle == -1)
+  {
+    /* No font data, so just the system font text string */
+    _swix(0x105,0);
+    _swix(ColourTrans_SetGCOL,_IN(0)|_INR(3,4), fg,0,0);
+    _swix(OS_Plot,_INR(0,2),4,x,y+28-2);
+    _swix(OS_WriteN,_INR(0,1),str,len);
+  }
+  else
+  {
+    _swix(ColourTrans_SetFontColours,_INR(0,3), handle,
+                                                bg,fg, 14);
+    err = _swix(Font_Paint, _INR(0,7),
+                            handle, str,
+                            (1<<8) | (1<<7) | (1<<4) | (1<<11),
+                            x, y, NULL, NULL, len);
+    if (err)
+    {
+      dprintf("error writing string\n");
+    }
+  }
+}
+
+/*************************************************** Gerph *********
+ Function:     font_getstringsize
+ Description:  Return the size of the string into the structure
+ Parameters:   handle = the font handle, or -1 for system font
+               bounds-> the box to fill in
+               str-> the string to read
+               len = the number of characters to process, or -1 for all
+ Returns:      none
+ ******************************************************************/
+static void font_getstringsize(font_t handle, fontbounds_t *bounds,
+                               const char *str, int len)
+{
+  _kernel_oserror *err;
+  if (len==-1)
+    len = strlen(str);
+
+  if (handle == -1)
+  {
+    bounds->ascent = 28;
+    bounds->descent = 6;
+    bounds->lbearing = 0;
+    bounds->rbearing = 0;
+    bounds->xoffset = len * 16;
+    return;
+  }
+
+  /* Get the ascent/descent */
+  err = _swix(Font_ReadInfo, _IN(0)|_OUT(2)|_OUT(4),
+                             handle,
+                             &bounds->descent,
+                             &bounds->ascent);
+  if (err)
+  {
+    bounds->ascent = 0;
+    bounds->descent = 0;
+  }
+  else
+  {
+    bounds->descent = -bounds->descent;
+    dprintf("descent = %i\n", bounds->descent);
+    dprintf("ascent = %i\n", bounds->ascent);
+  }
+
+  /* Obtain the size of the string */
+  {
+    int width;
+    int block[9];
+    block[0]=0;
+    block[1]=0;
+    block[2]=0;
+    block[3]=0;
+    block[4]=-1;
+    err = _swix(Font_ScanString, _INR(0,7)|_OUT(3),
+                                 handle, str,
+                                 (1<<8)|(1<<5)|(1<<18)|(1<<7),
+                                 1<<30, 1<<30,
+                                 block, NULL,
+                                 len,
+                                 &width);
+    if (err)
+    {
+      dprintf("error scanning : %s\n", err->errmess);
+      bounds->lbearing = 0;
+      bounds->rbearing = 0;
+      bounds->xoffset = 0;
+    }
+    else
+    {
+#define FONT_XTOOS(x) (((x)+399+400)/400)
+      bounds->lbearing  = FONT_XTOOS(-block[5]);
+      bounds->rbearing  = FONT_XTOOS(block[7]-width);
+      bounds->xoffset   = FONT_XTOOS(width);
+    }
+    dprintf("%i,%i,%i\n", bounds->lbearing, bounds->rbearing, bounds->xoffset);
+  }
+}
+
+/*************************************************** Gerph *********
+ Function:     font_paintattrib
+ Description:  Put a string, with the given attributes
+ Parameters:   fonthandle = the handle to plot with
+               x0,y0,x1,y1 = box to centre in
+               str-> the string to use
+               len = the length to use
+               bg,fg = colour to use
+               attrib = the attributes to use
+ Returns:      none
+ ******************************************************************/
+void font_paintattrib(int fonthandle, int x0, int y0, int x1, int y1,
+                      const char *str, int len,
+                      unsigned long bg, unsigned long fg,
+                      unsigned long attrib)
+{
+  fontbounds_t bounds;
+  int strwidth, strheight;
+  int x,y;
+
+  font_getstringsize(fonthandle, &bounds, str, len);
+  strwidth = bounds.lbearing + bounds.rbearing + bounds.xoffset;
+  strheight = bounds.ascent + bounds.descent;
+  switch (attrib & FONTATTRIB_ALIGN_HMASK)
+  {
+    default:
+    case FONTATTRIB_ALIGN_HLEFT:
+retry_left:
+      x = x0 + bounds.lbearing;
+      /* FIXME: Check for too big on right */
+      break;
+
+    case FONTATTRIB_ALIGN_HRIGHT:
+      x = x1 - strwidth + bounds.lbearing;
+      /* FIXME: Check for too big on left */
+      break;
+
+    case FONTATTRIB_ALIGN_HCENTRE:
+      x = (x0+x1-strwidth)/2+bounds.lbearing;
+      if (x < x0)
+        goto retry_left; /* Too big, pretend left aligned and truncate */
+      break;
+  }
+
+  switch (attrib & FONTATTRIB_ALIGN_VMASK)
+  {
+    default:
+    case FONTATTRIB_ALIGN_VTOP:
+      y = y1 - strheight + bounds.descent;
+      if (y < y0)
+        return; /* It doesn't fit, so give up */
+      break;
+
+    case FONTATTRIB_ALIGN_VBOTTOM:
+      y = y0 + bounds.descent;
+      if (y+bounds.ascent > y1)
+        return; /* It doesn't fit, so give up */
+      break;
+
+    case FONTATTRIB_ALIGN_VCENTRE:
+      y = (y0+y1-strheight)/2+bounds.descent;
+      break;
+  }
+  /* x,y now the left of the baseline to plot at */
+
+  dprintf("Plot string %p at %i, %i (bg=%08x, fg=%08x)\n", str, x, y, bg, fg);
+
+  (font_paint)(fonthandle, x, y, bg, fg, str, len);
+
+  if (attrib & FONTATTRIB_UNDERLINE)
+  {
+    line_start(fg);
+    line(x,y, x+bounds.xoffset, y);
+    line_end();
+  }
+
+#if 0
+  gcol(cal->fg);
+  move(x0,y0);
+  draw((x0+x1-strwidth)/2+bounds.lbearing,
+       (y0+y1-strheight)/2+bounds.descent);
+  draw((x0+x1-strwidth)/2+bounds.lbearing+bounds.xoffset,
+       (y0+y1-strheight)/2+bounds.descent);
+  draw((x0+x1-strwidth)/2+bounds.lbearing+bounds.xoffset,
+       (y0+y1-strheight)/2+bounds.descent + bounds.ascent);
+  draw((x0+x1-strwidth)/2+bounds.lbearing+bounds.xoffset,
+       (y0+y1-strheight)/2);
+#endif
+}
