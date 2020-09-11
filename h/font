@@ -8,6 +8,8 @@
 #ifndef FONT_H
 #define FONT_H
 
+#include "gcontext.h"
+
 typedef struct fontbounds_s {
   int ascent, descent;
   int lbearing, rbearing;
@@ -43,11 +45,11 @@ void font_losefont(font_t handle);
                len = the length to use
                bg,fg = colour to use
                attrib = the attributes to use
- Returns:      none
+ Returns:      coords_t for the end position
  ******************************************************************/
-void font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
-                      const char *str, int len,
-                      unsigned long bg, unsigned long fg,
-                      unsigned long attrib);
+coords_t font_paintattrib(int fonthandle, int x0, int y0, int x1, int y1,
+                          const char *str, int len,
+                          unsigned long bg, unsigned long fg,
+                          unsigned long attrib);
 
 #endif

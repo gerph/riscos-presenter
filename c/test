@@ -4,19 +4,29 @@
 #include "gcontext.h"
 
 #define FONT_SIZE 22*16
-#define FONT_NAME "HirukoPro.Regular"
+#define FONT_NAME "HirukoPro.Book"
+//#define FONT_NAME "Optima.Regular"
+#define FONT_ALTNAME "Homerton.Medium"
 
 int main(int argc, char *argv[])
 {
     void *f;
-    gcontext_initvdu(0);
+    coords_t end;
+    gcontext_initvdu(1);
     rect_fill(0x4444FF00, 64, 64,  640, 320);
+    rect_outline(0x44440000, 64+16, 320-128,  640-16, 320-16);
 
     f = font_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
+    if (((int)f) == -1)
+        f = font_find(FONT_ALTNAME, FONT_SIZE, FONT_SIZE);
     printf("Font handle: %p\n", f);
-    font_paint(f, 64+16, 320-128,  640-16, 320-16,
-               "hello", 5,
-               0x4444FF00, 0xFFFFFF00, 0);
+    end = font_paint(f, 64+16, 320-128,  640-16, 320-16,
+                     "hello ", -1,
+                     0x4444FF00, 0xFFFFFF00, 0);
+
+    end = font_paint(f, end.x, 320-128,  640-16, end.y,
+                     "another", 7,
+                     0x4444FF00, 0xFFFFFF00, 0);
 
     font_lose(f);
 

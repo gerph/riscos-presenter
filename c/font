@@ -183,16 +183,17 @@ static void font_getstringsize(font_t handle, fontbounds_t *bounds,
                len = the length to use
                bg,fg = colour to use
                attrib = the attributes to use
- Returns:      none
+ Returns:      coords_t for the end position
  ******************************************************************/
-void font_paintattrib(int fonthandle, int x0, int y0, int x1, int y1,
-                      const char *str, int len,
-                      unsigned long bg, unsigned long fg,
-                      unsigned long attrib)
+coords_t font_paintattrib(int fonthandle, int x0, int y0, int x1, int y1,
+                          const char *str, int len,
+                          unsigned long bg, unsigned long fg,
+                          unsigned long attrib)
 {
   fontbounds_t bounds;
   int strwidth, strheight;
   int x,y;
+  coords_t end;
 
   font_getstringsize(fonthandle, &bounds, str, len);
   strwidth = bounds.lbearing + bounds.rbearing + bounds.xoffset;
@@ -217,6 +218,7 @@ retry_left:
         goto retry_left; /* Too big, pretend left aligned and truncate */
       break;
   }
+  end.x = x + strwidth;
 
   switch (attrib & FONTATTRIB_ALIGN_VMASK)
   {
@@ -225,16 +227,19 @@ retry_left:
       y = y1 - strheight + bounds.descent;
       if (y < y0)
         return; /* It doesn't fit, so give up */
+      end.y = y1;
       break;
 
     case FONTATTRIB_ALIGN_VBOTTOM:
       y = y0 + bounds.descent;
       if (y+bounds.ascent > y1)
         return; /* It doesn't fit, so give up */
+      end.y = y0;
       break;
 
     case FONTATTRIB_ALIGN_VCENTRE:
       y = (y0+y1-strheight)/2+bounds.descent;
+      end.y = y - bounds.descent;
       break;
   }
   /* x,y now the left of the baseline to plot at */
@@ -262,4 +267,6 @@ retry_left:
   draw((x0+x1-strwidth)/2+bounds.lbearing+bounds.xoffset,
        (y0+y1-strheight)/2);
 #endif
+
+    return end;
 }
