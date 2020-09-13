@@ -102,12 +102,15 @@ static void (font_paint)(font_t handle, int x, int y,
  Description:  Return the size of the string into the structure
  Parameters:   handle = the font handle, or -1 for system font
                bounds-> the box to fill in
+               xlimit = the widest the string may be, or -1 for unlimited
                str-> the string to read
                len = the number of characters to process, or -1 for all
+               splitchar = character to split on, or 0 for none
  Returns:      none
  ******************************************************************/
-static void font_getstringsize(font_t handle, fontbounds_t *bounds,
-                               const char *str, int len)
+void font_getstringsize(font_t handle, stringbounds_t *bounds,
+                        int xlimit,
+                        const char *str, int len, char split_char)
 {
   _kernel_oserror *err;
   if (len==-1)
@@ -140,21 +143,26 @@ static void font_getstringsize(font_t handle, fontbounds_t *bounds,
     dprintf("ascent = %i\n", bounds->ascent);
   }
 
+  if (xlimit == -1)
+    xlimit = 0x7FFFFFFF;
+
   /* Obtain the size of the string */
   {
+    char *endp;
     int width;
     int block[9];
     block[0]=0;
     block[1]=0;
     block[2]=0;
     block[3]=0;
-    block[4]=-1;
-    err = _swix(Font_ScanString, _INR(0,7)|_OUT(3),
+    block[4] = split_char ? split_char : -1;
+    err = _swix(Font_ScanString, _INR(0,7)|_OUT(1)|_OUT(3),
                                  handle, str,
                                  (1<<8)|(1<<5)|(1<<18)|(1<<7),
-                                 1<<30, 1<<30,
+                                 xlimit, 1<<30,
                                  block, NULL,
                                  len,
+                                 &endp,
                                  &width);
     if (err)
     {
@@ -162,6 +170,7 @@ static void font_getstringsize(font_t handle, fontbounds_t *bounds,
       bounds->lbearing = 0;
       bounds->rbearing = 0;
       bounds->xoffset = 0;
+      bounds->charoffset = 0;
     }
     else
     {
@@ -169,6 +178,7 @@ static void font_getstringsize(font_t handle, fontbounds_t *bounds,
       bounds->lbearing  = FONT_XTOOS(-block[5]);
       bounds->rbearing  = FONT_XTOOS(block[7]-width);
       bounds->xoffset   = FONT_XTOOS(width);
+      bounds->charoffset = endp - str;
     }
     dprintf("%i,%i,%i\n", bounds->lbearing, bounds->rbearing, bounds->xoffset);
   }
@@ -185,17 +195,17 @@ static void font_getstringsize(font_t handle, fontbounds_t *bounds,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t font_paintattrib(int fonthandle, int x0, int y0, int x1, int y1,
+coords_t font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
                           const char *str, int len,
                           unsigned long bg, unsigned long fg,
                           unsigned long attrib)
 {
-  fontbounds_t bounds;
+  stringbounds_t bounds;
   int strwidth, strheight;
   int x,y;
-  coords_t end;
+  coords_t end = {0};
 
-  font_getstringsize(fonthandle, &bounds, str, len);
+  font_getstringsize(fonthandle, &bounds, -1, str, len, 0);
   strwidth = bounds.lbearing + bounds.rbearing + bounds.xoffset;
   strheight = bounds.ascent + bounds.descent;
   switch (attrib & FONTATTRIB_ALIGN_HMASK)
@@ -218,7 +228,7 @@ retry_left:
         goto retry_left; /* Too big, pretend left aligned and truncate */
       break;
   }
-  end.x = x + strwidth;
+  end.x = x + bounds.xoffset;
 
   switch (attrib & FONTATTRIB_ALIGN_VMASK)
   {
@@ -226,14 +236,14 @@ retry_left:
     case FONTATTRIB_ALIGN_VTOP:
       y = y1 - strheight + bounds.descent;
       if (y < y0)
-        return; /* It doesn't fit, so give up */
+        return end; /* It doesn't fit, so give up */
       end.y = y1;
       break;
 
     case FONTATTRIB_ALIGN_VBOTTOM:
       y = y0 + bounds.descent;
       if (y+bounds.ascent > y1)
-        return; /* It doesn't fit, so give up */
+        return end; /* It doesn't fit, so give up */
       end.y = y0;
       break;
 
@@ -244,7 +254,7 @@ retry_left:
   }
   /* x,y now the left of the baseline to plot at */
 
-  dprintf("Plot string %p at %i, %i (bg=%08x, fg=%08x)\n", str, x, y, bg, fg);
+  dprintf("Plot string %p at %i, %i (bg=%08lx, fg=%08lx)\n", str, x, y, bg, fg);
 
   (font_paint)(fonthandle, x, y, bg, fg, str, len);
 

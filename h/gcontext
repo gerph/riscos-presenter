@@ -26,6 +26,14 @@ typedef struct coords_s {
   int y;
 } coords_t;
 
+typedef struct stringbounds_s {
+  int ascent, descent;
+  int lbearing, rbearing;
+  int xoffset;
+  int charoffset;
+} stringbounds_t;
+
+
 typedef struct gcontext_s {
   void (*rectangle_fill)(unsigned long colour,
                          int x0, int y0, int x1, int y1);
@@ -47,6 +55,11 @@ typedef struct gcontext_s {
 
   void *(*font_find)(const char *name, int xsize, int ysize);
   void (*font_lose)(void *handle);
+
+  void (*font_getstringsize)(void *handle, stringbounds_t *bounds,
+                             int xlimit,
+                             const char *str, int strsize, char split_char);
+
   coords_t (*font_paint)(void *handle,
                          int x, int y, int x1, int y1,
                          const char *str, int strsize,

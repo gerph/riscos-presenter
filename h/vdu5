@@ -1,39 +1,36 @@
 /*******************************************************************
- * File:     font
- * Purpose:  Simple font manipulation for our calendar gadget
+ * File:     vdu5
+ * Purpose:  Plain VDU5 text rendering
  * Author:   Justin Fletcher
- * Date:     16 Jan 2006
+ * Date:     13 Sep 2020
  ******************************************************************/
-
-#ifndef FONT_H
-#define FONT_H
 
 #include "gcontext.h"
 
-typedef int font_t;
 
 /*************************************************** Gerph *********
- Function:     font_findfont
+ Function:     vdu5_findfont
  Description:  Find a font
  Parameters:   fontname-> the name of the font to find
                xsize = the size (points * 16)
                ysize = the size (points * 16)
  Returns:      font handle, or -1 if could not claim
  ******************************************************************/
-font_t font_findfont(const char *fontname, int xsize, int ysize);
+void *vdu5_findfont(const char *name, int xsize, int ysize);
 
 /*************************************************** Gerph *********
- Function:     font_losefont
+ Function:     vdu5_losefont
  Description:  Lose a font we've claimed
  Parameters:   handle = the handle to lose
  Returns:      none
  ******************************************************************/
-void font_losefont(font_t handle);
+void vdu5_losefont(void *fh);
+
 
 /*************************************************** Gerph *********
- Function:     font_getstringsize
+ Function:     vdu5_getstringsize
  Description:  Return the size of the string into the structure
- Parameters:   handle = the font handle, or -1 for system font
+ Parameters:   fh = the font handle
                bounds-> the box to fill in
                xlimit = the widest the string may be, or -1 for unlimited
                str-> the string to read
@@ -41,12 +38,12 @@ void font_losefont(font_t handle);
                splitchar = character to split on, or 0 for none
  Returns:      none
  ******************************************************************/
-void font_getstringsize(font_t handle, stringbounds_t *bounds,
+void vdu5_getstringsize(void *fh, stringbounds_t *bounds,
                         int xlimit,
-                        const char *str, int len, char split_char);
+                        const char *str, int strsize, char split_char);
 
 /*************************************************** Gerph *********
- Function:     font_paintattrib
+ Function:     vdu5_paintattrib
  Description:  Put a string, with the given attributes
  Parameters:   fonthandle = the handle to plot with
                x0,y0,x1,y1 = box to centre in
@@ -56,9 +53,7 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
-                          const char *str, int len,
+coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
+                          const char *str, int strsize,
                           unsigned long bg, unsigned long fg,
-                          unsigned long attrib);
-
-#endif
+                          unsigned long attr);
