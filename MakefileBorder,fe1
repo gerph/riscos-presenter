@@ -1,0 +1,19 @@
+# Makefile for Border
+#
+
+COMPONENT  = Border
+TYPE       = aif
+INCLUDES   = 
+LIBS       = ${CLIB}
+CDEFINES   = -DTEST_BORDER
+OBJS       = \
+             o.font \
+             o.vdu5 \
+             o.vdushape \
+             o.gcontext \
+			 o.border
+
+include LibraryCommand
+
+#---------------------------------------------------------------------------
+# Dynamic dependencies:
