@@ -22,23 +22,39 @@
 #define dprintf if (0) _swix(0x104,0), printf
 #endif
 
+struct font_s {
+    int handle;
+    int xsize, ysize;
+    int ascent, descent;
+};
+
+
 /*************************************************** Gerph *********
  Function:     font_findfont
  Description:  Find a font
  Parameters:   fontname-> the name of the font to find
                xsize = the size (points * 16)
                ysize = the size (points * 16)
- Returns:      font handle, or -1 if could not claim
+ Returns:      font handle, or NULL if could not claim
  ******************************************************************/
 font_t font_findfont(const char *fontname, int xsize, int ysize)
 {
   _kernel_oserror *err;
-  font_t handle;
+  font_t font = calloc(1, sizeof(*font));
+  if (font == 0)
+    return NULL;
   err = _swix(Font_FindFont, _INR(1,5)|_OUT(0), fontname, xsize, ysize, 0, 0,
-                                                &handle);
+                                                &font->handle);
   if (err)
-    return -1;
-  return handle;
+  {
+    free(font);
+    return NULL;
+  }
+  font->xsize = xsize;
+  font->ysize = ysize;
+  font->ascent = 0;
+  font->descent = 0;
+  return font;
 }
 
 /*************************************************** Gerph *********
@@ -47,11 +63,12 @@ font_t font_findfont(const char *fontname, int xsize, int ysize)
  Parameters:   handle = the handle to lose
  Returns:      none
  ******************************************************************/
-void font_losefont(font_t handle)
+void font_losefont(font_t font)
 {
-  if (handle < 0)
+  if (font == NULL)
     return;
-  _swix(Font_LoseFont, _IN(0), handle);
+  _swix(Font_LoseFont, _IN(0), font->handle);
+  free(font);
 }
 
 /*************************************************** Gerph *********
@@ -66,7 +83,7 @@ void font_losefont(font_t handle)
                len = the number of characters to plot, or -1 for all
  Returns:      none
  ******************************************************************/
-static void (font_paint)(font_t handle, int x, int y,
+static void (font_paint)(font_t font, int x, int y,
                          unsigned long bg, unsigned long fg,
                          const char *str, int len)
 {
@@ -74,7 +91,7 @@ static void (font_paint)(font_t handle, int x, int y,
   if (len==-1)
     len = strlen(str);
 
-  if (handle == -1)
+  if (font == NULL)
   {
     /* No font data, so just the system font text string */
     _swix(0x105,0);
@@ -84,10 +101,10 @@ static void (font_paint)(font_t handle, int x, int y,
   }
   else
   {
-    _swix(ColourTrans_SetFontColours,_INR(0,3), handle,
+    _swix(ColourTrans_SetFontColours,_INR(0,3), font->handle,
                                                 bg,fg, 14);
     err = _swix(Font_Paint, _INR(0,7),
-                            handle, str,
+                            font->handle, str,
                             (1<<8) | (1<<7) | (1<<4) | (1<<11),
                             x, y, NULL, NULL, len);
     if (err)
@@ -100,7 +117,7 @@ static void (font_paint)(font_t handle, int x, int y,
 /*************************************************** Gerph *********
  Function:     font_getstringsize
  Description:  Return the size of the string into the structure
- Parameters:   handle = the font handle, or -1 for system font
+ Parameters:   font = the font handle, or NULL for system font
                bounds-> the box to fill in
                xlimit = the widest the string may be, or -1 for unlimited
                str-> the string to read
@@ -108,7 +125,7 @@ static void (font_paint)(font_t handle, int x, int y,
                splitchar = character to split on, or 0 for none
  Returns:      none
  ******************************************************************/
-void font_getstringsize(font_t handle, stringbounds_t *bounds,
+void font_getstringsize(font_t font, stringbounds_t *bounds,
                         int xlimit,
                         const char *str, int len, char split_char)
 {
@@ -116,7 +133,7 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
   if (len==-1)
     len = strlen(str);
 
-  if (handle == -1)
+  if (font == NULL)
   {
     bounds->ascent = 28;
     bounds->descent = 6;
@@ -127,21 +144,24 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
   }
 
   /* Get the ascent/descent */
-  err = _swix(Font_ReadInfo, _IN(0)|_OUT(2)|_OUT(4),
-                             handle,
-                             &bounds->descent,
-                             &bounds->ascent);
-  if (err)
+  if (font->ascent == 0)
   {
-    bounds->ascent = 0;
-    bounds->descent = 0;
+      dprintf("Cache the ascent/descent\n");
+      err = _swix(Font_ReadInfo, _IN(0)|_OUT(2)|_OUT(4),
+                                 font->handle,
+                                 &font->descent,
+                                 &font->ascent);
+      if (err)
+      {
+        font->ascent = 0;
+        font->descent = 0;
+      }
   }
-  else
-  {
-    bounds->descent = -bounds->descent;
-    dprintf("descent = %i\n", bounds->descent);
-    dprintf("ascent = %i\n", bounds->ascent);
-  }
+
+  bounds->ascent = font->ascent;
+  bounds->descent = -font->descent;
+  dprintf("descent = %i\n", bounds->descent);
+  dprintf("ascent = %i\n", bounds->ascent);
 
   if (xlimit == -1)
     xlimit = 0x7FFFFFFF;
@@ -157,7 +177,7 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
     block[3]=0;
     block[4] = split_char ? split_char : -1;
     err = _swix(Font_ScanString, _INR(0,7)|_OUT(1)|_OUT(3),
-                                 handle, str,
+                                 font->handle, str,
                                  (1<<8)|(1<<5)|(1<<18)|(1<<7),
                                  xlimit, 1<<30,
                                  block, NULL,
@@ -187,7 +207,7 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
 /*************************************************** Gerph *********
  Function:     font_paintattrib
  Description:  Put a string, with the given attributes
- Parameters:   fonthandle = the handle to plot with
+ Parameters:   font = the handle to plot with
                x0,y0,x1,y1 = box to centre in
                str-> the string to use
                len = the length to use
@@ -195,7 +215,7 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
+coords_t font_paintattrib(font_t font, int x0, int y0, int x1, int y1,
                           const char *str, int len,
                           unsigned long bg, unsigned long fg,
                           unsigned long attrib)
@@ -205,7 +225,7 @@ coords_t font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
   int x,y;
   coords_t end = {0};
 
-  font_getstringsize(fonthandle, &bounds, -1, str, len, 0);
+  font_getstringsize(font, &bounds, -1, str, len, 0);
   strwidth = bounds.lbearing + bounds.rbearing + bounds.xoffset;
   strheight = bounds.ascent + bounds.descent;
   switch (attrib & FONTATTRIB_ALIGN_HMASK)
@@ -256,7 +276,7 @@ retry_left:
 
   dprintf("Plot string %p at %i, %i (bg=%08lx, fg=%08lx)\n", str, x, y, bg, fg);
 
-  (font_paint)(fonthandle, x, y, bg, fg, str, len);
+  (font_paint)(font, x, y, bg, fg, str, len);
 
   if (attrib & FONTATTRIB_UNDERLINE)
   {

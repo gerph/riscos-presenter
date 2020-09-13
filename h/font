@@ -10,7 +10,7 @@
 
 #include "gcontext.h"
 
-typedef int font_t;
+typedef struct font_s *font_t;
 
 /*************************************************** Gerph *********
  Function:     font_findfont
