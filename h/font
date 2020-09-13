@@ -46,6 +46,22 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
                         const char *str, int len, char split_char);
 
 /*************************************************** Gerph *********
+ Function:     font_paint
+ Description:  Paint our font somewhere
+ Parameters:   handle = the font handle
+               x = the x position to plot at (OS units)
+               y = the y position to plot at (OS units)
+                   (of the left base line)
+               bg,fg = colours to use
+               str-> the string to plot
+               len = the number of characters to plot, or -1 for all
+ Returns:      coords_t for the end position
+ ******************************************************************/
+coords_t font_paint(font_t font, int x, int y,
+                    unsigned long bg, unsigned long fg,
+                    const char *str, int len);
+
+/*************************************************** Gerph *********
  Function:     font_paintattrib
  Description:  Put a string, with the given attributes
  Parameters:   fonthandle = the handle to plot with

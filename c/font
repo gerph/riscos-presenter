@@ -81,13 +81,14 @@ void font_losefont(font_t font)
                bg,fg = colours to use
                str-> the string to plot
                len = the number of characters to plot, or -1 for all
- Returns:      none
+ Returns:      coords_t for the end position
  ******************************************************************/
-static void (font_paint)(font_t font, int x, int y,
-                         unsigned long bg, unsigned long fg,
-                         const char *str, int len)
+coords_t font_paint(font_t font, int x, int y,
+                    unsigned long bg, unsigned long fg,
+                    const char *str, int len)
 {
   _kernel_oserror *err;
+  coords_t end = {0};
   if (len==-1)
     len = strlen(str);
 
@@ -98,20 +99,27 @@ static void (font_paint)(font_t font, int x, int y,
     _swix(ColourTrans_SetGCOL,_IN(0)|_INR(3,4), fg,0,0);
     _swix(OS_Plot,_INR(0,2),4,x,y+28-2);
     _swix(OS_WriteN,_INR(0,1),str,len);
+    _swix(0x104,0);
+    end.x += len * 16;
+    end.y = y;
   }
   else
   {
     _swix(ColourTrans_SetFontColours,_INR(0,3), font->handle,
                                                 bg,fg, 14);
-    err = _swix(Font_Paint, _INR(0,7),
+    err = _swix(Font_Paint, _INR(0,7)|_OUTR(3,4),
                             font->handle, str,
                             (1<<8) | (1<<7) | (1<<4) | (1<<11),
-                            x, y, NULL, NULL, len);
+                            x, y, NULL, NULL, len,
+                            &end.x, &end.y);
     if (err)
     {
       dprintf("error writing string\n");
+      end.x = x;
+      end.y = y;
     }
   }
+  return end;
 }
 
 /*************************************************** Gerph *********
@@ -276,7 +284,7 @@ retry_left:
 
   dprintf("Plot string %p at %i, %i (bg=%08lx, fg=%08lx)\n", str, x, y, bg, fg);
 
-  (font_paint)(font, x, y, bg, fg, str, len);
+  font_paint(font, x, y, bg, fg, str, len);
 
   if (attrib & FONTATTRIB_UNDERLINE)
   {

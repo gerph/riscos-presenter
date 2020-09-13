@@ -16,35 +16,35 @@ int main(int argc, char *argv[])
     rect_fill(0x4444FF00, 64, 64,  640, 320);
     rect_outline(0x44440000, 64+16, 320-128,  640-16, 320-16);
 
-    f = font_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
+    f = text_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
     if (((int)f) == -1)
-        f = font_find(FONT_ALTNAME, FONT_SIZE, FONT_SIZE);
+        f = text_find(FONT_ALTNAME, FONT_SIZE, FONT_SIZE);
     printf("Font handle: %p\n", f);
-    end = font_paint(f, 64+16, 320-128,  640-16, 320-16,
-                     "hello ", -1,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, 64+16, 320-128,  640-16, 320-16,
+                           "hello ", -1,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    end = font_paint(f, end.x, 320-128,  640-16, end.y,
-                     "another", 7,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, end.x, 320-128,  640-16, end.y,
+                           "another", 7,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    end = font_paint(f, end.x, 320-128,  640-16, end.y,
-                     "more", 4,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, end.x, 320-128,  640-16, end.y,
+                           "more", 4,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    end = font_paint(f, 64+16, 320-128,  640-16, 320-60,
-                     "hello ", -1,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, 64+16, 320-128,  640-16, 320-60,
+                           "hello ", -1,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    end = font_paint(f, end.x, 320-128,  640-16, end.y,
-                     "another", 7,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, end.x, 320-128,  640-16, end.y,
+                           "another", 7,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    end = font_paint(f, end.x, 320-128,  640-16, end.y,
-                     "more", 4,
-                     0x4444FF00, 0xFFFFFF00, 0);
+    end = text_paintattrib(f, end.x, 320-128,  640-16, end.y,
+                           "more", 4,
+                           0x4444FF00, 0xFFFFFF00, 0);
 
-    font_lose(f);
+    text_lose(f);
 
     getchar();
 }

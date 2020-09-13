@@ -131,20 +131,20 @@ void vdu5_getstringsize(void *fh, stringbounds_t *bounds,
 }
 
 /*************************************************** Gerph *********
- Function:     vdu5_paintattrib
- Description:  Put a string, with the given attributes
- Parameters:   fonthandle = the handle to plot with
-               x0,y0,x1,y1 = box to centre in
-               str-> the string to use
-               len = the length to use
-               bg,fg = colour to use
-               attrib = the attributes to use
+ Function:     font_paint
+ Description:  Paint our font somewhere
+ Parameters:   handle = the font handle
+               x = the x position to plot at (OS units)
+               y = the y position to plot at (OS units)
+                   (of the left base line)
+               bg,fg = colours to use
+               str-> the string to plot
+               len = the number of characters to plot, or -1 for all
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
-                          const char *str, int strsize,
-                          unsigned long bg, unsigned long fg,
-                          unsigned long attr)
+coords_t vdu5_paint(void *fh, int x, int y,
+                    unsigned long bg, unsigned long fg,
+                    const char *str, int strsize)
 {
   unsigned long composite = (unsigned long) fh;
   unsigned long xeig = (composite>>28) & 0xF;
@@ -159,18 +159,12 @@ coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
     strsize = strlen(str);
   if (strsize == 0)
   {
-    end.x = x0;
-    end.y = y1;
+    end.x = x;
+    end.y = y;
     return end;
   }
 
-  if (0)
-  { /* Fill the box */
-    xsize = ((x1-x0+1)>>xeig) / strsize;
-    ysize = ((y0-y1+1)>>yeig);
-  }
-
-  move(x0,y1);
+  move(x, y + (ysize * 28 / 32));
   gcol(fg);
   seq[5] = xsize % 256;
   seq[6] = xsize / 256;
@@ -188,7 +182,36 @@ coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
       _swix(OS_WriteI + 4, 0);
   }
 
-  end.x = x0 + xsize * (strsize<<xeig);
-  end.y = y1;
+  end.x = x + xsize * (strsize<<xeig);
+  end.y = y;
   return end;
+}
+
+
+/*************************************************** Gerph *********
+ Function:     vdu5_paintattrib
+ Description:  Put a string, with the given attributes
+ Parameters:   fonthandle = the handle to plot with
+               x0,y0,x1,y1 = box to centre in
+               str-> the string to use
+               len = the length to use
+               bg,fg = colour to use
+               attrib = the attributes to use
+ Returns:      coords_t for the end position
+ ******************************************************************/
+coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
+                          const char *str, int strsize,
+                          unsigned long bg, unsigned long fg,
+                          unsigned long attr)
+{
+    unsigned long composite = (unsigned long) fh;
+    unsigned long ysize = (composite>>0) & 0xFFF;
+    coords_t end;
+
+    /* Correct for the _paint function wanting the baseline */
+    int yb = y1 - ((ysize * 28) / 32);
+    end = vdu5_paint(fh, x0, yb, bg, fg, str, strsize);
+    end.y = y1;
+
+    return end;
 }

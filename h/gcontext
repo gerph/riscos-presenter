@@ -53,18 +53,23 @@ typedef struct gcontext_s {
   void (*fill_close)(void);
   void (*fill_end)(void);
 
-  void *(*font_find)(const char *name, int xsize, int ysize);
-  void (*font_lose)(void *handle);
+  void *(*text_findfont)(const char *name, int xsize, int ysize);
+  void (*text_losefont)(void *handle);
 
-  void (*font_getstringsize)(void *handle, stringbounds_t *bounds,
+  void (*text_getstringsize)(void *handle, stringbounds_t *bounds,
                              int xlimit,
                              const char *str, int strsize, char split_char);
 
-  coords_t (*font_paint)(void *handle,
-                         int x, int y, int x1, int y1,
+  coords_t (*text_paint)(void *handle,
+                         int xb, int yb,
                          const char *str, int strsize,
-                         unsigned long bg, unsigned long fg,
-                         unsigned long attrib);
+                         unsigned long bg, unsigned long fg);
+
+  coords_t (*text_paintattrib)(void *handle,
+                               int x, int y, int x1, int y1,
+                               const char *str, int strsize,
+                               unsigned long bg, unsigned long fg,
+                               unsigned long attrib);
 } gcontext_t;
 
 extern gcontext_t gcontext;
@@ -98,12 +103,14 @@ extern gcontext_t gcontext;
 #define fill_end() \
                   (gcontext.fill_end)()
 
-#define font_find(name,xsize,ysize) \
-                  (gcontext.font_find)(name, xsize, ysize)
-#define font_lose(handle) \
-                  (gcontext.font_lose)(handle)
-#define font_paint(handle, x, y, x1, y1, str, strsize, bg, fg, attr) \
-                  (gcontext.font_paint)(handle,x,y,x1,y1,str,strsize,bg,fg,attr)
+#define text_find(name,xsize,ysize) \
+                  (gcontext.text_findfont)(name, xsize, ysize)
+#define text_lose(handle) \
+                  (gcontext.text_losefont)(handle)
+#define text_paint(handle, xb, yb, str, strsize, bg, fg) \
+                  (gcontext.text_paint)(handle,xb,yb,str,strsize,bg,fg)
+#define text_paintattrib(handle, x, y, x1, y1, str, strsize, bg, fg, attr) \
+                  (gcontext.text_paintattrib)(handle,x,y,x1,y1,str,strsize,bg,fg,attr)
 
 /*************************************************** Gerph *********
  Function:     gcontext_initvdu
