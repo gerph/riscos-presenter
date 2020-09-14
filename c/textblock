@@ -103,8 +103,7 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
             else
             {
                 /* We're in the midst of a line, so we need to start a new one */
-                int line_height = textblock->line_ascent + textblock->line_descent;
-                int line_spacing = (line_height * textblock->line_spacing) >> 16;
+                int line_spacing = textblock_linespacing(textblock);
                 dprintf("Move to next line: spacing = %i\n", line_spacing);
                 textblock->xc = 0;
                 textblock->yc += line_spacing;
@@ -244,3 +243,115 @@ int textblock_add(textblock_t textblock, void *font,
     }
     return text - start_text;
 }
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_covered
+ Description:   Return the extent covered by the text that has been
+                added.
+ Parameters:    textblock = the handle to work on
+                bbox-> the bbox to fill in
+ Returns:       none
+ ******************************************************************/
+void textblock_covered(textblock_t textblock, bbox_t *bbox)
+{
+    bbox->x0 = textblock->cx0;
+    bbox->y0 = textblock->cy0;
+    bbox->x1 = textblock->cx1;
+    bbox->y1 = textblock->cy1;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_position
+ Description:   Return the coordinates of the output position
+ Parameters:    textblock = the handle to work on
+ Returns:       coordinates of the position (ie the baseline of the
+                next write)
+ ******************************************************************/
+coords_t textblock_position(textblock_t textblock)
+{
+    coords_t pos;
+    pos.x = textblock->x0 + textblock->xc;
+    pos.y = textblock->y1 - textblock->yc - textblock->line_ascent;
+    return pos;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_extent
+ Description:   Return the extent of the output; the bottom y position
+                of the region, to use in a new block.
+ Parameters:    textblock = the handle to work on
+ Returns:       y-position suitable for a new text block
+ ******************************************************************/
+int textblock_extent(textblock_t textblock)
+{
+    return textblock->y1 - textblock->yc - textblock->line_ascent;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_lineheight
+ Description:   Return the height of a line.
+ Parameters:    textblock = the handle to work on
+ Returns:       height of the line
+ ******************************************************************/
+int textblock_lineheight(textblock_t textblock)
+{
+    return textblock->line_ascent + textblock->line_descent;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_linespacing
+ Description:   Return the spacing of a line.
+ Parameters:    textblock = the handle to work on
+ Returns:       height of the line + spacign
+ ******************************************************************/
+int textblock_linespacing(textblock_t textblock)
+{
+    int line_height = textblock->line_ascent + textblock->line_descent;
+    int line_spacing = (line_height * textblock->line_spacing) >> 16;
+    return line_spacing;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_space
+ Description:   Add a space in the text for a specific size.
+                Might be used to leave a gap for an image.
+ Parameters:    textblock = the handle to work on
+                width = width of the space to create
+                height = height of the space to create (may push the
+                ascent higher)
+                posp-> where to store the coords of the bottom left
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_space(textblock_t textblock, int width, int height,
+                    coords_t *posp)
+{
+    int xspace = textblock->width - textblock->xc;
+    int y0;
+    int new_line_ascent;
+
+    if (xspace < width)
+    {
+        /* Doesn't fit on the current line */
+        textblock_clear(textblock, TBCLEAR_TEXTNEWLINE);
+        xspace = textblock->width - textblock->xc;
+        if (xspace < width)
+            return 0;
+    }
+
+    new_line_ascent = max(height, textblock->line_ascent);
+    y0 = textblock->y1 - textblock->yc - new_line_ascent;
+    if (y0 - textblock->line_descent < textblock->y0)
+        return 0;
+
+    posp->x = textblock->x0 + textblock->xc;
+    posp->y = y0;
+    textblock->line_ascent = new_line_ascent;
+    return 1;
+}
+

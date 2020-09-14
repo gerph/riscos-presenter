@@ -26,6 +26,11 @@ typedef struct coords_s {
   int y;
 } coords_t;
 
+typedef struct bbox_s {
+  int x0, y0;
+  int x1, y1;
+} bbox_t;
+
 typedef struct stringbounds_s {
   int ascent, descent;
   int lbearing, rbearing;

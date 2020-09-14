@@ -52,7 +52,8 @@ void textblock_clear(textblock_t textblock, unsigned long flags);
 /*************************************************** Gerph *********
  Function:      textblock_add
  Description:   Add a string to the wrap area
- Parameters:    font = the font handle to use
+ Parameters:    textblock = the handle to work on
+                font = the font handle to use
                 text = the text string to add
                 bg,fg = colour to use
                 flags = TBADD_* flags
@@ -62,5 +63,70 @@ int textblock_add(textblock_t textblock, void *font,
                   const char *text,
                   unsigned long bg, unsigned long fg,
                   unsigned long flags);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_covered
+ Description:   Return the extent covered by the text that has been
+                added.
+ Parameters:    textblock = the handle to work on
+                bbox-> the bbox to fill in
+ Returns:       none
+ ******************************************************************/
+void textblock_covered(textblock_t textblock, bbox_t *bbox);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_position
+ Description:   Return the coordinates of the output position
+ Parameters:    textblock = the handle to work on
+ Returns:       coordinates of the position (ie the baseline of the
+                next write)
+ ******************************************************************/
+coords_t textblock_position(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_extent
+ Description:   Return the extent of the output; the bottom y position
+                of the region, to use in a new block.
+ Parameters:    textblock = the handle to work on
+ Returns:       y-position suitable for a new text block
+ ******************************************************************/
+int textblock_extent(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_lineheight
+ Description:   Return the height of a line.
+ Parameters:    textblock = the handle to work on
+ Returns:       height of the line
+ ******************************************************************/
+int textblock_lineheight(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_linespacing
+ Description:   Return the spacing of a line.
+ Parameters:    textblock = the handle to work on
+ Returns:       height of the line + spacing
+ ******************************************************************/
+int textblock_linespacing(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_space
+ Description:   Add a space in the text for a specific size.
+                Might be used to leave a gap for an image.
+ Parameters:    textblock = the handle to work on
+                width = width of the space to create
+                height = height of the space to create (may push the
+                ascent higher)
+                posp-> where to store the coords of the bottom left
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_space(textblock_t textblock, int width, int height,
+                    coords_t *posp);
+
 
 #endif
