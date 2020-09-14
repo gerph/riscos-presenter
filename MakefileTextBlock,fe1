@@ -1,0 +1,16 @@
+# Build the test textblock code
+
+COMPONENT  = textblock
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.font \
+             o.vdu5 \
+             o.vdushape \
+             o.gcontext \
+             o.textblock \
+             o.test_textblock
+
+include LibraryCommand

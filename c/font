@@ -13,14 +13,21 @@
 #include "gcontext.h"
 
 /* Define this to debug this file */
-//#undef DEBUG
-#define DEBUG
+#undef DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define dprintf if (1) _swix(0x104,0), printf
 #else
 #define dprintf if (0) _swix(0x104,0), printf
 #endif
+
+#define Font_OSUnit (400)
+
+#define FONT_XTOOS(x) (((x)+Font_OSUnit-1)/Font_OSUnit)
+#define FONT_YTOOS(x) (((x)+Font_OSUnit-1)/Font_OSUnit)
+#define FONT_OSTOX(x) ((x)*Font_OSUnit)
+#define FONT_OSTOY(x) ((x)*Font_OSUnit)
 
 struct font_s {
     int handle;
@@ -127,7 +134,7 @@ coords_t font_paint(font_t font, int x, int y,
  Description:  Return the size of the string into the structure
  Parameters:   font = the font handle, or NULL for system font
                bounds-> the box to fill in
-               xlimit = the widest the string may be, or -1 for unlimited
+               xlimit = the widest the string may be in OS units, or -1 for unlimited
                str-> the string to read
                len = the number of characters to process, or -1 for all
                splitchar = character to split on, or 0 for none
@@ -164,6 +171,11 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
         font->ascent = 0;
         font->descent = 0;
       }
+      else
+      {
+        dprintf("font ascent = %i\n", font->ascent);
+        dprintf("font descent = %i\n", font->descent);
+      }
   }
 
   bounds->ascent = font->ascent;
@@ -173,6 +185,8 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
 
   if (xlimit == -1)
     xlimit = 0x7FFFFFFF;
+  else
+    xlimit = FONT_OSTOX(xlimit);
 
   /* Obtain the size of the string */
   {
@@ -202,13 +216,13 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
     }
     else
     {
-#define FONT_XTOOS(x) (((x)+399+400)/400)
       bounds->lbearing  = FONT_XTOOS(-block[5]);
       bounds->rbearing  = FONT_XTOOS(block[7]-width);
       bounds->xoffset   = FONT_XTOOS(width);
       bounds->charoffset = endp - str;
     }
-    dprintf("%i,%i,%i\n", bounds->lbearing, bounds->rbearing, bounds->xoffset);
+    dprintf("font_getstringsize lbearing=%i,lbearing=%i,xoffset=%i,charoffset=%i\n",
+            bounds->lbearing, bounds->rbearing, bounds->xoffset, bounds->charoffset);
   }
 }
 

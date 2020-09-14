@@ -1,0 +1,246 @@
+/*******************************************************************
+ * File:     textblock
+ * Purpose:  Rendering of text using the font functions into a wrapped
+ *           block
+ * Author:   Justin Fletcher
+ * Date:     13 Sep 2020
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "swis.h"
+
+#include "gcontext.h"
+
+#include "textblock.h"
+
+/* Define this to debug this file */
+#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+#define UNDERLINE_OFFSET (4)
+
+
+struct textblock_s {
+    int x0, y0, x1, y1;                 /* Region bounds */
+    int width, height;                  /* Implicit values, from the above */
+
+    int xc, yc;                         /* Current offset within the region, for the top of the char, ie x0+xc, y1-yc */
+
+    /* User configurables */
+    unsigned long line_spacing;         /* 16.16 scaling for the lines */
+
+    /* Configured/derived values */
+    int line_ascent;                    /* OS units to the baseline, once known */
+    int line_descent;                   /* OS units from baseline to the base of characters, once known */
+
+    /* Informational */
+    int cx0, cy0, cx1, cy1;             /* Covering box - how much has been drawn (like ChangedBox) */
+};
+
+
+#define min(a,b) (((a)<(b)) ? (a) : (b))
+#define max(a,b) (((a)>(b)) ? (a) : (b))
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_create
+ Description:   Create a new text block for wrapping text
+ Parameters:    x0, y0, y1, y1 = box inside which we'll plot
+                line_spacing = 16.16 value for line spacing as a portion of line height
+ Returns:       textblock_t handle for manipulating the text region
+ ******************************************************************/
+textblock_t textblock_create(int x0, int y0, int x1, int y1,
+                             unsigned long line_spacing)
+{
+    textblock_t textblock = calloc(1, sizeof(*textblock));
+    if (textblock == NULL)
+        return NULL;
+
+    textblock->width = x1 - x0;
+    textblock->height = y1 - y0;
+
+    textblock->x0 = x0;
+    textblock->y0 = y0;
+    textblock->x1 = x1;
+    textblock->y1 = y1;
+    textblock->line_spacing = line_spacing;
+
+    /* Mark unknown values */
+    textblock->line_ascent = -1;
+    textblock->line_descent = -1;
+    return textblock;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_clear
+ Description:   Clear the text block, resetting the block to the top
+                left corner.
+ Parameters:    textblock = the handle to work on
+                flags = TBCLEAR_* flags
+ Returns:       none
+ ******************************************************************/
+void textblock_clear(textblock_t textblock, unsigned long flags)
+{
+    switch (flags & TBCLEAR_TEXTMASK) {
+
+        case TBCLEAR_TEXTTOP:
+            textblock->xc = textblock->yc = 0;
+            break;
+
+        case TBCLEAR_TEXTNEWLINE:
+            if (textblock->xc == 0)
+            {
+                /* We're already at the start of the line */
+            }
+            else
+            {
+                /* We're in the midst of a line, so we need to start a new one */
+                int line_height = textblock->line_ascent + textblock->line_descent;
+                int line_spacing = (line_height * textblock->line_spacing) >> 16;
+                dprintf("Move to next line: spacing = %i\n", line_spacing);
+                textblock->xc = 0;
+                textblock->yc += line_spacing;
+            }
+            break;
+    }
+
+    if (flags & TBCLEAR_SIZING)
+    {
+        textblock->line_ascent = -1;
+        textblock->line_descent = -1;
+    }
+
+    if (flags & TBCLEAR_COVERED)
+    {
+        /* Clear the bounding box to show it's invalid */
+        textblock->cx0 = textblock->cy0 = 0;
+        textblock->cx1 = textblock->cy1 = -1;
+    }
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_add
+ Description:   Add a string to the wrap area
+ Parameters:    font = the font handle to use
+                text = the text string to add
+                bg,fg = colour to use
+                flags = TBADD_* flags
+ Returns:       number of bytes written
+ ******************************************************************/
+int textblock_add(textblock_t textblock, void *font,
+                  const char *text,
+                  unsigned long bg, unsigned long fg,
+                  unsigned long flags)
+{
+    const char *start_text = text;
+    while (*text)
+    {
+        stringbounds_t bounds;
+        int xspace = textblock->width - textblock->xc;
+
+        /* Find out how much we might get printed on this line */
+        dprintf("Trying to fit '%s'\n", text);
+        text_getstringsize(font, &bounds, xspace, text, -1, ' ');
+        if (bounds.charoffset == 0)
+        {
+            dprintf("No characters could be fit, need to move to a new line\n");
+            /* We could not print anything, so we need to move to a new line */
+            /* ... unless we never wrote anything on this line. In that case, we need to write
+               what we can. */
+            if (textblock->xc == 0)
+            {
+                dprintf("Already on a new line; just need to write as much as we can\n");
+                text_getstringsize(font, &bounds, xspace, text, -1, 0);
+            }
+            else
+            {
+                dprintf("Calling clear for a newline\n");
+                textblock_clear(textblock, TBCLEAR_TEXTNEWLINE);
+                /* Go around again, we'll find the next segment */
+                continue;
+            }
+        }
+
+        if (bounds.charoffset == 0)
+        {
+            /* We couldn't fit the string in - that's weird. Just give up */
+            return text - start_text;
+        }
+
+        /* Update the line height if necessary */
+        textblock->line_ascent = max(textblock->line_ascent, bounds.ascent);
+        textblock->line_descent = max(textblock->line_descent, bounds.descent);
+
+        /* We now know what we're going to plot, and how much space it'll take */
+        {
+            /* Update the covered bounds */
+            int x0 = textblock->x0 + textblock->xc + bounds.lbearing;
+            int x1 = textblock->x0 + textblock->xc + bounds.rbearing;
+            int y1 = textblock->y1 - textblock->yc;
+            int y0 = y1 - (textblock->line_ascent + textblock->line_descent);
+
+            if (y0 < textblock->y0)
+            {
+                /* This line won't fit; give up */
+                return text - start_text;
+            }
+
+            if (textblock->cx0 > textblock->cx1)
+            {
+                /* No covered region present, so we just set the region */
+                textblock->cx0 = x0;
+                textblock->cy0 = y0;
+                textblock->cx1 = x1;
+                textblock->cy1 = y1;
+            }
+            else
+            {
+                /* Update the covered region with the limits */
+                textblock->cx0 = min(textblock->cx0, x0);
+                textblock->cy0 = min(textblock->cy0, y0);
+                textblock->cx1 = max(textblock->cx1, x1);
+                textblock->cy1 = max(textblock->cy1, y1);
+            }
+
+            /* Paint in the new location */
+            if (flags & TBADD_PAINT)
+            {
+                int xb = textblock->x0 + textblock->xc;
+                int yb = y1 - textblock->line_ascent;
+                dprintf("Write '%.*s'\n", bounds.charoffset, text);
+                text_paint(font, xb, yb, bg, fg, text, bounds.charoffset);
+
+                if (flags & TBADD_UNDERLINE)
+                {
+                    line_start(fg);
+                    line(xb, yb - UNDERLINE_OFFSET, xb+bounds.xoffset, yb - UNDERLINE_OFFSET);
+                    line_end();
+                }
+            }
+        }
+
+        /* Move along the line by the baseline x offset */
+        textblock->xc += bounds.xoffset;
+        dprintf("Moving cursor by %i\n", bounds.xoffset);
+
+        /* And move the character position along */
+        text += bounds.charoffset;
+        dprintf("Next characters will be '%s'\n", text);
+        if (*text != '\0') {
+            /* We did a split, so we need to move to the next line */
+            textblock_clear(textblock, TBCLEAR_TEXTNEWLINE);
+        }
+        while (*text == ' ')
+            text++;
+    }
+    return text - start_text;
+}

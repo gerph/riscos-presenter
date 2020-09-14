@@ -62,8 +62,8 @@ typedef struct gcontext_s {
 
   coords_t (*text_paint)(void *handle,
                          int xb, int yb,
-                         const char *str, int strsize,
-                         unsigned long bg, unsigned long fg);
+                         unsigned long bg, unsigned long fg,
+                         const char *str, int strsize);
 
   coords_t (*text_paintattrib)(void *handle,
                                int x, int y, int x1, int y1,
@@ -107,8 +107,10 @@ extern gcontext_t gcontext;
                   (gcontext.text_findfont)(name, xsize, ysize)
 #define text_lose(handle) \
                   (gcontext.text_losefont)(handle)
-#define text_paint(handle, xb, yb, str, strsize, bg, fg) \
-                  (gcontext.text_paint)(handle,xb,yb,str,strsize,bg,fg)
+#define text_getstringsize(handle, bounds, xlimit, str, strsize, split_char) \
+                  (gcontext.text_getstringsize)(handle, bounds, xlimit, str, strsize, split_char)
+#define text_paint(handle, xb, yb, bg, fg, str, strsize) \
+                  (gcontext.text_paint)(handle,xb,yb,bg,fg,str,strsize)
 #define text_paintattrib(handle, x, y, x1, y1, str, strsize, bg, fg, attr) \
                   (gcontext.text_paintattrib)(handle,x,y,x1,y1,str,strsize,bg,fg,attr)
 
