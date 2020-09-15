@@ -38,6 +38,8 @@ typedef struct stringbounds_s {
   int charoffset;
 } stringbounds_t;
 
+typedef struct font_s *font_t;
+
 
 typedef struct gcontext_s {
   void (*rectangle_fill)(unsigned long colour,
@@ -58,19 +60,19 @@ typedef struct gcontext_s {
   void (*fill_close)(void);
   void (*fill_end)(void);
 
-  void *(*text_findfont)(const char *name, int xsize, int ysize);
-  void (*text_losefont)(void *handle);
+  font_t (*text_findfont)(const char *name, int xsize, int ysize);
+  void (*text_losefont)(font_t handle);
 
-  void (*text_getstringsize)(void *handle, stringbounds_t *bounds,
+  void (*text_getstringsize)(font_t, stringbounds_t *bounds,
                              int xlimit,
                              const char *str, int strsize, char split_char);
 
-  coords_t (*text_paint)(void *handle,
+  coords_t (*text_paint)(font_t handle,
                          int xb, int yb,
                          unsigned long bg, unsigned long fg,
                          const char *str, int strsize);
 
-  coords_t (*text_paintattrib)(void *handle,
+  coords_t (*text_paintattrib)(font_t handle,
                                int x, int y, int x1, int y1,
                                const char *str, int strsize,
                                unsigned long bg, unsigned long fg,

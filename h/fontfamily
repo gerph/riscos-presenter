@@ -1,0 +1,67 @@
+/*******************************************************************
+ * File:    fontfamily
+ * Purpose: Managing families of font, with bold and italic styles.
+ *          These are only meant for simple use; if you want more
+ *          fine grained control over the fonts used they can be
+ *          assigned to styles, or used manually.
+ * Author:  Gerph
+ * Date:    15 Sep 2020
+ ******************************************************************/
+
+#ifndef FONTFAMILY_H
+#define FONTFAMILY_H
+
+#include "gcontext.h"
+
+
+typedef struct fontfamily_s *fontfamily_t;
+
+#define FONTFAMILY_STYLE_BASE       (0)
+#define FONTFAMILY_STYLE_BOLD       (1)
+#define FONTFAMILY_STYLE_SLANT      (2)
+#define FONTFAMILY_STYLE_BOLDSLANT  (3)
+#define FONTFAMILY_STYLE_COUNT      (4)
+
+
+/*************************************************** Gerph *********
+ Function:         fontfamily_create
+ Description:      Create a selection of fonts for a family
+ Parameters:       name-> the font name to use
+ Returns:          fontfamily pointer, or NULL if cannot allocate.
+ ******************************************************************/
+fontfamily_t fontfamily_create(const char *name, int xsize, int ysize);
+
+
+/*************************************************** Gerph *********
+ Function:         fontfamily_create
+ Description:      Create a selection of fonts for a family
+ Parameters:       family-> the family to change
+ Returns:          None
+ ******************************************************************/
+void fontfamily_destroy(fontfamily_t family);
+
+
+/*************************************************** Gerph *********
+ Function:      fontfamily_set_style
+ Description:   Set the font for a given style
+ Parameters:    family -> the family to change
+                style = FONTFAMILY_STYLE_* style number
+                fontname -> font name string
+ Returns:       1 if failed to allocate, 0 if ok
+ ******************************************************************/
+int fontfamily_set_style(fontfamily_t family,
+                         int style, const char *fontname);
+
+
+/*************************************************** Gerph *********
+ Function:      fontfamily_get_font
+ Description:   Return the font for a given
+ Parameters:    family -> the family to change
+                style = FONTFAMILY_STYLE_* style number
+ Returns:       font_t handle for the new font,
+                OR NULL if failed to allocate
+ ******************************************************************/
+font_t fontfamily_get_font(fontfamily_t family,
+                           int style);
+
+#endif

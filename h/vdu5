@@ -24,7 +24,7 @@ void *vdu5_findfont(const char *name, int xsize, int ysize);
  Parameters:   handle = the handle to lose
  Returns:      none
  ******************************************************************/
-void vdu5_losefont(void *fh);
+void vdu5_losefont(font_t fh);
 
 
 /*************************************************** Gerph *********
@@ -38,7 +38,7 @@ void vdu5_losefont(void *fh);
                splitchar = character to split on, or 0 for none
  Returns:      none
  ******************************************************************/
-void vdu5_getstringsize(void *fh, stringbounds_t *bounds,
+void vdu5_getstringsize(font_t, stringbounds_t *bounds,
                         int xlimit,
                         const char *str, int strsize, char split_char);
 
@@ -69,7 +69,7 @@ coords_t vdu5_paint(font_t font, int x, int y,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
+coords_t vdu5_paintattrib(font_t, int x0, int y0, int x1, int y1,
                           const char *str, int strsize,
                           unsigned long bg, unsigned long fg,
                           unsigned long attr);

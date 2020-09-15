@@ -1,0 +1,65 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "gcontext.h"
+#include "textblock.h"
+#include "fontfamily.h"
+
+
+#define FONT_SIZE 22*16
+#define FONT_NAME "HirukoPro.Book"
+//#define FONT_NAME "Optima.Regular"
+#define FONT_ALTNAME "Homerton.Medium"
+
+
+int main(int argc, char *argv[])
+{
+    fontfamily_t family;
+    textblock_t textblock;
+    int ytop = 480;
+    int ytexttop = ytop - 16;
+    int ylimit = ytexttop - 256;
+    int i;
+
+    gcontext_initvdu(1);
+    rect_fill(0x4444FF00, 64, 64-16,  640, ytop);
+    rect_outline(0x44440000, 64+16, ylimit,  640-16, ytexttop);
+
+    family = fontfamily_create("HirukoPro.Book", FONT_SIZE, FONT_SIZE);
+    fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, "HirukoPro.Book.Oblique");
+    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, "HirukoPro.Bold");
+    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, "HirukoPro.Bold.Oblique");
+
+    textblock = textblock_create(64+16, ylimit,  640-16, ytexttop,
+                                 TBCREATE_DEFAULT_SPACING);
+
+    for (i=0; i < 2 ; i++)
+    {
+        unsigned long flags = (i==0) ? 0 : TBADD_PAINT;
+        textblock_add(textblock,
+                      fontfamily_get_font(family, FONTFAMILY_STYLE_BASE),
+                      "Regular ",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+
+        textblock_add(textblock,
+                      fontfamily_get_font(family, FONTFAMILY_STYLE_SLANT),
+                      "Slant ",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+
+        textblock_add(textblock,
+                      fontfamily_get_font(family, FONTFAMILY_STYLE_BOLD),
+                      "Bold ",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+
+        textblock_add(textblock,
+                      fontfamily_get_font(family, FONTFAMILY_STYLE_BOLDSLANT),
+                      "BoldSlant ",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+
+        textblock_clear(textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
+    }
+
+    fontfamily_destroy(family);
+
+    getchar();
+}

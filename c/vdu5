@@ -32,7 +32,7 @@
                ysize = the size (points * 16)
  Returns:      font handle, or -1 if could not claim
  ******************************************************************/
-void *vdu5_findfont(const char *name, int xsize, int ysize)
+font_t vdu5_findfont(const char *name, int xsize, int ysize)
 {
   unsigned long composite;
   unsigned long xeig, yeig;
@@ -54,7 +54,7 @@ void *vdu5_findfont(const char *name, int xsize, int ysize)
  Parameters:   handle = the handle to lose
  Returns:      none
  ******************************************************************/
-void vdu5_losefont(void *fh)
+void vdu5_losefont(font_t fh)
 {
   /* Nothing to do to lose the font */
 }
@@ -71,7 +71,7 @@ void vdu5_losefont(void *fh)
                splitchar = character to split on, or 0 for none
  Returns:      none
  ******************************************************************/
-void vdu5_getstringsize(void *fh, stringbounds_t *bounds,
+void vdu5_getstringsize(font_t fh, stringbounds_t *bounds,
                         int xlimit,
                         const char *str, int strsize, char split_char)
 {
@@ -142,7 +142,7 @@ void vdu5_getstringsize(void *fh, stringbounds_t *bounds,
                len = the number of characters to plot, or -1 for all
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t vdu5_paint(void *fh, int x, int y,
+coords_t vdu5_paint(font_t fh, int x, int y,
                     unsigned long bg, unsigned long fg,
                     const char *str, int strsize)
 {
@@ -199,7 +199,7 @@ coords_t vdu5_paint(void *fh, int x, int y,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t vdu5_paintattrib(void *fh, int x0, int y0, int x1, int y1,
+coords_t vdu5_paintattrib(font_t fh, int x0, int y0, int x1, int y1,
                           const char *str, int strsize,
                           unsigned long bg, unsigned long fg,
                           unsigned long attr)

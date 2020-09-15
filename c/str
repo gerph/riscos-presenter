@@ -1,0 +1,39 @@
+/*******************************************************************
+ * File:     strdup.c
+ * Purpose:  String duplication routines
+ * Author:   Justin Fletcher
+ * Date:     17 Mar 2001
+ ******************************************************************/
+
+#include <string.h>
+#include <stdlib.h>
+
+/*********************************************** <c> Gerph *********
+ Function:     strdup
+ Description:  Copy a string into a new block of memory
+ Parameters:   x-> string to copy
+ Returns:      pointer to new copy of string, or NULL if failed
+ ******************************************************************/
+char *strdup(char const *x)
+{
+  char *n=malloc(strlen(x)+1);
+  if (n!=NULL) strcpy(n,x);
+  return n;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     strndup
+ Description:  Duplicate a string to a particular length
+ Parameters:   str-> string to copy
+               n = number of CHARACTERS to copy
+ Returns:      pointer to new string
+ ******************************************************************/
+char *strndup(char *str,int n)
+{
+  char *s=malloc(n+1);
+  if (s!=NULL)
+  {
+    strncpy(s,str,n); s[n]='\0';
+  }
+  return s;
+}

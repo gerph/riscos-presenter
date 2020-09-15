@@ -1,0 +1,28 @@
+/*******************************************************************
+ * File:     str.h
+ * Purpose:  String utilities
+ * Author:   Justin Fletcher
+ * Date:     30 Jul 1997
+ ******************************************************************/
+
+#ifndef STR_H
+#define STR_H
+
+/*********************************************** <c> Gerph *********
+ Function:     strdup
+ Description:  Copy a string into a new block of memory
+ Parameters:   x-> string to copy
+ Returns:      pointer to new copy of string, or NULL if failed
+ ******************************************************************/
+char *strdup(const char *x);
+
+/*********************************************** <c> Gerph *********
+ Function:     strndup
+ Description:  Duplicate a string to a particular length
+ Parameters:   str-> string to copy
+               n = number of CHARACTERS to copy
+ Returns:      pointer to new string
+ ******************************************************************/
+char *strndup(const char *str,int n);
+
+#endif

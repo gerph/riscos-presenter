@@ -1,0 +1,18 @@
+# Build the test fontfamily code
+
+COMPONENT  = fontfamily
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.font \
+             o.vdu5 \
+             o.vdushape \
+             o.gcontext \
+             o.textblock \
+             o.str \
+             o.fontfamily \
+             o.test_fontfamily
+
+include LibraryCommand
