@@ -1,0 +1,19 @@
+#!/usr/bin/env riscos-amu -f
+# Makefile for Slidedeck
+#
+
+COMPONENT  = Slidedeck
+TYPE       = aif
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+		     o.str \
+			 o.slidedeck \
+			 o.test_slidedeck
+
+
+include LibraryCommand
+
+
+#---------------------------------------------------------------------------
+# Dynamic dependencies:

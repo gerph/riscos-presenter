@@ -1,0 +1,179 @@
+/*******************************************************************
+ * File:        slidedeck
+ * Purpose:     Holds information about a deck of slides - multiple
+ *              related slides that contain content to be presented.
+ * Author:      Gerph
+ * Date:        17 Sep 2020
+ ******************************************************************/
+
+/*
+
+A slide deck contains multiple slides.
+Slides can be added at the end of the deck.
+Slides consist of blocks - horizontal regions of content.
+Blocks are defined by a type:
+    - regular blocks contain a list of spans.
+    - heading blocks contain a list of spans.
+    - list blocks contain a list of blocks
+    - item blocks contain a list of spans
+    - pre blocks contain a list of blocks(?)
+Blocks are layed out down the slide.
+Blocks may vary the indentation of their containers.
+Spans are layed out across the page and wrap.
+Spans contain text which has rendering properties.
+The block type and the span render properties determine the font used.
+
+*/
+
+#ifndef SLIDEDECK_H
+#define SLIDEDECK_H
+
+typedef struct renderattribs_s {
+    /* Font styles */
+    int code:1;
+    int italic:1;
+    int bold:1;
+
+    /* Adornments */
+    int underline:1;
+    int del:1;
+} renderattribs_t;
+
+extern renderattribs_t sliderender_default;
+
+typedef struct slidespan_s {
+    struct slidespan_s *next;
+    renderattribs_t render;
+    const char *text;
+} slidespan_t;
+
+typedef enum slideblocktype_s {
+    sbt_plain,
+    sbt_heading,
+    sbt_list,
+    sbt_item,
+    sbt_pre
+} slideblocktype_t;
+
+/* sbt_list index values */
+#define SLIDEBLOCKINDEX_ORDERED     (0)
+#define SLIDEBLOCKINDEX_UNORDERED   (-1)
+/* sbt_heading index values */
+#define SLIDEBLOCKINDEX_HEADING(n)  (n)
+/* sbt_* index values */
+#define SLIDEBLOCKINDEX_NOINDEX     (0)
+
+typedef struct slideblock_s {
+    struct slideblock_s *parent;
+    struct slideblock_s *next;
+    slideblocktype_t blocktype;
+    int index; /* for heading indicates the level.
+                  for item indicates the index (or -1 for unordered)
+                  for list indicates the next index (or -1 for unordered) */
+    slidespan_t *spans;
+    slidespan_t *lastspan;
+
+    struct slideblock_s *blocks; /* list of inner blocks */
+    struct slideblock_s *lastblock; /* the final block to add to, if any */
+
+    /* Current state as we construct the spans */
+    renderattribs_t current_render;
+} slideblock_t;
+
+typedef struct slide_s {
+    slideblock_t *blocks;
+    slideblock_t *lastblock;
+    slideblock_t *currentblock; /* NULL if adding to the slide, or a pointer to a block to add to */
+    int index;  /* slide number, 0 indexed */
+
+    /* FIXME: Background ? */
+    /* FIXME: Properties for the slide */
+} slide_t;
+
+typedef struct slidedeck_s {
+    int nslides;
+    slide_t **slides;
+    slide_t *lastslide;
+
+    /* FIXME: Properties to pass through */
+} slidedeck_t;
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_create
+ Description:   Create a new slide deck, with an initial slide
+ Parameters:    none
+ Returns:       pointer to the slidedeck, or NULL if failed to allocate
+ ******************************************************************/
+slidedeck_t *slidedeck_create(void);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_newslide
+ Description:   Create a new slide within the deck
+ Parameters:    deck-> the slide deck to add to
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_newslide(slidedeck_t *deck);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_newblock
+ Description:   Create a new block within a slide
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_newblock(slidedeck_t *deck, slideblocktype_t blocktype, int index);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_startblock
+ Description:   Create a new block within a slide, and start a chain within it.
+                Only useful for the sbt_list blockstype
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_startblock(slidedeck_t *deck, slideblocktype_t blocktype, int index);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_endblock
+ Description:   End a block (used when we're coming out of a list)
+                Only useful for the sbt_list blockstype
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_endblock(slidedeck_t *deck);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan
+ Description:   Add a span element to the current block
+ Parameters:    deck-> the slide deck to add a span to
+                text-> text to add
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan(slidedeck_t *deck, const char *text);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_render_*
+ Description:   Change the render properties for a render property
+ Parameters:    deck-> the slide deck to add a block to
+                state = 1 to enable italic, 0 to disable
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_render_italic(slidedeck_t *deck, int state);
+int slidedeck_render_bold(slidedeck_t *deck, int state);
+int slidedeck_render_code(slidedeck_t *deck, int state);
+int slidedeck_render_underline(slidedeck_t *deck, int state);
+int slidedeck_render_del(slidedeck_t *deck, int state);
+
+
+#endif

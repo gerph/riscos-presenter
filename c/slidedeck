@@ -1,0 +1,300 @@
+/*******************************************************************
+ * File:        slidedeck
+ * Purpose:     Holds information about a deck of slides - multiple
+ *              related slides that contain content to be presented.
+ * Author:      Gerph
+ * Date:        17 Sep 2020
+ ******************************************************************/
+
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "swis.h"
+
+#include "slidedeck.h"
+#include "str.h"
+
+/* Define this to debug this file */
+//#undef DEBUG
+#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+#define UNDERLINE_OFFSET (4)
+
+
+renderattribs_t sliderender_default = {0,0,0,0,0};
+
+#define SLIDE_BLOCK(slide) ((slide)->currentblock ? (slide)->currentblock->lastblock : (slide)->lastblock)
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_create
+ Description:   Create a new slide deck, with an initial slide
+ Parameters:    none
+ Returns:       pointer to the slidedeck, or NULL if failed to allocate
+ ******************************************************************/
+slidedeck_t *slidedeck_create(void)
+{
+    slidedeck_t *deck = calloc(1, sizeof(*deck));
+    if (deck == NULL)
+        return NULL;
+
+    deck->nslides = 0;
+    deck->slides = NULL;
+    deck->lastslide = NULL;
+
+    if (slidedeck_newslide(deck))
+    {
+        free(deck);
+        return NULL;
+    }
+    return deck;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_newslide
+ Description:   Create a new slide within the deck
+ Parameters:    deck-> the slide deck to add to
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_newslide(slidedeck_t *deck)
+{
+    slide_t **new_slides;
+    slide_t *slide;
+
+    slide = calloc(1, sizeof(*slide));
+    if (slide == NULL)
+        return 1;
+
+    /* Extend the slide array */
+    new_slides = realloc(deck->slides, sizeof(slide_t*) * (deck->nslides+1));
+    if (new_slides == NULL)
+    {
+        free(slide);
+        return 1;
+    }
+
+    deck->slides = new_slides;
+    deck->slides[deck->nslides] = slide;
+    deck->nslides++;
+    deck->lastslide = slide;
+
+    /* Initialise the slide data */
+    slide->index = deck->nslides - 1; /* 0-indexed */
+    slide->blocks = NULL;
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_newblock
+ Description:   Create a new block within a slide
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_newblock(slidedeck_t *deck, slideblocktype_t blocktype, int index)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block;
+
+    block = calloc(1, sizeof(*block));
+    if (block == NULL)
+        return 1;
+
+    /* Initialise the block */
+    block->parent = NULL;
+    block->next = NULL;
+    block->blocktype = blocktype;
+    block->index = index;
+    block->spans = NULL;
+    block->lastspan = NULL;
+    block->blocks = NULL;
+    block->lastblock = NULL;
+    block->current_render = sliderender_default;
+
+    /* Attach to the slide */
+    if (slide->currentblock)
+    {
+        /* This block needs to be chained on to an existing block (nested list items) */
+        if (slide->currentblock->lastblock)
+            slide->currentblock->lastblock->next = block;
+        else
+            slide->currentblock->blocks = block;
+        slide->currentblock->lastblock = block;
+        if (slide->currentblock->index == -1)
+            block->index = -1; /* The current block has no index, so the newly added block should not have one either */
+        else
+            block->index = slide->currentblock->index++;
+
+        block->parent = slide->currentblock;
+    }
+    else
+    {
+        /* This block needs to be chained on to the end of the slide */
+        if (slide->lastblock)
+            slide->lastblock->next = block;
+        else
+            slide->blocks = block;
+        slide->lastblock = block;
+    }
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_startblock
+ Description:   Create a new block within a slide, and start a chain within it.
+                Only useful for the sbt_list blockstype
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_startblock(slidedeck_t *deck, slideblocktype_t blocktype, int index)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block;
+    int failed = slidedeck_newblock(deck, blocktype, index);
+    if (failed)
+        return 1;
+
+    /* Make the new block the one we'll add to */
+    block = SLIDE_BLOCK(slide);
+    slide->currentblock = block;
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_endblock
+ Description:   End a block (used when we're coming out of a list)
+                Only useful for the sbt_list blockstype
+ Parameters:    deck-> the slide deck to add a block to
+                blocktype = the type of block to add
+                index = the index for the new block (only for heading or list type)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_endblock(slidedeck_t *deck)
+{
+    slide_t *slide = deck->lastslide;
+    assert(slide->currentblock); /* FIXME: Decide if this should be an assertion or just a return 1 */
+    slide->currentblock = slide->currentblock->parent;
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan
+ Description:   Add a span element to the current block
+ Parameters:    deck-> the slide deck to add a span to
+                text-> text to add
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan(slidedeck_t *deck, const char *text)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+    slidespan_t *span;
+
+    dprintf("slidedeck_addspan(%p, '%s')\n", deck, text);
+    dprintf("  slide = %p, block = %p\n", slide, block);
+
+    span = calloc(1, sizeof(*span));
+    if (span == NULL)
+        return 1;
+
+    /* Configure the span */
+    span->text = strdup(text);
+    if (span->text == NULL)
+    {
+        free(span);
+        return 1;
+    }
+    span->render = block->current_render;
+
+    /* Link to chain */
+    if (block->lastspan)
+        block->lastspan->next = span;
+    else
+        block->spans = span;
+    block->lastspan = span;
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_render_*
+ Description:   Change the render properties for a render property
+ Parameters:    deck-> the slide deck to add a block to
+                state = 1 to enable italic, 0 to disable
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_render_italic(slidedeck_t *deck, int state)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+
+    if (!block)
+        return 1;
+
+    block->current_render.italic = state;
+    return 0;
+}
+int slidedeck_render_bold(slidedeck_t *deck, int state)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+
+    if (!block)
+        return 1;
+
+    block->current_render.bold = state;
+    return 0;
+}
+int slidedeck_render_code(slidedeck_t *deck, int state)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+
+    if (!block)
+        return 1;
+
+    block->current_render.code = state;
+    return 0;
+}
+int slidedeck_render_underline(slidedeck_t *deck, int state)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+
+    if (!block)
+        return 1;
+
+    block->current_render.underline = state;
+    return 0;
+}
+int slidedeck_render_del(slidedeck_t *deck, int state)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+
+    if (!block)
+        return 1;
+
+    block->current_render.del = state;
+    return 0;
+}
+
+

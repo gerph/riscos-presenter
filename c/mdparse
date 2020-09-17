@@ -283,7 +283,10 @@ void debug_log(const char *msg, void *userdata)
 
 MD_PARSER parser = {
     0, /* ABI version */
-    0, /* Dialect options */
+    0 |
+        MD_FLAG_COLLAPSEWHITESPACE |
+        MD_FLAG_STRIKETHROUGH |
+        MD_FLAG_NOHTML, /* Dialect options */
 
     /* Rendering callbacks... */
     enter_block,
