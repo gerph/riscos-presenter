@@ -1,0 +1,15 @@
+#!/usr/bin/env riscos-amu -f
+# Makefile for MDParse
+#
+
+COMPONENT  = MDParse
+TYPE       = aif
+INCLUDES   = <Lib$Dir>.MarkdownMD4C.
+LIBS       = ${CLIB} ${GETOPTLIB} <Lib$Dir>.MarkdownMD4C.o.libMarkdownMD4C
+OBJS       = o.mdparse \
+
+include LibraryCommand
+
+
+#---------------------------------------------------------------------------
+# Dynamic dependencies:
