@@ -12,6 +12,7 @@
 
 #include "fontfamily.h"
 #include "gcontext.h"
+#include "fontmapif.h"
 #include "str.h"
 
 typedef struct namedfont_s {
@@ -148,4 +149,51 @@ font_t fontfamily_get_font(fontfamily_t family,
         return NULL;
 
     return family->style[style].font;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      fontfamily_populate
+ Description:   Populate any font family members not supplied
+ Parameters:    family -> the family to change
+ Returns:       1 if failed to allocate, 0 if ok
+ ******************************************************************/
+int fontfamily_populate(fontfamily_t family)
+{
+    const char *regular_font = family->style[FONTFAMILY_STYLE_BASE].name;
+    const char *base_font;
+    const char *new_font;
+
+    /* Start with the bold-italic, so that we take any of the values that are explicitly set */
+    if (family->style[FONTFAMILY_STYLE_BOLD].name)
+        base_font = family->style[FONTFAMILY_STYLE_BOLD].name;
+    else if  (family->style[FONTFAMILY_STYLE_SLANT].name)
+        base_font = family->style[FONTFAMILY_STYLE_SLANT].name;
+    else
+        base_font = regular_font;
+
+    new_font = fontmap_makefont_bolditalic(base_font);
+    if (!new_font)
+        new_font = regular_font;
+
+    if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, new_font))
+        return 1; /* Allocation failed */
+
+    /* Now bold */
+    new_font = fontmap_makefont_bold(regular_font);
+    if (!new_font)
+        new_font = regular_font;
+
+    if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, new_font))
+        return 1; /* Allocation failed */
+
+    /* Finally italic */
+    new_font = fontmap_makefont_italic(regular_font);
+    if (!new_font)
+        new_font = regular_font;
+
+    if (fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, new_font))
+        return 1; /* Allocation failed */
+
+    return 0;
 }

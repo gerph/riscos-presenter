@@ -1,0 +1,60 @@
+/*******************************************************************
+ * File:    fontmap_if
+ * Purpose: Interface to the FontMap module
+ * Author:  Gerph
+ * Date:    17 Sep 2020
+ ******************************************************************/
+
+#include <stdlib.h>
+#include "swis.h"
+
+#include "fontmap.h"
+
+#include "str.h"
+#include "fontmapif.h"
+
+
+/*************************************************** Gerph *********
+ Function:      fontmap_makefont
+ Description:   Make a font with a given type
+ Parameters:    font -> font to font to use as the base
+                fmi = italic request
+                fmw = weight request
+                fms = slant request
+ Returns:       font name, strdup'd, or NULL if could not get one.
+ ******************************************************************/
+static const char *fontmap_makefont(const char *font,
+                                    fontmapitalic_t fmi,
+                                    fontmapweight_t fmw,
+                                    fontmapstretch_t fms)
+{
+    char new_font[256];
+    _kernel_oserror *err;
+
+    err = _swix(FontMap_Translate, _INR(0,5),
+                                   (FONTMAP_SYS_RO << FONTMAP_SRC_SHIFT) | (FONTMAP_SYS_RO << FONTMAP_DST_SHIFT),
+                                   font, fmi, fmw, fms, new_font, sizeof(new_font));
+    if (err)
+        return NULL;
+
+    return strdup(new_font);
+}
+
+/*************************************************** Gerph *********
+ Function:      fontmap_makefont_*
+ Description:   Make an bold, italic, bold-italic font
+ Parameters:    font -> font to font to use as the base
+ Returns:       font name, strdup'd, or NULL if could not get one.
+ ******************************************************************/
+const char *fontmap_makefont_italic(const char *font)
+{
+    return fontmap_makefont(font, fmi_italic, fmw_dontcare, fms_dontcare);
+}
+const char *fontmap_makefont_bold(const char *font)
+{
+    return fontmap_makefont(font, fmi_dontcare, fmw_bold, fms_dontcare);
+}
+const char *fontmap_makefont_bolditalic(const char *font)
+{
+    return fontmap_makefont(font, fmi_italic, fmw_bold, fms_dontcare);
+}

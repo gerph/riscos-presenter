@@ -26,9 +26,17 @@ int main(int argc, char *argv[])
     rect_outline(0x44440000, 64+16, ylimit,  640-16, ytexttop);
 
     family = fontfamily_create("HirukoPro.Book", FONT_SIZE, FONT_SIZE);
+#if 1
+    if (fontfamily_populate(family))
+    {
+        printf("Failed to initialise font family\n");
+        exit(1);
+    }
+#else
     fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, "HirukoPro.Book.Oblique");
     fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, "HirukoPro.Bold");
     fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, "HirukoPro.Bold.Oblique");
+#endif
 
     textblock = textblock_create(64+16, ylimit,  640-16, ytexttop,
                                  TBCREATE_DEFAULT_SPACING);

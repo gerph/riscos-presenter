@@ -12,6 +12,7 @@ OBJS       = \
              o.gcontext \
              o.textblock \
              o.str \
+             o.fontmapif \
              o.fontfamily \
              o.test_fontfamily
 

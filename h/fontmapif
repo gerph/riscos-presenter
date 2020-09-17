@@ -1,0 +1,23 @@
+/*******************************************************************
+ * File:    fontmapif
+ * Purpose: Interface to the FontMap module
+ * Author:  Gerph
+ * Date:    17 Sep 2020
+ ******************************************************************/
+
+#ifndef FONTMAPIF_H
+#define FONTMAPIF_H
+
+#include "fontmap.h"
+
+/*************************************************** Gerph *********
+ Function:      fontmap_makefont_*
+ Description:   Make an bold, italic, bold-italic font
+ Parameters:    font -> font to font to use as the base
+ Returns:       font name, strdup'd, or NULL if could not get one.
+ ******************************************************************/
+const char *fontmap_makefont_italic(const char *font);
+const char *fontmap_makefont_bold(const char *font);
+const char *fontmap_makefont_bolditalic(const char *font);
+
+#endif

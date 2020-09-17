@@ -1,0 +1,9 @@
+%YAML 1.1
+---
+
+config:
+    graphics.implementation: wx
+    graphicscairo.fonts_fontconfig: true
+
+modules:
+  - ${ROMODULES}/FontMap,ffa
