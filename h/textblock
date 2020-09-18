@@ -24,6 +24,7 @@ typedef struct textblock_s *textblock_t;
 
 /* How to render text */
 #define TBADD_UNDERLINE     (1ul<<0)    /* Whether we draw an underline or not */
+#define TBADD_STRIKETHROUGH (1ul<<1)    /* Whether we draw a strike through or not */
 #define TBADD_PAINT         (1ul<<16)   /* Whether we're painting, or just calculating the sizes */
 
 

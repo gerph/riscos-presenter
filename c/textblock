@@ -224,6 +224,12 @@ int textblock_add(textblock_t textblock, void *font,
                     line(xb, yb - UNDERLINE_OFFSET, xb+bounds.xoffset, yb - UNDERLINE_OFFSET);
                     line_end();
                 }
+                if (flags & TBADD_STRIKETHROUGH)
+                {
+                    line_start(fg);
+                    line(xb, yb + bounds.ascent / 3, xb+bounds.xoffset, yb + bounds.ascent / 3);
+                    line_end();
+                }
             }
         }
 
