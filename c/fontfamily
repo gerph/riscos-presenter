@@ -38,12 +38,6 @@ struct fontfamily_s
     namedfont_t style[FONTFAMILY_STYLE_COUNT];
 };
 
-#define FONTFAMILY_STYLE_BASE       (0)
-#define FONTFAMILY_STYLE_BOLD       (1)
-#define FONTFAMILY_STYLE_SLANT      (2)
-#define FONTFAMILY_STYLE_BOLDSLANT  (3)
-#define FONTFAMILY_STYLE_COUNT      (4)
-
 
 /*************************************************** Gerph *********
  Function:         fontfamily_create

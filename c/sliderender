@@ -61,18 +61,23 @@ typedef struct sliderender_s {
 
     int in_heading; /* Which heading we're in, or -1 if we're not in a heading */
 
-    fontfamily_t font_heading[MAXHEADING];
-    fontfamily_t font_body;
-    fontfamily_t font_code;
+    fontfamily_t family_heading[MAXHEADING];
+    fontfamily_t family_body;
+    fontfamily_t family_code;
+
+    font_t font_body; /* A reference to the base font in family_body */
 
     textblock_t textblock;
     int pass;
+
+    bounds_t em;
 } sliderender_t;
 
 
 void sliderender_block(sliderender_t *render,
                        slideblock_t *block)
 {
+    unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
     switch (block->blocktype)
     {
         case sbt_heading:
@@ -89,17 +94,43 @@ void sliderender_block(sliderender_t *render,
             {
                 dprintf("  List ordered, next index %i\n", block->index);
             }
+
+            /* Set up the indentation for the block */
+            {
+                int indent = render->em.width / 2;
+                if (block->parent)
+                    indent += render->em.width * 1.5;
+                textblock_inset(render->textblock, indent, indent);
+            }
             break;
 
         case sbt_item:
             if (block->index == -1)
             {
                 dprintf("  Item unordered\n");
+                textblock_inset(render->textblock, render->em.width * .5, render->em.width * .5);
+                textblock_add(render->textblock,
+                              render->font_body,
+                              // "\xb7",        // Latin-1 encoding of middot
+                              "\xe2\x80\xa2",   // UTF-8 encoding of bullet
+                              0x00000000, 0xFFFFFF00,
+                              flags);
+                textblock_inset(render->textblock, render->em.width, render->em.width);
             }
             else
             {
+                char buf[4];
+                sprintf(buf, "%i.", block->index + 1);
                 dprintf("  Item ordered, index %i\n", block->index);
+                textblock_add(render->textblock,
+                              render->font_body,
+                              buf,
+                              0x00000000, 0xFFFFFF00,
+                              flags);
+                // Indent for the spans
+                textblock_inset(render->textblock, render->em.width * 1.5, render->em.width * 1.5);
             }
+
             break;
     }
     if (block->blocks)
@@ -115,7 +146,6 @@ void sliderender_block(sliderender_t *render,
     if (block->spans)
     {
         slidespan_t *span;
-        unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
         for (span = block->spans; span; span=span->next)
         {
             int fontstyle = 0;
@@ -132,11 +162,11 @@ void sliderender_block(sliderender_t *render,
                 fontflags |= TBADD_STRIKETHROUGH;
 
             if (span->render.code)
-                family = render->font_code;
+                family = render->family_code;
             else if (render->in_heading != -1)
-                family = render->font_heading[render->in_heading];
+                family = render->family_heading[render->in_heading];
             else
-                family = render->font_body;
+                family = render->family_body;
 
             dprintf("Rendering with family %p\n", family);
             font = fontfamily_get_font(family, fontstyle);
@@ -150,6 +180,24 @@ void sliderender_block(sliderender_t *render,
         }
 
         textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
+    }
+
+    switch (block->blocktype)
+    {
+        case sbt_list:
+            /* We're now leaving the list */
+            {
+                int indent = render->em.width / 2;
+                if (block->parent)
+                    indent += render->em.width * 1.5;
+                textblock_inset(render->textblock, -indent, -indent);
+            }
+            break;
+
+        case sbt_item:
+            // Restore the indent as we leave the item
+            textblock_inset(render->textblock, -render->em.width * 1.5, -render->em.width * 1.5);
+            break;
     }
 
     /* We're not in a heading any more */
@@ -186,11 +234,11 @@ fontfamily_t sliderender_prepare_font(sliderender_t *render,
 
 void sliderender_destroy(sliderender_t *render)
 {
-    fontfamily_destroy(render->font_body);
-    fontfamily_destroy(render->font_code);
-    fontfamily_destroy(render->font_heading[0]);
-    fontfamily_destroy(render->font_heading[1]);
-    fontfamily_destroy(render->font_heading[2]);
+    fontfamily_destroy(render->family_body);
+    fontfamily_destroy(render->family_code);
+    fontfamily_destroy(render->family_heading[0]);
+    fontfamily_destroy(render->family_heading[1]);
+    fontfamily_destroy(render->family_heading[2]);
     textblock_destroy(render->textblock);
 
     //free(render);
@@ -206,15 +254,15 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
     render.slide = deck->slides[slidenumber]; /* FIXME Check number */
 
     /* Prepare the families */
-    render.font_body = sliderender_prepare_font(&render, "body", &fontdefault_body);
-    if (!render.font_body)
+    render.family_body = sliderender_prepare_font(&render, "body", &fontdefault_body);
+    if (!render.family_body)
     {
         dprintf("Cannot initialise the font family for body\n");
         goto failed;
     }
 
-    render.font_code = sliderender_prepare_font(&render, "code", &fontdefault_code);
-    if (!render.font_code)
+    render.family_code = sliderender_prepare_font(&render, "code", &fontdefault_code);
+    if (!render.family_code)
     {
         dprintf("Cannot initialise the font family for code\n");
         goto failed;
@@ -225,8 +273,8 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
         for (n=0; n<MAXHEADING; n++)
         {
             sprintf(name, "h%i", n + 1);
-            render.font_heading[n] = sliderender_prepare_font(&render, name, &fontdefault_headings[n]);
-            if (!render.font_heading[n])
+            render.family_heading[n] = sliderender_prepare_font(&render, name, &fontdefault_headings[n]);
+            if (!render.family_heading[n])
             {
                 dprintf("Cannot initialise the font family for heading %i\n", n+1);
                 goto failed;
@@ -238,6 +286,9 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
 
     render.textblock = textblock_create(64, 64,  1280-64, 960-64,
                                         TBCREATE_DEFAULT_SPACING);
+
+    render.font_body = fontfamily_get_font(render.family_body, FONTFAMILY_STYLE_BASE);
+    render.em = text_getemsize(render.font_body);
 
     for (pass=0; pass<2; pass++)
     {

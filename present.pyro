@@ -4,6 +4,7 @@
 config:
     graphics.implementation: wx
     graphicscairo.fonts_fontconfig: true
+    vdu.alphabet: UTF8
 
 modules:
   - ${ROMODULES}/FontMap,ffa

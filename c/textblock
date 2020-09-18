@@ -211,7 +211,7 @@ int textblock_add(textblock_t textblock, void *font,
         {
             /* Update the covered bounds */
             int x0 = textblock->x0 + textblock->inset_left + textblock->xc + bounds.lbearing;
-            int x1 = textblock->x0 + textblock->inset_left + textblock->xc + bounds.rbearing;
+            int x1 = textblock->x0 + textblock->inset_left + textblock->xc + bounds.xoffset + bounds.rbearing;
             int y1 = textblock->y1 - textblock->yc;
             int y0 = y1 - (textblock->line_ascent + textblock->line_descent);
 

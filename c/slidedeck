@@ -146,9 +146,17 @@ int slidedeck_newblock(slidedeck_t *deck, slideblocktype_t blocktype, int index)
             slide->currentblock->blocks = block;
         slide->currentblock->lastblock = block;
         if (slide->currentblock->index == -1)
+        {
             block->index = -1; /* The current block has no index, so the newly added block should not have one either */
+        }
         else
-            block->index = slide->currentblock->index++;
+        {
+            /* Only increment when the block we add is an 'item' */
+            if (blocktype == sbt_item)
+                block->index = slide->currentblock->index++;
+            else
+                block->index = -1;
+        }
 
         block->parent = slide->currentblock;
     }
@@ -186,6 +194,7 @@ int slidedeck_startblock(slidedeck_t *deck, slideblocktype_t blocktype, int inde
     /* Make the new block the one we'll add to */
     block = SLIDE_BLOCK(slide);
     slide->currentblock = block;
+    block->index = index;
 
     return 0;
 }
