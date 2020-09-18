@@ -1,0 +1,33 @@
+/*******************************************************************
+ * File:        test_slidemd
+ * Purpose:     Test that the slide markdown parser generates the right things
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include <assert.h>
+#include <stdio.h>
+
+#include "slidedeck.h"
+#include "slidedeck_debug.h"
+#include "slidemd.h"
+#include "file.h"
+
+
+int main(int argc, char *argv[])
+{
+    char *in_filename = "file/md";
+    const char *mddata;
+    slidedeck_t *deck;
+
+    mddata = file_read(in_filename);
+    assert(mddata);
+
+    printf("---- MD parsing ----\n");
+    deck = slidemd_parse(mddata, strlen(mddata));
+
+    printf("---- Slides dump ----\n");
+    slidedeck_dump(deck);
+
+    return 0;
+}

@@ -1,0 +1,24 @@
+/*******************************************************************
+ * File:        slidemd
+ * Purpose:     Parse the Markdown files and construct a slide deck
+ *              for use with presenter
+ * Author:      Gerph
+ * Date:        17 Sep 2020
+ ******************************************************************/
+
+#ifndef SLIDEMD_H
+#define SLIDEMD_H
+
+#include "slidedeck.h"
+
+
+/*************************************************** Gerph *********
+ Function:      slidemd_parse
+ Description:   Parse markdown text into a set of slides
+ Parameters:    text-> the text to parse
+                len = the length of the text to parse, or -1 for 0-terminated string.
+ Returns:       slidedeck, or NULL if failed.
+ ******************************************************************/
+slidedeck_t *slidemd_parse(const char *text, int len);
+
+#endif

@@ -10,10 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "swis.h"
 
 #include "slidedeck.h"
-#include "slidedeck_debug.h"
-
 #include "md4c.h"
 #include "mdnames.h"
 
@@ -343,53 +342,20 @@ MD_PARSER parser = {
 
 
 /*************************************************** Gerph *********
- Function:      file_read
- Description:   Read the contents of a file into a block.
- Parameters:    filename-> the file to read
- Returns:       pointer to the file content
+ Function:      slidemd_parse
+ Description:   Parse markdown text into a set of slides
+ Parameters:    text-> the text to parse
+                len = the length of the text to parse, or -1 for 0-terminated string.
+ Returns:       slidedeck, or NULL if failed.
  ******************************************************************/
-const char *file_read(const char *filename)
+slidedeck_t *slidemd_parse(const char *text, int len)
 {
-    char *content;
-    long size;
-    FILE *f = fopen(filename, "rb");
-    if (f == NULL)
-        return NULL;
-
-    fseek(f, 0, SEEK_END);
-    size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    content = malloc(size + 1);
-    if (content == NULL)
-    {
-        fclose(f);
-        return NULL;
-    }
-    fread(content, 1, size, f);
-    fclose(f);
-
-    content[size] = '\0';
-    return content;
-}
-
-
-int main(int argc, char *argv[])
-{
-    char *in_filename = "file/md";
-    const char *mddata;
     slidedeck_t *deck;
-
-    mddata = file_read(in_filename);
-    assert(mddata);
-
     deck = slidedeck_create();
+    if (deck == NULL)
+        return NULL;
 
-    printf("---- MD parsing ----\n");
-    md_parse(mddata, strlen(mddata), &parser, deck);
+    md_parse(text, len == -1 ? strlen(text) : len, &parser, deck);
 
-    printf("---- Slides dump ----\n");
-    slidedeck_dump(deck);
-
-    return 0;
+    return deck;
 }

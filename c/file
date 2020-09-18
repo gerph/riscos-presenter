@@ -1,0 +1,42 @@
+/*******************************************************************
+ * File:        file
+ * Purpose:     File manipulation
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "file.h"
+
+/*************************************************** Gerph *********
+ Function:      file_read
+ Description:   Read the contents of a file into a block.
+ Parameters:    filename-> the file to read
+ Returns:       pointer to the file content
+ ******************************************************************/
+const char *file_read(const char *filename)
+{
+    char *content;
+    long size;
+    FILE *f = fopen(filename, "rb");
+    if (f == NULL)
+        return NULL;
+
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    content = malloc(size + 1);
+    if (content == NULL)
+    {
+        fclose(f);
+        return NULL;
+    }
+    fread(content, 1, size, f);
+    fclose(f);
+
+    content[size] = '\0';
+    return content;
+}

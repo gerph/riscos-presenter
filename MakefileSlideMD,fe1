@@ -12,6 +12,8 @@ OBJS       = \
 			 o.slidedeck \
 			 o.slidedeck_debug \
 			 o.slidemd \
+			 o.file \
+			 o.test_slidemd \
 			 o.mdnames
 
 include LibraryCommand

@@ -1,0 +1,19 @@
+/*******************************************************************
+ * File:        file
+ * Purpose:     File manipulation
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#ifndef FILE_H
+#define FILE_H
+
+/*************************************************** Gerph *********
+ Function:      file_read
+ Description:   Read the contents of a file into a block.
+ Parameters:    filename-> the file to read
+ Returns:       pointer to the file content
+ ******************************************************************/
+const char *file_read(const char *filename);
+
+#endif
