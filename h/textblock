@@ -13,7 +13,8 @@ typedef struct textblock_s *textblock_t;
 
 /* How to create the block */
 #define TBCREATE_DEFAULT_SPACING (0x10000) /* 100% */
-#define TBCREATE_EXTRA_SPACING   (0x13333) /* 120% */
+#define TBCREATE_SPACING_120     (0x13333) /* 120% */
+#define TBCREATE_SPACING_150     (0x18000) /* 150% */
 
 /* How to clear the text block to a known state */
 #define TBCLEAR_TEXTMASK    (3ul<<0)    /* Clear the text to the top-left of the region */
@@ -139,6 +140,18 @@ int textblock_linespacing(textblock_t textblock);
 int textblock_space(textblock_t textblock, int width, int height,
                     coords_t *posp);
 
+
+/*************************************************** Gerph *********
+ Function:      textblock_gap
+ Description:   Add a vertical gap in the blocks
+                Might be used to space out content between headings, etc
+ Parameters:    textblock = the handle to work on
+                height = height of the gap to insert
+                posp-> where to store the coords of the bottom left
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_gap(textblock_t textblock, int height,
+                    coords_t *posp);
 
 /*************************************************** Gerph *********
  Function:      textblock_inset

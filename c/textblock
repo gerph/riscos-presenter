@@ -122,6 +122,7 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
             {
                 /* We're in the midst of a line, so we need to start a new one */
                 int line_spacing = textblock_linespacing(textblock);
+                dprintf("ascent/descent = %i\n", textblock->line_ascent, textblock->line_descent);
                 dprintf("Move to next line: spacing = %i\n", line_spacing);
                 textblock->xc = 0;
                 textblock->yc += line_spacing;
@@ -353,7 +354,7 @@ int textblock_linespacing(textblock_t textblock)
 
 /*************************************************** Gerph *********
  Function:      textblock_space
- Description:   Add a space in the text for a specific size.
+ Description:   Add a space inline with the text for a specific size.
                 Might be used to leave a gap for an image.
  Parameters:    textblock = the handle to work on
                 width = width of the space to create
@@ -383,9 +384,41 @@ int textblock_space(textblock_t textblock, int width, int height,
     if (y0 - textblock->line_descent < textblock->y0)
         return 0;
 
-    posp->x = textblock->x0 + textblock->inset_left + textblock->xc;
-    posp->y = y0;
+    if (posp)
+    {
+        posp->x = textblock->x0 + textblock->inset_left + textblock->xc;
+        posp->y = y0;
+    }
     textblock->line_ascent = new_line_ascent;
+    return 1;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_gap
+ Description:   Add a vertical gap in the blocks
+                Might be used to space out content between headings, etc
+ Parameters:    textblock = the handle to work on
+                height = height of the gap to insert
+                posp-> where to store the coords of the bottom left
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_gap(textblock_t textblock, int height,
+                  coords_t *posp)
+{
+    int y0;
+    int new_line_ascent;
+
+    y0 = textblock->y1 - textblock->yc - height;
+    if (y0 < textblock->y0)
+        return 0;
+
+    textblock->yc += height;
+    if (posp)
+    {
+        posp->x = textblock->x0 + textblock->inset_left + textblock->xc;
+        posp->y = y0;
+    }
     return 1;
 }
 

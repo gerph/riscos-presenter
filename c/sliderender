@@ -95,6 +95,9 @@ void sliderender_block(sliderender_t *render,
                 dprintf("  List ordered, next index %i\n", block->index);
             }
 
+            /* Entering and leaving a list should insert somee extra space */
+            textblock_gap(render->textblock, render->em.height / 2, NULL);
+
             /* Set up the indentation for the block */
             {
                 int indent = render->em.width / 2;
@@ -133,6 +136,10 @@ void sliderender_block(sliderender_t *render,
 
             break;
     }
+
+    /* This is a new horizontal block, so it has its own sizing */
+    textblock_clear(render->textblock, TBCLEAR_SIZING);
+
     if (block->blocks)
     {
         /* Has nested blocks */
@@ -192,6 +199,9 @@ void sliderender_block(sliderender_t *render,
                     indent += render->em.width * 1.5;
                 textblock_inset(render->textblock, -indent, -indent);
             }
+
+            /* Entering and leaving a list should insert somee extra space */
+            textblock_gap(render->textblock, render->em.height / 2, NULL);
             break;
 
         case sbt_item:
@@ -285,7 +295,7 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
     render.in_heading = -1; /* Not in a heading right now */
 
     render.textblock = textblock_create(64, 64,  1280-64, 960-64,
-                                        TBCREATE_DEFAULT_SPACING);
+                                        TBCREATE_SPACING_150);
 
     render.font_body = fontfamily_get_font(render.family_body, FONTFAMILY_STYLE_BASE);
     render.em = text_getemsize(render.font_body);
