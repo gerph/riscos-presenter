@@ -1,0 +1,357 @@
+/*******************************************************************
+ * File:     optlist.c
+ * Purpose:  Linked list of options
+ * Author:   Justin Fletcher
+ * Date:     18 Aug 1998
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "str.h"
+#include "optlist.h"
+
+/* Define this to debug the code */
+/* #define DEBUG */
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_create
+ Description:  Creates a opt block with nothing in it
+ Parameters:   none
+ Returns:      pointer to a opt block, or NULL if failed
+ ******************************************************************/
+opts *opt_create(void)
+{
+  opts *opt=malloc(sizeof(opts));
+  if (opt==NULL)
+    return NULL;
+  opt->head=NULL; /* nothing there yet */
+  opt->tail=NULL; /* nothing there yet */
+  return opt; /* return it */
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_copy
+ Description:  Copies a opts block
+ Parameters:   opt-> opt block
+ Returns:      pointer to a new opt block, or NULL if failed
+ ******************************************************************/
+opts *opt_copy(opts *opt)
+{
+    opts *new_opts = opt_create();
+    optval *val;
+    if (new_opts == NULL)
+        return NULL;
+
+    for (val = opt_firstopt(opt); val; val=opt_nextopt(val))
+    {
+        if (opt_add(new_opts, opt_id(val), opt_value(val)))
+        {
+            opt_destroy(new_opts);
+            return NULL;
+        }
+    }
+
+    return new_opts;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_change
+ Description:  Change an option value
+ Parameters:   opt-> optval to change
+               data-> value to change to
+ Returns:      1 if failed, 0 otherwise
+ ******************************************************************/
+int opt_change(optval *opt,char const *data)
+{
+  char *nval=strdup(data);
+  if (nval==NULL)
+    return 1;
+  free(opt->value);
+  opt->value=nval;
+  return 0;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_add
+ Description:  Add an option to the opt block
+ Parameters:   opt-> opt block
+               id-> identifier name (will be copied)
+               data-> data to add (will be copied)
+ Returns:      0 for success, 1 if failed
+ ******************************************************************/
+int opt_add(opts *opt,char const *id,char const *data)
+{
+  optval *noptval=malloc(sizeof(optval));
+  if (noptval==NULL) return 1; /* failed */
+  noptval->next=NULL;         /* not linked to anything */
+  noptval->id=strdup(id); /* copy the optval */
+  if (noptval->id==NULL)
+  { free(noptval); return 1; } /* failed */
+  noptval->value=strdup(data); /* copy the optval */
+  if (noptval->value==NULL)
+  { free(noptval->id); free(noptval); return 1; } /* failed */
+  if (opt->head==NULL)
+  {
+    opt->head=noptval;
+    opt->tail=noptval;
+  }
+  else
+  {
+    opt->tail->next=noptval; /* link us on to the end of the list */
+    opt->tail=noptval;       /* and make us the end of the list */
+  }
+  return 0; /* success */
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_firstopt
+ Description:  Return the first optval of the block
+ Parameters:   opt-> opt block
+ Returns:      pointer to the optval, or NULL if none
+ ******************************************************************/
+optval *opt_firstopt(opts *opt)
+{
+  return opt->head; /* return the head item */
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_nextopt
+ Description:  Return the next optval of the block
+ Parameters:   opt-> last optval block
+ Returns:      pointer to the next optval, or NULL if none
+ ******************************************************************/
+optval *opt_nextopt(optval *opt)
+{
+  return opt->next;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_remove
+ Description:  Remove a block
+ Parameters:   top-> the top entry
+               opt-> the optval to remove
+ Returns:      NULL, to store if you wish
+ ******************************************************************/
+optval *opt_remove(opts *top,optval *opt)
+{
+  optval *cur=top->head;  /* the current optval */
+  optval *last=NULL;      /* the last optval we looked at */
+  while (cur!=NULL)
+  {
+    optval *next=cur->next;
+    if (cur==opt)
+    {
+      free(cur->value);       /* free optval itself */
+      free(cur->id);          /* free optval itself */
+      free(cur);              /* and free the block */
+      if (last==NULL) top->head=next;
+      else last->next=next;    /* relink us */
+      cur=last;
+    }
+    last=cur; cur=next; /* move on to next */
+  }
+  return NULL;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_destroy
+ Description:  Destroy an entire opt block
+ Parameters:   opt-> the opt block to kill
+ Returns:      NULL (for assigning to the variable you used if you want)
+ ******************************************************************/
+opts *opt_destroy(opts *opt)
+{
+  optval *cur=opt->head;  /* the current optval */
+  optval *last;           /* the last optval we looked at */
+  while (cur!=NULL)
+  {
+    last=cur; cur=cur->next; /* move on to next */
+    free(last->value);       /* free optval itself */
+    free(last->id);          /* free optval itself */
+    free(last);              /* and free the block */
+  }
+  free(opt);
+  return NULL;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_readfile
+ Description:  Read an options file in
+ Parameters:   file-> filename
+ Returns:      pointer to opts, or NULL if failed
+ ******************************************************************/
+opts *opt_readfile(char const *file)
+{
+  opts *olist=opt_create();
+  FILE *f;
+  if (olist==NULL)
+    return NULL; /* Failed to create */
+  f=fopen(file,"r");
+  if (f==NULL)
+  {
+    opt_destroy(olist);
+    return NULL;
+  }
+  while (!feof(f))
+  {
+    char line[512];
+    char *ok;
+    ok=fgets(line,512,f);
+#ifdef DEBUG
+    { void __swi(0x104) vdu4(void); vdu4(); }
+    printf("Read line:");
+#endif
+    if (ok!=NULL)
+    {
+      char *sep,*septab,*sepspc;
+      char *id,*file;
+#ifdef DEBUG
+      printf("'%s'\n",line);
+#endif
+      sep=strchr(line,':');
+      septab=strchr(line,'\t');
+      sepspc=strchr(line,' ');
+      if ((sep==NULL) || ( (septab!=NULL) && (septab<sep) ) )
+        sep=septab;
+      if ((sep==NULL) || ( (sepspc!=NULL) && (sepspc<sep) ) )
+        sep=sepspc;
+      if (sep!=NULL)
+      {
+        sep[0]='\0';
+        id=line;
+        file=&sep[1];
+        while ((file[0]==' ') || (file[0]=='\t'))
+          file=&file[1];
+        sep=strchr(file,'\n');
+        if (sep!=NULL)
+          sep[0]='\0';
+        if (opt_add(olist,id,file))
+        { /* It failed to add the entry - we've got to abort */
+          opt_destroy(olist);
+          fclose(f);
+          return NULL;
+        }
+      }
+    } else
+    {
+#ifdef DEBUG
+      printf("[not valid]\n");
+#endif
+    }
+  }
+#ifdef DEBUG
+  printf("done!\n");
+#endif
+  fclose(f);
+  return olist;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_show
+ Description:  Output the opt to a file (or the screen)
+ Parameters:   file-> FILE to send to
+               opt-> opt list to output
+               term-> terminator to use
+               indent-> indent string
+ Returns:      none
+ ******************************************************************/
+void opt_show(FILE *file,opts *opt,char const *term,char const *indent)
+{
+  optval *now=opt_firstopt(opt);
+  while (now!=NULL)
+  {
+    fprintf(file,"%s%s: %s%s", indent ? indent : "", opt_id(now),opt_value(now),term);
+    now=opt_nextopt(now);
+  }
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_showtabbed
+ Description:  Output the opt to a file, with tab seperations (or the screen)
+ Parameters:   file-> FILE to send to
+               opt-> opt list to output
+               term-> terminator to use
+               indent-> indent string
+ Returns:      none
+ ******************************************************************/
+void opt_showtabbed(FILE *file,opts *opt,char const *term,char const *indent)
+{
+  optval *now=opt_firstopt(opt);
+  while (now!=NULL)
+  {
+    fprintf(file,"%s%s\t%s%s", indent ? indent : "", opt_id(now),opt_value(now),term);
+    now=opt_nextopt(now);
+  }
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_findopt
+ Description:  Find a particular optval of opt in a opt block
+ Parameters:   opt-> opt list to search
+               find-> the optval to search for
+ Returns:      pointer to optval entry, or NULL if not found
+ ******************************************************************/
+optval *opt_findopt(opts *opt,char const *find)
+{
+  optval *now=opt_firstopt(opt);
+  while (now!=NULL)
+  {
+    if (strcmp(find,opt_id(now))==0)
+      return now;
+    now=opt_nextopt(now);
+  }
+  return NULL;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_findiopt
+ Description:  Find a particular optval of opt in a opt block
+               insensitively
+ Parameters:   opt-> opt list to search
+               find-> the optval to search for
+ Returns:      pointer to optval entry, or NULL if not found
+ ******************************************************************/
+optval *opt_findiopt(opts *opt,char const *find)
+{
+  optval *now=opt_firstopt(opt);
+  while (now!=NULL)
+  {
+    if (stricmp(find, opt_id(now))==0)
+      return now;
+    now=opt_nextopt(now);
+  }
+  return NULL;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_lookup
+ Description:  Find value for a given option (case sensitive)
+ Parameters:   opt-> opt list to search
+               find-> the optval to search for
+ Returns:      pointer to value string, or NULL if not found
+ ******************************************************************/
+const char *opt_lookup(opts *opt, char const *find)
+{
+  optval *val=opt_findopt(opt, find);
+  if (val == NULL)
+    return NULL;
+
+  return opt_value(val);
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     opt_lookupi
+ Description:  Find value for a given option (case insensitive)
+ Parameters:   opt-> opt list to search
+               find-> the optval to search for
+ Returns:      pointer to value string, or NULL if not found
+ ******************************************************************/
+const char *opt_lookupi(opts *opt, char const *find)
+{
+  optval *val=opt_findiopt(opt, find);
+  if (val == NULL)
+    return NULL;
+
+  return opt_value(val);
+}

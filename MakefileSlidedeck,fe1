@@ -8,6 +8,7 @@ INCLUDES   =
 LIBS       = ${CLIB}
 OBJS       = \
 		     o.str \
+		     o.optlist \
 			 o.slidedeck \
 			 o.test_slidedeck
 

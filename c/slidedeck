@@ -47,10 +47,17 @@ slidedeck_t *slidedeck_create(void)
     deck->nslides = 0;
     deck->slides = NULL;
     deck->lastslide = NULL;
+    deck->properties = opt_create();
+    if (deck->properties == NULL)
+    {
+        free(deck);
+        return NULL;
+    }
 
     if (slidedeck_newslide(deck))
     {
         free(deck);
+        opt_destroy(deck->properties);
         return NULL;
     }
     return deck;
@@ -80,14 +87,21 @@ int slidedeck_newslide(slidedeck_t *deck)
         return 1;
     }
 
+    /* Initialise the slide data */
+    slide->index = deck->nslides - 1; /* 0-indexed */
+    slide->blocks = NULL;
+    slide->properties = opt_copy(deck->properties);
+    if (slide->properties == NULL)
+    {
+        free(slide);
+        free(new_slides);
+        return 1;
+    }
+
     deck->slides = new_slides;
     deck->slides[deck->nslides] = slide;
     deck->nslides++;
     deck->lastslide = slide;
-
-    /* Initialise the slide data */
-    slide->index = deck->nslides - 1; /* 0-indexed */
-    slide->blocks = NULL;
 
     return 0;
 }
@@ -298,3 +312,42 @@ int slidedeck_render_del(slidedeck_t *deck, int state)
 }
 
 
+/*************************************************** Gerph *********
+ Function:      slidedeck_addproperty
+ Description:   Set a property on the current slide, and the whole deck.
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+                value-> property value string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addproperty(slidedeck_t *deck, const char *id, const char *value)
+{
+    slide_t *slide = deck->lastslide;
+
+    if (opt_add(slide->properties, id, value))
+        return 1;
+
+    if (opt_add(deck->properties, id, value))
+    {
+        opt_remove(slide->properties, opt_findopt(slide->properties, id));
+        return 1;
+    }
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slide_getproperty
+ Description:   Read a property from a slide
+ Parameters:    slide-> the slide to read
+                id-> property id string
+                default_value-> value to return if no property present
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+const char *slide_getproperty(slide_t *slide, const char *id, const char *default_value)
+{
+    const char *value = opt_lookup(slide->properties, id);
+    if (value == NULL)
+        value = default_value;
+    return value;
+}

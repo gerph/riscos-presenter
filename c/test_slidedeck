@@ -107,6 +107,16 @@ void slidedeck_dump(slidedeck_t *deck)
         slide_t *slide = deck->slides[slide_number];
         slideblock_t *block;
         printf("Slide #%i\n", slide_number);
+        {
+            optval *val;
+            int first = 1;
+            for (val = opt_firstopt(slide->properties); val; val = opt_nextopt(val))
+            {
+                if (first)
+                    printf("  Properties:\n"), first = 0;
+                printf("    %s: '%s'\n", opt_id(val), opt_value(val));
+            }
+        }
 
         for (block = slide->blocks; block; block=block->next)
         {
@@ -121,6 +131,8 @@ int main(int argc, char *argv[])
     slidedeck_t *deck;
 
     deck = slidedeck_create();
+
+    slidedeck_addproperty(deck, "font", "homerton");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
     slidedeck_addspan(deck, "Hello ");
@@ -150,6 +162,8 @@ int main(int argc, char *argv[])
     slidedeck_addspan(deck, "Top level text");
 
     slidedeck_newslide(deck);
+
+    slidedeck_addproperty(deck, "font-size", "12pt");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
     slidedeck_addspan(deck, "Top level text");

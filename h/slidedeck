@@ -28,6 +28,10 @@ The block type and the span render properties determine the font used.
 #ifndef SLIDEDECK_H
 #define SLIDEDECK_H
 
+
+#include "optlist.h"
+
+
 typedef struct renderattribs_s {
     /* Font styles */
     int code:1;
@@ -86,8 +90,7 @@ typedef struct slide_s {
     slideblock_t *currentblock; /* NULL if adding to the slide, or a pointer to a block to add to */
     int index;  /* slide number, 0 indexed */
 
-    /* FIXME: Background ? */
-    /* FIXME: Properties for the slide */
+    opts *properties;
 } slide_t;
 
 typedef struct slidedeck_s {
@@ -95,7 +98,7 @@ typedef struct slidedeck_s {
     slide_t **slides;
     slide_t *lastslide;
 
-    /* FIXME: Properties to pass through */
+    opts *properties;
 } slidedeck_t;
 
 
@@ -174,6 +177,28 @@ int slidedeck_render_bold(slidedeck_t *deck, int state);
 int slidedeck_render_code(slidedeck_t *deck, int state);
 int slidedeck_render_underline(slidedeck_t *deck, int state);
 int slidedeck_render_del(slidedeck_t *deck, int state);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addproperty
+ Description:   Set a property on the current slide, and the whole deck.
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+                value-> property value string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addproperty(slidedeck_t *deck, const char *id, const char *value);
+
+
+/*************************************************** Gerph *********
+ Function:      slide_getproperty
+ Description:   Read a property from a slide
+ Parameters:    slide-> the slide to read
+                id-> property id string
+                default_value-> value to return if no property present
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+const char *slide_getproperty(slide_t *slide, const char *id, const char *default_value);
 
 
 #endif

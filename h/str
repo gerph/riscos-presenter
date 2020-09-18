@@ -25,4 +25,15 @@ char *strdup(const char *x);
  ******************************************************************/
 char *strndup(const char *str,int n);
 
+/*********************************************** <c> Gerph *********
+ Function:     stricmp
+ Description:  Case insensitive comparison
+ Parameters:   str1 = one string
+               str2 = the other one
+ Returns:      <0 if str1 < str2
+               >0 if str1 > str2
+               =0 if str1 = str2
+ ******************************************************************/
+int stricmp(const char *str1,const char *str2);
+
 #endif

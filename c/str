@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 /*********************************************** <c> Gerph *********
  Function:     strdup
@@ -36,4 +37,33 @@ char *strndup(char *str,int n)
     strncpy(s,str,n); s[n]='\0';
   }
   return s;
+}
+
+/*********************************************** <c> Gerph *********
+ Function:     stricmp
+ Description:  Case insensitive comparison
+ Parameters:   str1 = one string
+               str2 = the other one
+ Returns:      <0 if str1 < str2
+               >0 if str1 > str2
+               =0 if str1 = str2
+ ******************************************************************/
+int stricmp(const char *str1, const char *str2)
+{
+  char one,two;
+  int  index;
+  int  len=strlen(str1); /* speeds things up a tad */
+  for(index=0; index<=len; index++)
+  {
+    one=tolower(*str1++);
+    two=tolower(*str2++);
+    if (one!=two)
+    {
+      if (one<two)
+        return -1;
+      else
+        return 1;
+    }
+  }
+  return 0;
 }
