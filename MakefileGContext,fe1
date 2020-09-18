@@ -1,6 +1,6 @@
 # Build the test code
 
-COMPONENT  = test
+COMPONENT  = GContext
 TYPE       = aif
 CDEFINES   =
 INCLUDES   =
@@ -10,6 +10,6 @@ OBJS       = \
              o.vdu5 \
              o.vdushape \
              o.gcontext \
-             o.test
+             o.test_gcontext
 
 include LibraryCommand
