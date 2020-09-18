@@ -51,12 +51,33 @@ font_t vdu5_findfont(const char *name, int xsize, int ysize)
 /*************************************************** Gerph *********
  Function:     vdu5_losefont
  Description:  Lose a font we've claimed
- Parameters:   handle = the handle to lose
+ Parameters:   fh = the handle to lose
  Returns:      none
  ******************************************************************/
 void vdu5_losefont(font_t fh)
 {
   /* Nothing to do to lose the font */
+}
+
+
+/*************************************************** Gerph *********
+ Function:     vdu5_getem
+ Description:  Return the em size
+ Parameters:   fh = the font handle, or NULL for system font
+ Returns:      bounds for the em
+ ******************************************************************/
+bounds_t vdu5_getem(font_t fh)
+{
+  bounds_t bounds;
+  unsigned long composite = (unsigned long) fh;
+  unsigned long xeig = (composite>>28) & 0xF;
+  unsigned long yeig = (composite>>24) & 0xF;
+  unsigned long xsize = (composite>>12) & 0xFFF;
+  unsigned long ysize = (composite>>0) & 0xFFF;
+
+  bounds.width = xsize;
+  bounds.height = ysize;
+  return bounds;
 }
 
 
@@ -126,7 +147,7 @@ void vdu5_getstringsize(font_t fh, stringbounds_t *bounds,
   bounds->ascent = ysize * 28 / 32;
   bounds->descent = ysize - bounds->ascent;
   bounds->lbearing = 0;
-  bounds->rbearing = xsize * len;
+  bounds->rbearing = 0;
   bounds->xoffset = len;
 }
 

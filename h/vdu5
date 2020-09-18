@@ -14,17 +14,26 @@
  Parameters:   fontname-> the name of the font to find
                xsize = the size (points * 16)
                ysize = the size (points * 16)
- Returns:      font handle, or -1 if could not claim
+ Returns:      font handle, or NULL if could not claim
  ******************************************************************/
 void *vdu5_findfont(const char *name, int xsize, int ysize);
 
 /*************************************************** Gerph *********
  Function:     vdu5_losefont
  Description:  Lose a font we've claimed
- Parameters:   handle = the handle to lose
+ Parameters:   fh = the handle to lose
  Returns:      none
  ******************************************************************/
 void vdu5_losefont(font_t fh);
+
+
+/*************************************************** Gerph *********
+ Function:     vdu5_getem
+ Description:  Return the em size
+ Parameters:   fh = the font handle, or NULL for system font
+ Returns:      bounds for the em
+ ******************************************************************/
+bounds_t vdu5_getem(font_t fh);
 
 
 /*************************************************** Gerph *********

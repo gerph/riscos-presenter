@@ -26,6 +26,11 @@ typedef struct coords_s {
   int y;
 } coords_t;
 
+typedef struct bounds_s {
+  int width;
+  int height;
+} bounds_t;
+
 typedef struct bbox_s {
   int x0, y0;
   int x1, y1;
@@ -66,6 +71,8 @@ typedef struct gcontext_s {
   void (*text_getstringsize)(font_t, stringbounds_t *bounds,
                              int xlimit,
                              const char *str, int strsize, char split_char);
+
+  bounds_t (*text_getemsize)(font_t);
 
   coords_t (*text_paint)(font_t handle,
                          int xb, int yb,
@@ -116,6 +123,8 @@ extern gcontext_t gcontext;
                   (gcontext.text_losefont)(handle)
 #define text_getstringsize(handle, bounds, xlimit, str, strsize, split_char) \
                   (gcontext.text_getstringsize)(handle, bounds, xlimit, str, strsize, split_char)
+#define text_getemsize(handle) \
+                  (gcontext.text_getemsize)(handle)
 #define text_paint(handle, xb, yb, bg, fg, str, strsize) \
                   (gcontext.text_paint)(handle,xb,yb,bg,fg,str,strsize)
 #define text_paintattrib(handle, x, y, x1, y1, str, strsize, bg, fg, attr) \

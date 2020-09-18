@@ -29,6 +29,15 @@ font_t font_findfont(const char *fontname, int xsize, int ysize);
 void font_losefont(font_t handle);
 
 /*************************************************** Gerph *********
+ Function:     font_getem
+ Description:  Return the em size
+ Parameters:   font = the font handle, or NULL for system font
+               bounds-> the box to fill in
+ Returns:      bounds for the em
+ ******************************************************************/
+bounds_t font_getem(font_t font);
+
+/*************************************************** Gerph *********
  Function:     font_getstringsize
  Description:  Return the size of the string into the structure
  Parameters:   handle = the font handle, or -1 for system font

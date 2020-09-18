@@ -16,9 +16,9 @@ int main(int argc, char *argv[])
     void *f2;
     coords_t end;
     textblock_t textblock;
-    int ytop = 480;
+    int ytop = 640;
     int ytexttop = ytop - 16;
-    int ylimit = ytexttop - 256;
+    int ylimit = ytexttop - 512;
     int i;
 
     gcontext_initvdu(1);
@@ -51,7 +51,25 @@ int main(int argc, char *argv[])
         textblock_add(textblock, f2, "strike",
                       0x4444FF00, 0xFFFFFF00, flags | TBADD_STRIKETHROUGH);
 
-        textblock_clear(textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
+        textblock_clear(textblock, TBCLEAR_TEXTNEWLINE);
+        textblock_add(textblock, f2, "Newline",
+                      0x4444FF00, 0xFFFFFF00, flags);
+
+        textblock_clear(textblock, TBCLEAR_TEXTNEWLINE);
+        {
+            bounds_t em = text_getemsize(f2);
+            //printf("em = %i x %i\n", em.width, em.height);
+            textblock_inset(textblock, em.width, em.width);
+
+            textblock_add(textblock, f2, "1.",
+                          0x4444FF00, 0xFFFFFF00, flags);
+
+            textblock_inset(textblock, em.width * 1.5, em.width * 1.5);
+            textblock_add(textblock, f2, "Text which wraps to the next line",
+                          0x4444FF00, 0xFFFFFF00, flags);
+        }
+
+        textblock_clear(textblock, TBCLEAR_TEXTTOP | TBCLEAR_INSET | TBCLEAR_COVERED);
     }
     text_lose(f);
     text_lose(f2);

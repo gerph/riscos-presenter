@@ -10,6 +10,7 @@ OBJS       = \
 		     o.str \
 		     o.optlist \
 			 o.slidedeck \
+			 o.slidedeck_debug \
 			 o.test_slidedeck
 
 

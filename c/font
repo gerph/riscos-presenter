@@ -33,6 +33,8 @@ struct font_s {
     int handle;
     int xsize, ysize;
     int ascent, descent;
+
+    bounds_t em; /* This is the width and height of an em */
 };
 
 
@@ -61,6 +63,10 @@ font_t font_findfont(const char *fontname, int xsize, int ysize)
   font->ysize = ysize;
   font->ascent = 0;
   font->descent = 0;
+
+  /* Values that aren't cached yet */
+  font->em.width = -1;
+  font->em.height = -1;
   return font;
 }
 
@@ -128,6 +134,39 @@ coords_t font_paint(font_t font, int x, int y,
   }
   return end;
 }
+
+
+/*************************************************** Gerph *********
+ Function:     font_getem
+ Description:  Return the em size
+ Parameters:   font = the font handle, or NULL for system font
+               bounds-> the box to fill in
+ Returns:      bounds for the em
+ ******************************************************************/
+bounds_t font_getem(font_t font)
+{
+  bounds_t bounds;
+  stringbounds_t stringbounds;
+  if (font == NULL)
+  {
+    bounds.width = 16;
+    bounds.height = 32;
+    return bounds;
+  }
+
+  if (font->em.width != -1)
+  {
+    /* Return cached value */
+    return font->em;
+  }
+
+  font_getstringsize(font, &stringbounds, -1, "M", 1, 0);
+  dprintf("String bounds for M were %i, %i\n", stringbounds.lbearing, stringbounds.rbearing);
+  font->em.width = -stringbounds.lbearing + stringbounds.xoffset + stringbounds.rbearing;
+  font->em.height = stringbounds.ascent + stringbounds.descent;
+  return font->em;
+}
+
 
 /*************************************************** Gerph *********
  Function:     font_getstringsize
@@ -221,7 +260,7 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
       bounds->xoffset   = FONT_XTOOS(width);
       bounds->charoffset = endp - str;
     }
-    dprintf("font_getstringsize lbearing=%i,lbearing=%i,xoffset=%i,charoffset=%i\n",
+    dprintf("font_getstringsize lbearing=%i,rbearing=%i,xoffset=%i,charoffset=%i\n",
             bounds->lbearing, bounds->rbearing, bounds->xoffset, bounds->charoffset);
   }
 }

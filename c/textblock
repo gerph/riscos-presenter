@@ -29,6 +29,7 @@
 
 struct textblock_s {
     int x0, y0, x1, y1;                 /* Region bounds */
+    int inset_left, inset_right;        /* Indentation sizes */
     int width, height;                  /* Implicit values, from the above */
 
     int xc, yc;                         /* Current offset within the region, for the top of the char, ie x0+xc, y1-yc */
@@ -71,6 +72,8 @@ textblock_t textblock_create(int x0, int y0, int x1, int y1,
     textblock->x1 = x1;
     textblock->y1 = y1;
     textblock->line_spacing = line_spacing;
+    textblock->inset_left = 0;
+    textblock->inset_right = 0;
 
     /* Mark unknown values */
     textblock->line_ascent = -1;
@@ -130,6 +133,16 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
     {
         textblock->line_ascent = -1;
         textblock->line_descent = -1;
+    }
+
+    if (flags & TBCLEAR_INSET)
+    {
+        if (textblock->xc != 0)
+            textblock->xc += textblock->inset_left;
+
+        textblock->inset_left = 0;
+        textblock->inset_right = 0;
+        textblock->width = textblock->x1 - textblock->x0;
     }
 
     if (flags & TBCLEAR_COVERED)
@@ -197,8 +210,8 @@ int textblock_add(textblock_t textblock, void *font,
         /* We now know what we're going to plot, and how much space it'll take */
         {
             /* Update the covered bounds */
-            int x0 = textblock->x0 + textblock->xc + bounds.lbearing;
-            int x1 = textblock->x0 + textblock->xc + bounds.rbearing;
+            int x0 = textblock->x0 + textblock->inset_left + textblock->xc + bounds.lbearing;
+            int x1 = textblock->x0 + textblock->inset_left + textblock->xc + bounds.rbearing;
             int y1 = textblock->y1 - textblock->yc;
             int y0 = y1 - (textblock->line_ascent + textblock->line_descent);
 
@@ -228,7 +241,7 @@ int textblock_add(textblock_t textblock, void *font,
             /* Paint in the new location */
             if (flags & TBADD_PAINT)
             {
-                int xb = textblock->x0 + textblock->xc;
+                int xb = textblock->x0 + textblock->inset_left + textblock->xc;
                 int yb = y1 - textblock->line_ascent;
                 dprintf("Write '%.*s'\n", bounds.charoffset, text);
                 text_paint(font, xb, yb, bg, fg, text, bounds.charoffset);
@@ -293,7 +306,7 @@ void textblock_covered(textblock_t textblock, bbox_t *bbox)
 coords_t textblock_position(textblock_t textblock)
 {
     coords_t pos;
-    pos.x = textblock->x0 + textblock->xc;
+    pos.x = textblock->x0 + textblock->inset_left + textblock->xc;
     pos.y = textblock->y1 - textblock->yc - textblock->line_ascent;
     return pos;
 }
@@ -370,9 +383,39 @@ int textblock_space(textblock_t textblock, int width, int height,
     if (y0 - textblock->line_descent < textblock->y0)
         return 0;
 
-    posp->x = textblock->x0 + textblock->xc;
+    posp->x = textblock->x0 + textblock->inset_left + textblock->xc;
     posp->y = y0;
     textblock->line_ascent = new_line_ascent;
     return 1;
 }
 
+
+/*************************************************** Gerph *********
+ Function:      textblock_inset
+ Description:   Add inset (or remove inst if negative)
+ Parameters:    textblock = the handle to work on
+                left = left inset in OS units
+                right = right inset in OS units
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_inset(textblock_t textblock, int left, int right)
+{
+    int xc = textblock->xc;
+    int width = textblock->width - left - right;
+    if (width < 0)
+        return 0;
+
+    if (xc != 0)
+    {
+        xc -= left;
+        if (xc < 0)
+            xc = 0;
+        textblock->xc = xc;
+    }
+
+    textblock->inset_left += left;
+    textblock->inset_right += right;
+    textblock->width = width;
+
+    return 1;
+}

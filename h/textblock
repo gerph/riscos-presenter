@@ -20,7 +20,8 @@ typedef struct textblock_s *textblock_t;
 #define TBCLEAR_TEXTTOP     (1ul<<0)    /* Clear the text to the top-left of the region */
 #define TBCLEAR_TEXTNEWLINE (2ul<<0)    /* Clear the text for a new line (moves to the left of a new line) */
 #define TBCLEAR_SIZING      (1ul<<2)    /* Clear the sizings, so we calculate line sizings afresh */
-#define TBCLEAR_COVERED     (1ul<<3)    /* Clear the covered bounds */
+#define TBCLEAR_INSET       (1ul<<3)    /* Clear the inset, so we're at the full width */
+#define TBCLEAR_COVERED     (1ul<<4)    /* Clear the covered bounds */
 
 /* How to render text */
 #define TBADD_UNDERLINE     (1ul<<0)    /* Whether we draw an underline or not */
@@ -138,5 +139,15 @@ int textblock_linespacing(textblock_t textblock);
 int textblock_space(textblock_t textblock, int width, int height,
                     coords_t *posp);
 
+
+/*************************************************** Gerph *********
+ Function:      textblock_inset
+ Description:   Add inset (or remove inst if negative)
+ Parameters:    textblock = the handle to work on
+                left = left inset in OS units
+                right = right inset in OS units
+ Returns:       1 if successful, 0 if there is no room left
+ ******************************************************************/
+int textblock_inset(textblock_t textblock, int left, int right);
 
 #endif
