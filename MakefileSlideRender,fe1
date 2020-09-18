@@ -1,0 +1,30 @@
+#!/usr/bin/env riscos-amu -f
+# Makefile for SlideRender
+#
+
+COMPONENT  = SlideRender
+TYPE       = aif
+INCLUDES   = <Lib$Dir>.MarkdownMD4C.
+LIBS       = ${CLIB} ${GETOPTLIB} <Lib$Dir>.MarkdownMD4C.o.libMarkdownMD4C
+OBJS       = \
+             o.font \
+             o.vdu5 \
+             o.vdushape \
+             o.gcontext \
+             o.textblock \
+             o.fontfamily \
+             o.fontmapif \
+		     o.str \
+		     o.optlist \
+			 o.slidedeck \
+			 o.slidedeck_debug \
+			 o.slidemd \
+			 o.file \
+			 o.sliderender \
+			 o.mdnames
+
+include LibraryCommand
+
+
+#---------------------------------------------------------------------------
+# Dynamic dependencies:

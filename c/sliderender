@@ -1,0 +1,286 @@
+/*******************************************************************
+ * File:        sliderender
+ * Purpose:     Render the slides
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "swis.h"
+
+#include "gcontext.h"
+#include "textblock.h"
+#include "fontfamily.h"
+
+#include "slidedeck.h"
+#include "slidedeck_debug.h"
+#include "slidemd.h"
+#include "file.h"
+
+/* Define this to debug this file */
+//#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
+#define MAXHEADING 3
+
+
+typedef struct fontdefaults_ {
+    char *name;
+    int xsize, ysize;
+} fontdefault_t;
+
+fontdefault_t fontdefault_body = {
+    "HirukoPro.Book", (12*16), (12*16)
+};
+fontdefault_t fontdefault_code = {
+    "FairfaxSMHD.Medium", (12*16), (12*16)
+};
+fontdefault_t fontdefault_headings[MAXHEADING] = {
+    {"Optima.Bold", (22*16), (22*16)},
+    {"Optima.Bold", (18*16), (18*16)},
+    {"Optima.Regular", (16*16), (16*16)},
+};
+
+/* Rendering context for a slide */
+typedef struct sliderender_s {
+    slidedeck_t *deck;
+    slide_t *slide;
+
+    unsigned long colour_bg;
+    unsigned long colour_fg;
+
+    int in_heading; /* Which heading we're in, or -1 if we're not in a heading */
+
+    fontfamily_t font_heading[MAXHEADING];
+    fontfamily_t font_body;
+    fontfamily_t font_code;
+
+    textblock_t textblock;
+    int pass;
+} sliderender_t;
+
+
+void sliderender_block(sliderender_t *render,
+                       slideblock_t *block)
+{
+    switch (block->blocktype)
+    {
+        case sbt_heading:
+            dprintf("  Heading %i\n", block->index);
+            render->in_heading = block->index - 1;
+            break;
+
+        case sbt_list:
+            if (block->index == -1)
+            {
+                dprintf("  List unordered\n");
+            }
+            else
+            {
+                dprintf("  List ordered, next index %i\n", block->index);
+            }
+            break;
+
+        case sbt_item:
+            if (block->index == -1)
+            {
+                dprintf("  Item unordered\n");
+            }
+            else
+            {
+                dprintf("  Item ordered, index %i\n", block->index);
+            }
+            break;
+    }
+    if (block->blocks)
+    {
+        /* Has nested blocks */
+        slideblock_t *nest;
+
+        for (nest = block->blocks; nest; nest=nest->next)
+        {
+            sliderender_block(render, nest);
+        }
+    }
+    if (block->spans)
+    {
+        slidespan_t *span;
+        unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
+        for (span = block->spans; span; span=span->next)
+        {
+            int fontstyle = 0;
+            int fontflags = flags;
+            fontfamily_t family;
+            font_t font;
+            if (span->render.bold)
+                fontstyle |= FONTFAMILY_STYLE_BOLD;
+            if (span->render.italic)
+                fontstyle |= FONTFAMILY_STYLE_SLANT;
+            if (span->render.underline)
+                fontflags |= TBADD_UNDERLINE;
+            if (span->render.del)
+                fontflags |= TBADD_STRIKETHROUGH;
+
+            if (span->render.code)
+                family = render->font_code;
+            else if (render->in_heading != -1)
+                family = render->font_heading[render->in_heading];
+            else
+                family = render->font_body;
+
+            dprintf("Rendering with family %p\n", family);
+            font = fontfamily_get_font(family, fontstyle);
+
+            dprintf("Text: (style=%i) %s\n", fontstyle, span->text);
+            textblock_add(render->textblock,
+                          font,
+                          span->text,
+                          0x00000000, 0xFFFFFF00,
+                          fontflags);
+        }
+
+        textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
+    }
+
+    /* We're not in a heading any more */
+    render->in_heading = -1;
+}
+
+
+fontfamily_t sliderender_prepare_font(sliderender_t *render,
+                                      const char *keyname,
+                                      fontdefault_t *fontdefault)
+{
+    /* FIXME: Use the properties from the slide */
+    const char *font = fontdefault->name;
+    int xsize = fontdefault->xsize;
+    int ysize = fontdefault->ysize;
+    fontfamily_t family;
+
+    dprintf("Preparing family '%s' with font '%s'\n", keyname, font);
+    family = fontfamily_create(font, xsize, ysize);
+    if (family == NULL)
+    {
+        dprintf("Cannot create font family for %s\n", keyname);
+        return NULL;
+    }
+    if (fontfamily_populate(family))
+    {
+        dprintf("Cannot populate font family for %s\n", keyname);
+        return NULL;
+    }
+
+    return family;
+}
+
+
+void sliderender_destroy(sliderender_t *render)
+{
+    fontfamily_destroy(render->font_body);
+    fontfamily_destroy(render->font_code);
+    fontfamily_destroy(render->font_heading[0]);
+    fontfamily_destroy(render->font_heading[1]);
+    fontfamily_destroy(render->font_heading[2]);
+    textblock_destroy(render->textblock);
+
+    //free(render);
+}
+
+
+int sliderender_show(slidedeck_t *deck, int slidenumber)
+{
+    sliderender_t render = {0};
+    int pass;
+
+    render.deck = deck;
+    render.slide = deck->slides[slidenumber]; /* FIXME Check number */
+
+    /* Prepare the families */
+    render.font_body = sliderender_prepare_font(&render, "body", &fontdefault_body);
+    if (!render.font_body)
+    {
+        dprintf("Cannot initialise the font family for body\n");
+        goto failed;
+    }
+
+    render.font_code = sliderender_prepare_font(&render, "code", &fontdefault_code);
+    if (!render.font_code)
+    {
+        dprintf("Cannot initialise the font family for code\n");
+        goto failed;
+    }
+    {
+        char name[4];
+        int n;
+        for (n=0; n<MAXHEADING; n++)
+        {
+            sprintf(name, "h%i", n + 1);
+            render.font_heading[n] = sliderender_prepare_font(&render, name, &fontdefault_headings[n]);
+            if (!render.font_heading[n])
+            {
+                dprintf("Cannot initialise the font family for heading %i\n", n+1);
+                goto failed;
+            }
+        }
+    }
+
+    render.in_heading = -1; /* Not in a heading right now */
+
+    render.textblock = textblock_create(64, 64,  1280-64, 960-64,
+                                        TBCREATE_DEFAULT_SPACING);
+
+    for (pass=0; pass<2; pass++)
+    {
+        slideblock_t *block;
+        render.pass = pass;
+        for (block = render.slide->blocks; block; block=block->next)
+        {
+            sliderender_block(&render, block);
+        }
+        textblock_clear(render.textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
+    }
+    sliderender_destroy(&render);
+    return 0;
+
+failed:
+    sliderender_destroy(&render);
+    return 1;
+}
+
+
+
+int main(int argc, char *argv[])
+{
+    char *in_filename = "file/md";
+    const char *mddata;
+    slidedeck_t *deck;
+    int n;
+
+    gcontext_initvdu(1);
+
+    mddata = file_read(in_filename);
+    assert(mddata);
+
+    printf("---- MD parsing ----\n");
+    deck = slidemd_parse(mddata, strlen(mddata));
+
+    //_kernel_oscli("PyromaniacDebug traceswiargs");
+    for (n=0; n<deck->nslides; n++)
+    {
+        _swix(0x100+12,0);
+        sliderender_show(deck, n);
+        getchar();
+    }
+
+    return 0;
+}

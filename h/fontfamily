@@ -64,4 +64,14 @@ int fontfamily_set_style(fontfamily_t family,
 font_t fontfamily_get_font(fontfamily_t family,
                            int style);
 
+
+/*************************************************** Gerph *********
+ Function:      fontfamily_populate
+ Description:   Populate any font family members not supplied
+ Parameters:    family -> the family to change
+ Returns:       1 if failed to allocate, 0 if ok
+ ******************************************************************/
+int fontfamily_populate(fontfamily_t family);
+
+
 #endif

@@ -80,6 +80,21 @@ textblock_t textblock_create(int x0, int y0, int x1, int y1,
 
 
 /*************************************************** Gerph *********
+ Function:      textblock_destroy
+ Description:   Destroy a textblock
+ Parameters:    textblock = the handle to destroy
+ Returns:       none
+ ******************************************************************/
+void textblock_destroy(textblock_t textblock)
+{
+    if (textblock)
+    {
+        free(textblock);
+    }
+}
+
+
+/*************************************************** Gerph *********
  Function:      textblock_clear
  Description:   Clear the text block, resetting the block to the top
                 left corner.

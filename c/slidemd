@@ -17,8 +17,8 @@
 #include "mdnames.h"
 
 /* Define this to debug this file */
-//#undef DEBUG
-#define DEBUG
+#undef DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define dprintf if (1) _swix(0x104,0), printf
