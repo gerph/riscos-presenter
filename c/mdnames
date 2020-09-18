@@ -1,0 +1,51 @@
+/*******************************************************************
+ * File:        mdnames
+ * Purpose:     Names of the markdown regions and variables
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include "mdnames.h"
+
+const char *md_block_names[16] = {
+        "DOC",
+        "QUOTE",
+        "UL",
+        "OL",
+        "LI",
+        "HR",
+        "H",
+        "CODE",
+        "HTML",
+        "P",
+        "TABLE",
+        "THEAD",
+        "TBODY",
+        "TR",
+        "TH",
+        "TD",
+    };
+
+const char *md_span_names[10] = {
+        "EM",
+        "STRONG",
+        "A",
+        "IMG",
+        "CODE",
+        "DEL",
+        "LATEXMATH",
+        "LATEXMATH_DISPLAY",
+        "WIKILINK",
+        "U",
+    };
+
+const char *md_text_names[8] = {
+        "NORMAL",
+        "NULLCHAR",
+        "BR",
+        "SOFTBR",
+        "ENTITY",
+        "CODE",
+        "HTML",
+        "LATEXMATH",
+    };

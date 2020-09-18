@@ -1,0 +1,23 @@
+/*******************************************************************
+ * File:        mdnames
+ * Purpose:     Names of the markdown regions and variables
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#ifndef MDNAMES_H
+#define MDNAMES_H
+
+extern const char *md_block_names[16];
+#define MD_BLOCK_NAMES_COUNT (sizeof(md_block_names) / sizeof(md_block_names[0]))
+#define MD_BLOCK_NAME(type) ((type) < MD_BLOCK_NAMES_COUNT ? md_block_names[type] : "unknown")
+
+extern const char *md_span_names[10];
+#define MD_SPAN_NAMES_COUNT (sizeof(md_span_names) / sizeof(md_span_names[0]))
+#define MD_SPAN_NAME(type) ((type) < MD_SPAN_NAMES_COUNT ? md_span_names[type] : "unknown")
+
+extern const char *md_text_names[8];
+#define MD_TEXT_NAMES_COUNT (sizeof(md_text_names) / sizeof(md_text_names[0]))
+#define MD_TEXT_NAME(type) ((type) < MD_TEXT_NAMES_COUNT ? md_text_names[type] : "unknown")
+
+#endif

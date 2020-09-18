@@ -1,0 +1,21 @@
+/*******************************************************************
+ * File:        slidedeck_debug
+ * Purpose:     Debug information about the slide deck
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#ifndef SLIDEDECK_DEBUG_H
+#define SLIDEDECK_DEBUG_H
+
+#include "slidedeck.h"
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dump
+ Description:   Dump the contents of the slide deck to the console
+ Parameters:    deck-> the deck to display
+ Returns:       none
+ ******************************************************************/
+void slidedeck_dump(slidedeck_t *deck);
+
+#endif

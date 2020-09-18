@@ -1,12 +1,17 @@
 #!/usr/bin/env riscos-amu -f
-# Makefile for MDParse
+# Makefile for SlideMD
 #
 
-COMPONENT  = MDParse
+COMPONENT  = SlideMD
 TYPE       = aif
 INCLUDES   = <Lib$Dir>.MarkdownMD4C.
 LIBS       = ${CLIB} ${GETOPTLIB} <Lib$Dir>.MarkdownMD4C.o.libMarkdownMD4C
-OBJS       = o.test_mdparse \
+OBJS       = \
+		     o.str \
+		     o.optlist \
+			 o.slidedeck \
+			 o.slidedeck_debug \
+			 o.slidemd \
 			 o.mdnames
 
 include LibraryCommand

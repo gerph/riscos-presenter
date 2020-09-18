@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "swis.h"
 
 #include "slidedeck.h"
@@ -209,19 +210,21 @@ int slidedeck_endblock(slidedeck_t *deck)
 
 
 /*************************************************** Gerph *********
- Function:      slidedeck_addspan
- Description:   Add a span element to the current block
+ Function:      slidedeck_addnspan
+ Description:   Add a span element to the current block, for limited number of bytes
  Parameters:    deck-> the slide deck to add a span to
                 text-> text to add
+                len = length of text to add from the string
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int slidedeck_addspan(slidedeck_t *deck, const char *text)
+int slidedeck_addnspan(slidedeck_t *deck, const char *text, int len)
 {
     slide_t *slide = deck->lastslide;
     slideblock_t *block = SLIDE_BLOCK(slide);
     slidespan_t *span;
+    assert(block != NULL);
 
-    dprintf("slidedeck_addspan(%p, '%s')\n", deck, text);
+    dprintf("slidedeck_addspan(%p, '%.*s')\n", deck, len, text);
     dprintf("  slide = %p, block = %p\n", slide, block);
 
     span = calloc(1, sizeof(*span));
@@ -229,7 +232,7 @@ int slidedeck_addspan(slidedeck_t *deck, const char *text)
         return 1;
 
     /* Configure the span */
-    span->text = strdup(text);
+    span->text = strndup(text, len);
     if (span->text == NULL)
     {
         free(span);
@@ -245,6 +248,19 @@ int slidedeck_addspan(slidedeck_t *deck, const char *text)
     block->lastspan = span;
 
     return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan
+ Description:   Add a span element to the current block
+ Parameters:    deck-> the slide deck to add a span to
+                text-> text to add
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan(slidedeck_t *deck, const char *text)
+{
+    return slidedeck_addnspan(deck, text, strlen(text));
 }
 
 

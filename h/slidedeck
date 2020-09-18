@@ -156,6 +156,17 @@ int slidedeck_endblock(slidedeck_t *deck);
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_addnspan
+ Description:   Add a span element to the current block, for limited number of bytes
+ Parameters:    deck-> the slide deck to add a span to
+                text-> text to add
+                len = length of text to add from the string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addnspan(slidedeck_t *deck, const char *text, int len);
+
+
+/*************************************************** Gerph *********
  Function:      slidedeck_addspan
  Description:   Add a span element to the current block
  Parameters:    deck-> the slide deck to add a span to

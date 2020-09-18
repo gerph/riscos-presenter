@@ -1,0 +1,172 @@
+/*******************************************************************
+ * File:        slidedeck_debug
+ * Purpose:     Debug information about the slide deck
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include "slidedeck.h"
+
+
+const char *slideblocktype_names[] = {
+        "PLAIN",
+        "HEADING",
+        "LIST",
+        "ITEM",
+        "PRE",
+    };
+#define SLIDEBLOCKTYPE_NAMES_COUNT (sizeof(slideblocktype_names) / sizeof(slideblocktype_names[0]))
+#define SLIDEBLOCKTYPE_NAMES_NAME(type) ((type) < SLIDEBLOCKTYPE_NAMES_COUNT ? slideblocktype_names[type] : "unknown")
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dumpindent
+ Description:   Write out the spaces for a given indentation
+ Parameters:    indent = count of the indentation level
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_dumpindent(int indent)
+{
+    while (indent--)
+        printf("  ");
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dumpspan
+ Description:   Dump a span from a slide
+ Parameters:    deck-> the deck to dump from
+                span-> the span to dump
+                indent = count of the indentation level
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_dumpspan(slidedeck_t *deck, slidespan_t *span, int indent)
+{
+    int has_attribs = 0;
+    slidedeck_dumpindent(indent);
+    printf("Span text: '%s'\n", span->text);
+
+    if (span->render.code)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Code");
+    }
+    if (span->render.italic)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Italic");
+    }
+    if (span->render.bold)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Bold");
+    }
+    if (span->render.underline)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Underline");
+    }
+    if (span->render.del)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Del");
+    }
+
+    if (has_attribs)
+        printf("\n");
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dumpblock
+ Description:   Dump a block from a slide, and all its descendants
+ Parameters:    deck-> the deck to dump from
+                block-> the block to dump
+                indent = count of the indentation level
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_dumpblock(slidedeck_t *deck, slideblock_t *block, int indent)
+{
+    slidedeck_dumpindent(indent);
+    printf("Block type %i (%s)\n", block->blocktype, SLIDEBLOCKTYPE_NAMES_NAME(block->blocktype));
+    switch (block->blocktype)
+    {
+        case sbt_heading:
+            slidedeck_dumpindent(indent);
+            printf("  Heading %i\n", block->index);
+            break;
+
+        case sbt_list:
+            slidedeck_dumpindent(indent);
+            if (block->index == -1)
+                printf("  List unordered\n");
+            else
+                printf("  List ordered, next index %i\n", block->index);
+            break;
+
+        case sbt_item:
+            slidedeck_dumpindent(indent);
+            if (block->index == -1)
+                printf("  Item unordered\n");
+            else
+                printf("  Item ordered, index %i\n", block->index);
+            break;
+    }
+    if (block->blocks)
+    {
+        /* Has nested blocks */
+        slideblock_t *nest;
+
+        for (nest = block->blocks; nest; nest=nest->next)
+        {
+            slidedeck_dumpblock(deck, nest, indent + 1);
+        }
+    }
+    if (block->spans)
+    {
+        slidespan_t *span;
+        for (span = block->spans; span; span=span->next)
+        {
+            slidedeck_dumpspan(deck, span, indent + 1);
+        }
+    }
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dump
+ Description:   Dump the contents of the slide deck to the console
+ Parameters:    deck-> the deck to display
+ Returns:       none
+ ******************************************************************/
+void slidedeck_dump(slidedeck_t *deck)
+{
+    int slide_number;
+
+    for (slide_number = 0; slide_number < deck->nslides; slide_number++)
+    {
+        slide_t *slide = deck->slides[slide_number];
+        slideblock_t *block;
+        printf("Slide #%i\n", slide_number);
+        {
+            optval *val;
+            int first = 1;
+            for (val = opt_firstopt(slide->properties); val; val = opt_nextopt(val))
+            {
+                if (first)
+                    printf("  Properties:\n"), first = 0;
+                printf("    %s: '%s'\n", opt_id(val), opt_value(val));
+            }
+        }
+
+        for (block = slide->blocks; block; block=block->next)
+        {
+            slidedeck_dumpblock(deck, block, 1);
+        }
+    }
+}

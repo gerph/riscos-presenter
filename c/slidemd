@@ -1,6 +1,7 @@
 /*******************************************************************
- * File:        mdparse
- * Purpose:     Parse the Markdown files for use with presenter
+ * File:        slidemd
+ * Purpose:     Parse the Markdown files and construct a slide deck
+ *              for use with presenter
  * Author:      Gerph
  * Date:        17 Sep 2020
  ******************************************************************/
@@ -10,7 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "slidedeck.h"
+#include "slidedeck_debug.h"
+
 #include "md4c.h"
+#include "mdnames.h"
 
 /* Define this to debug this file */
 //#undef DEBUG
@@ -29,116 +34,86 @@ int leave_span(MD_SPANTYPE type, void *detail, void *userdata);
 int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata);
 void debug_log(const char *msg, void *userdata);
 
-const char *md_block_names[] = {
-        "DOC",
-        "QUOTE",
-        "UL",
-        "OL",
-        "LI",
-        "HR",
-        "H",
-        "CODE",
-        "HTML",
-        "P",
-        "TABLE",
-        "THEAD",
-        "TBODY",
-        "TR",
-        "TH",
-        "TD",
-    };
-#define MD_BLOCK_NAMES_COUNT (sizeof(md_block_names) / sizeof(md_block_names[0]))
-#define MD_BLOCK_NAME(type) ((type) < MD_BLOCK_NAMES_COUNT ? md_block_names[type] : "unknown")
-
-const char *md_span_names[] = {
-        "EM",
-        "STRONG",
-        "A",
-        "IMG",
-        "CODE",
-        "DEL",
-        "LATEXMATH",
-        "LATEXMATH_DISPLAY",
-        "WIKILINK",
-        "U",
-    };
-#define MD_SPAN_NAMES_COUNT (sizeof(md_span_names) / sizeof(md_span_names[0]))
-#define MD_SPAN_NAME(type) ((type) < MD_SPAN_NAMES_COUNT ? md_span_names[type] : "unknown")
-
-const char *md_text_names[] = {
-        "NORMAL",
-        "NULLCHAR",
-        "BR",
-        "SOFTBR",
-        "ENTITY",
-        "CODE",
-        "HTML",
-        "LATEXMATH",
-    };
-#define MD_TEXT_NAMES_COUNT (sizeof(md_text_names) / sizeof(md_text_names[0]))
-#define MD_TEXT_NAME(type) ((type) < MD_TEXT_NAMES_COUNT ? md_text_names[type] : "unknown")
-
 
 int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
-    printf("enter_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
+    slidedeck_t *deck = (slidedeck_t *)userdata;
+    dprintf("enter_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
     switch (type)
     {
         case MD_BLOCK_DOC:
             break;
 
         case MD_BLOCK_QUOTE:
+            /* FIXME: Quote block not supported by slidedeck */
             break;
 
         case MD_BLOCK_UL:
+            slidedeck_startblock(deck, sbt_list, SLIDEBLOCKINDEX_UNORDERED);
             break;
 
         case MD_BLOCK_OL:
+            slidedeck_startblock(deck, sbt_list, SLIDEBLOCKINDEX_ORDERED);
             break;
 
         case MD_BLOCK_LI:
+            slidedeck_newblock(deck, sbt_item, SLIDEBLOCKINDEX_NOINDEX);
             break;
 
         case MD_BLOCK_HR:
+            slidedeck_newslide(deck);
             break;
 
         case MD_BLOCK_H:
+            {
+                MD_BLOCK_H_DETAIL *blockdetail = (MD_BLOCK_H_DETAIL *)detail;
+                slidedeck_newblock(deck, sbt_heading, SLIDEBLOCKINDEX_HEADING(blockdetail->level));
+            }
             break;
 
         case MD_BLOCK_CODE:
+            slidedeck_newblock(deck, sbt_pre, SLIDEBLOCKINDEX_NOINDEX);
             break;
 
         case MD_BLOCK_HTML:
+            /* HTML blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_P:
+            slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
             break;
 
         case MD_BLOCK_TABLE:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_THEAD:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_TBODY:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_TR:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_TH:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
 
         case MD_BLOCK_TD:
+            /* Table blocks should not be seen - the option isn't enabled */
             break;
-
     }
     return 0;
 }
 
 int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
-    printf("leave_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
+    slidedeck_t *deck = (slidedeck_t *)userdata;
+    dprintf("leave_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
     switch (type)
     {
         case MD_BLOCK_DOC:
@@ -148,9 +123,11 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             break;
 
         case MD_BLOCK_UL:
+            slidedeck_endblock(deck);
             break;
 
         case MD_BLOCK_OL:
+            slidedeck_endblock(deck);
             break;
 
         case MD_BLOCK_LI:
@@ -195,37 +172,48 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
 int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
 {
-    printf("enter_span: %i (%s)\n", type, MD_SPAN_NAME(type));
+    slidedeck_t *deck = (slidedeck_t *)userdata;
+    dprintf("enter_span: %i (%s)\n", type, MD_SPAN_NAME(type));
     switch (type)
     {
         case MD_SPAN_EM:
+            slidedeck_render_italic(deck, 1);
             break;
 
         case MD_SPAN_STRONG:
+            slidedeck_render_bold(deck, 1);
             break;
 
         case MD_SPAN_A:
+            // FIXME: No hyper link support - do we need it?
             break;
 
         case MD_SPAN_IMG:
+            // FIXME: No image support
             break;
 
         case MD_SPAN_CODE:
+            slidedeck_render_code(deck, 1);
             break;
 
         case MD_SPAN_DEL:
+            slidedeck_render_del(deck, 1);
             break;
 
         case MD_SPAN_LATEXMATH:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_LATEXMATH_DISPLAY:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_WIKILINK:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_U:
+            slidedeck_render_underline(deck, 1);
             break;
     }
     return 0;
@@ -233,37 +221,48 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
 
 int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
 {
-    printf("leave_span: %i (%s)\n", type, MD_SPAN_NAME(type));
+    slidedeck_t *deck = (slidedeck_t *)userdata;
+    dprintf("leave_span: %i (%s)\n", type, MD_SPAN_NAME(type));
     switch (type)
     {
         case MD_SPAN_EM:
+            slidedeck_render_italic(deck, 0);
             break;
 
         case MD_SPAN_STRONG:
+            slidedeck_render_bold(deck, 0);
             break;
 
         case MD_SPAN_A:
+            // FIXME: No hyper link support - do we need it?
             break;
 
         case MD_SPAN_IMG:
+            // FIXME: No image support
             break;
 
         case MD_SPAN_CODE:
+            slidedeck_render_code(deck, 0);
             break;
 
         case MD_SPAN_DEL:
+            slidedeck_render_del(deck, 0);
             break;
 
         case MD_SPAN_LATEXMATH:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_LATEXMATH_DISPLAY:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_WIKILINK:
+            // We should not get this as the option is turned off
             break;
 
         case MD_SPAN_U:
+            slidedeck_render_underline(deck, 0);
             break;
     }
     return 0;
@@ -271,19 +270,62 @@ int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
 
 int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
 {
-    printf("text: %i (%s) [%.*s]\n", type, MD_TEXT_NAME(type), size, text);
+    slidedeck_t *deck = (slidedeck_t *)userdata;
+    dprintf("text: %i (%s) [%.*s]\n", type, MD_TEXT_NAME(type), size, text);
+
+    switch (type)
+    {
+        case MD_TEXT_NORMAL:
+            slidedeck_addnspan(deck, text, size);
+            break;
+
+        case MD_TEXT_NULLCHAR:
+            // We do not care about the null character
+            break;
+
+        case MD_TEXT_BR:
+            /* FIXME: Literal <br> should probably become a linebreak, but we don't support those yet */
+            slidedeck_addspan(deck, " ");
+            break;
+
+        case MD_TEXT_SOFTBR:
+            /* Soft BR just means we wrap it to the prior strings */
+            slidedeck_addspan(deck, " ");
+            break;
+
+        case MD_TEXT_ENTITY:
+            /* FIXME: No entity expansion. Do we care? */
+            break;
+
+        case MD_TEXT_CODE:
+            // The text for a code block may include a \n
+            // FIXME: We don't support those form of multiline yet?
+            // Maybe split each of these into sub blocks? Not thought about it.
+            slidedeck_addnspan(deck, text, size);
+            break;
+
+        case MD_TEXT_HTML:
+            // We should not get these as the option is turned off.
+            break;
+
+        case MD_TEXT_LATEXMATH:
+            // We should not get these as the option is turned off.
+            break;
+
+    }
     return 0;
 }
 
 void debug_log(const char *msg, void *userdata)
 {
-    printf("Debug: %s\n", msg);
+    dprintf("Debug: %s\n", msg);
 }
 
 
 MD_PARSER parser = {
     0, /* ABI version */
     0 |
+        MD_FLAG_UNDERLINE |
         MD_FLAG_COLLAPSEWHITESPACE |
         MD_FLAG_STRIKETHROUGH |
         MD_FLAG_NOHTML, /* Dialect options */
@@ -336,11 +378,18 @@ int main(int argc, char *argv[])
 {
     char *in_filename = "file/md";
     const char *mddata;
+    slidedeck_t *deck;
 
     mddata = file_read(in_filename);
     assert(mddata);
 
-    md_parse(mddata, strlen(mddata), &parser, NULL);
+    deck = slidedeck_create();
+
+    printf("---- MD parsing ----\n");
+    md_parse(mddata, strlen(mddata), &parser, deck);
+
+    printf("---- Slides dump ----\n");
+    slidedeck_dump(deck);
 
     return 0;
 }
