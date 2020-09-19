@@ -1,0 +1,22 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "gcontext.h"
+#include "colours.h"
+
+
+int main(int argc, char *argv[])
+{
+    gcontext_initvdu(1);
+
+    rect_fill(colours_parse("yellow", -1), 64, 64,  640, 320); /* yellow rectangle */
+    rect_outline(colours_parse("blue", -1), 64+16, 320-128,  640-16, 320-16); /* blue outline */
+
+    /* Purple squares */
+    rect_fill(colours_parse("#813979", -1), 128, 128,  128+32, 128+32);             /* (bl) */
+    rect_fill(colours_parse("#839", -1), 128, 224,  128+32, 224+32);                /* (tl) */
+    rect_fill(colours_parse("rgb(50%,22%,47%)", -1), 224, 128,  224+32, 128+32);    /* (br) */
+    rect_fill(colours_parse("rgb(129,57,121)", -1), 224, 224,  224+32, 224+32);     /* (tr) */
+
+    getchar();
+}

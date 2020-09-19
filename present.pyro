@@ -5,6 +5,8 @@ config:
     graphics.implementation: wx
     graphicscairo.fonts_fontconfig: true
     vdu.alphabet: UTF8
+    vdu.mode: 28
 
 modules:
   - ${ROMODULES}/FontMap,ffa
+  - ${ROMODULES}/WebColours,ffa

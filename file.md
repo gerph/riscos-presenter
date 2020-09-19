@@ -1,9 +1,10 @@
-# Stuff!
+# Stuff
 
 Nonsense.
 More _Nonsense_.
 
-* List.
+* List - `πρ`
+
 ---
 class: foo
 font: bar

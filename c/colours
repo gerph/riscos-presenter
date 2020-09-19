@@ -1,0 +1,46 @@
+/*******************************************************************
+ * File:        colours
+ * Purpose:     Processing of colour specifications
+ * Author:      Gerph
+ * Date:        20 Sep 2020
+ ******************************************************************/
+
+#include "swis.h"
+
+#include "WebColoursSWIs.h"
+#include "colours.h"
+
+
+/* Define this to debug this file */
+#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
+/*************************************************** Gerph *********
+ Function:      colours_parse
+ Description:   Parse a colour specification into a colour
+ Parameters:    string-> the string to parse
+                len = string length, or -1 for zero-terminated string
+ Returns:       RGB colour, or RGB_INVALID
+ ******************************************************************/
+rgb_t colours_parse(const char *string, int len)
+{
+    rgb_t colour;
+    _kernel_oserror *err;
+    err = _swix(WebColours_CSSToNumber, _INR(0,2)|_OUT(0),
+                                        WebColoursFlag_CSS3 |
+                                            ((len==-1) ? WebColoursFlag_ZeroTerminated : 0),
+                                        string,
+                                        len,
+                                        &colour);
+    if (err)
+        return RGB_INVALID;
+    dprintf("Colour %s -> %08x\n", string, colour);
+    return colour;
+}

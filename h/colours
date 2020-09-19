@@ -1,0 +1,24 @@
+/*******************************************************************
+ * File:        colours
+ * Purpose:     Processing of colour specifications
+ * Author:      Gerph
+ * Date:        20 Sep 2020
+ ******************************************************************/
+
+#ifndef COLOURS_H
+#define COLOURS_H
+
+typedef unsigned long rgb_t;
+
+#define RGB_INVALID (0xFFFFFFFFul)
+
+/*************************************************** Gerph *********
+ Function:      colours_parse
+ Description:   Parse a colour specification into a colour
+ Parameters:    string-> the string to parse
+                len = string length, or -1 for zero-terminated string
+ Returns:       RGB colour, or RGB_INVALID
+ ******************************************************************/
+rgb_t colours_parse(const char *string, int len);
+
+#endif
