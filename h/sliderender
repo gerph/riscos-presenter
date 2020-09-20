@@ -1,0 +1,57 @@
+/*******************************************************************
+ * File:        sliderender
+ * Purpose:     Render the slides
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#ifndef SLIDERENDER_H
+#define SLIDERENDER_H
+
+#include "gcontext.h"
+#include "slidedeck.h"
+
+/* Rendering context for a slide */
+typedef struct sliderender_s sliderender_t;
+
+/*************************************************** Gerph *********
+ Function:      sliderender_destroy
+ Description:   Destroy the block, freeing all memory associated with it
+ Parameters:    render-> the render to free
+ Returns:       none
+ ******************************************************************/
+void sliderender_destroy(sliderender_t *render);
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_create
+ Description:   Create a structure to manage the rendering of the
+                slides
+ Parameters:    deck-> the slide deck to render
+                slidenumber = the number of the slide we're rendering
+                region-> the bounds of the region to prepare for
+ Returns:       pointer to sliderender_t, or NULL if failed
+ ******************************************************************/
+sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *region);
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_set_slide
+ Description:   Select the slide number that we are going to render
+ Parameters:    render-> the render block
+                slidenumber = number of the slide we're going to show
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_set_slide(sliderender_t *render, int slidenumber);
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_show
+ Description:   Render the actual slide to the screen
+ Parameters:    render-> the render we're going to use.
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_show(sliderender_t *render, int slidenumber);
+
+
+#endif

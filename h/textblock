@@ -24,6 +24,8 @@ typedef struct textblock_s *textblock_t;
 #define TBCLEAR_INSET       (1ul<<3)    /* Clear the inset, so we're at the full width */
 #define TBCLEAR_COVERED     (1ul<<4)    /* Clear the covered bounds */
 
+#define TBCLEAR_ALL         (TBCLEAR_TEXTTOP | TBCLEAR_SIZING | TBCLEAR_INSET | TBCLEAR_COVERED)
+
 /* How to render text */
 #define TBADD_UNDERLINE     (1ul<<0)    /* Whether we draw an underline or not */
 #define TBADD_STRIKETHROUGH (1ul<<1)    /* Whether we draw a strike through or not */

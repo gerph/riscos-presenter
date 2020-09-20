@@ -16,7 +16,7 @@
  Parameters:   fontname-> the name of the font to find
                xsize = the size (points * 16)
                ysize = the size (points * 16)
- Returns:      font handle, or -1 if could not claim
+ Returns:      font handle, or NULL if could not claim
  ******************************************************************/
 font_t font_findfont(const char *fontname, int xsize, int ysize);
 

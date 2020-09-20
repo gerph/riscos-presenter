@@ -1,0 +1,62 @@
+/*******************************************************************
+ * File:        test_sliderender
+ * Purpose:     Test that the rendering of slides comes out sanely
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "swis.h"
+
+#include "gcontext.h"
+#include "slidemd.h"
+#include "file.h"
+#include "sliderender.h"
+
+/* Define this to debug this file */
+//#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
+int main(int argc, char *argv[])
+{
+    char *in_filename = "file/md";
+    const char *mddata;
+    slidedeck_t *deck;
+    sliderender_t *render;
+    bbox_t region = {0,0, 1280, 960};
+    int n;
+
+    gcontext_initvdu(1);
+
+    mddata = file_read(in_filename);
+    assert(mddata);
+
+    printf("---- MD parsing ----\n");
+    deck = slidemd_parse(mddata, strlen(mddata));
+
+    render = sliderender_create(deck, 0, &region);
+    if (render == NULL)
+    {
+        printf("Failed to create sliderender\n");
+        exit(1);
+    }
+    //_kernel_oscli("PyromaniacDebug traceswiargs");
+    for (n=0; n<deck->nslides; n++)
+    {
+        _swix(0x100+12,0);
+        sliderender_set_slide(render, n);
+        sliderender_show(render, n);
+        getchar();
+    }
+
+    return 0;
+}

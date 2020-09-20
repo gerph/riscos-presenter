@@ -5,7 +5,7 @@
  * Date:        18 Sep 2020
  ******************************************************************/
 
-#include <assert.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,8 +17,7 @@
 
 #include "slidedeck.h"
 #include "slidedeck_debug.h"
-#include "slidemd.h"
-#include "file.h"
+#include "sliderender.h"
 
 /* Define this to debug this file */
 //#undef DEBUG
@@ -51,10 +50,14 @@ fontdefault_t fontdefault_headings[MAXHEADING] = {
     {"Optima.Regular", (16*16), (16*16)},
 };
 
+
 /* Rendering context for a slide */
-typedef struct sliderender_s {
+struct sliderender_s {
     slidedeck_t *deck;
     slide_t *slide;
+    int slidenumber;
+
+    bbox_t region;
 
     unsigned long colour_bg;
     unsigned long colour_fg;
@@ -71,11 +74,18 @@ typedef struct sliderender_s {
     int pass;
 
     bounds_t em;
-} sliderender_t;
+};
 
 
-void sliderender_block(sliderender_t *render,
-                       slideblock_t *block)
+/*************************************************** Gerph *********
+ Function:      sliderender_block
+ Description:   Render a single block from a slide
+ Parameters:    render-> the render to use
+                block-> the block we're rendering
+ Returns:       none
+ ******************************************************************/
+static void sliderender_block(sliderender_t *render,
+                              slideblock_t *block)
 {
     unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
     switch (block->blocktype)
@@ -116,7 +126,7 @@ void sliderender_block(sliderender_t *render,
                               render->font_body,
                               // "\xb7",        // Latin-1 encoding of middot
                               "\xe2\x80\xa2",   // UTF-8 encoding of bullet
-                              0x00000000, 0xFFFFFF00,
+                              render->colour_bg, render->colour_fg,
                               flags);
                 textblock_inset(render->textblock, render->em.width, render->em.width);
             }
@@ -128,7 +138,7 @@ void sliderender_block(sliderender_t *render,
                 textblock_add(render->textblock,
                               render->font_body,
                               buf,
-                              0x00000000, 0xFFFFFF00,
+                              render->colour_bg, render->colour_fg,
                               flags);
                 // Indent for the spans
                 textblock_inset(render->textblock, render->em.width * 1.5, render->em.width * 1.5);
@@ -182,7 +192,7 @@ void sliderender_block(sliderender_t *render,
             textblock_add(render->textblock,
                           font,
                           span->text,
-                          0x00000000, 0xFFFFFF00,
+                          render->colour_bg, render->colour_fg,
                           fontflags);
         }
 
@@ -215,9 +225,17 @@ void sliderender_block(sliderender_t *render,
 }
 
 
-fontfamily_t sliderender_prepare_font(sliderender_t *render,
-                                      const char *keyname,
-                                      fontdefault_t *fontdefault)
+/*************************************************** Gerph *********
+ Function:      sliderender_prepare_font
+ Description:   Set up a font family for the current slide
+ Parameters:    render-> the render to work with
+                keyname-> the name of this family to set up from the slide properties
+                fontdefault-> the defaults to use for this family
+ Returns:       fontfamily_t for this font, or NULL if none could be assigned
+ ******************************************************************/
+static fontfamily_t sliderender_prepare_font(sliderender_t *render,
+                                             const char *keyname,
+                                             fontdefault_t *fontdefault)
 {
     /* FIXME: Use the properties from the slide */
     const char *font = fontdefault->name;
@@ -242,37 +260,109 @@ fontfamily_t sliderender_prepare_font(sliderender_t *render,
 }
 
 
-void sliderender_destroy(sliderender_t *render)
+/*************************************************** Gerph *********
+ Function:      sliderender_clear
+ Description:   Free all the transient and cached details for this render
+ Parameters:    render-> the render to clear
+ Returns:       none
+ ******************************************************************/
+static void sliderender_clear(sliderender_t *render)
 {
-    fontfamily_destroy(render->family_body);
-    fontfamily_destroy(render->family_code);
-    fontfamily_destroy(render->family_heading[0]);
-    fontfamily_destroy(render->family_heading[1]);
-    fontfamily_destroy(render->family_heading[2]);
-    textblock_destroy(render->textblock);
+    int n;
 
-    //free(render);
+    fontfamily_destroy(render->family_body);
+    render->family_body = NULL;
+    fontfamily_destroy(render->family_code);
+    render->family_code = NULL;
+
+    for (n=0; n<MAXHEADING; n++)
+    {
+        fontfamily_destroy(render->family_heading[n]);
+        render->family_heading[n] = NULL;
+    }
+    textblock_destroy(render->textblock);
+    render->textblock = NULL;
 }
 
 
-int sliderender_show(slidedeck_t *deck, int slidenumber)
+/*************************************************** Gerph *********
+ Function:      sliderender_destroy
+ Description:   Destroy the block, freeing all memory associated with it
+ Parameters:    render-> the render to free
+ Returns:       none
+ ******************************************************************/
+void sliderender_destroy(sliderender_t *render)
 {
-    sliderender_t render = {0};
-    int pass;
+    if (render == NULL)
+        return;
 
-    render.deck = deck;
-    render.slide = deck->slides[slidenumber]; /* FIXME Check number */
+    sliderender_clear(render);
+    free(render);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_create
+ Description:   Create a structure to manage the rendering of the
+                slides
+ Parameters:    deck-> the slide deck to render
+                slidenumber = the number of the slide we're rendering
+                region-> the bounds of the region to prepare for
+ Returns:       pointer to sliderender_t, or NULL if failed
+ ******************************************************************/
+sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *region)
+{
+    sliderender_t *render = calloc(1, sizeof(*render));
+    if (render == NULL)
+        return NULL;
+
+    render->deck = deck;
+    render->slidenumber = -1;
+    if (region)
+    {
+        render->region = *region;
+    }
+    else
+    {
+        /* If no region was specified, give it a default size; they can change it later */
+        render->region.x0 = 0;
+        render->region.y0 = 0;
+        render->region.x1 = 640;
+        render->region.y1 = 480;
+    }
+
+    sliderender_set_slide(render, slidenumber);
+
+    return render;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_set_slide
+ Description:   Select the slide number that we are going to render
+ Parameters:    render-> the render block
+                slidenumber = number of the slide we're going to show
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_set_slide(sliderender_t *render, int slidenumber)
+{
+    slidedeck_t *deck = render->deck;
+    if (slidenumber >= deck->nslides || slidenumber < 0)
+        return 1; /* Invalid slide number */
+
+    sliderender_clear(render);
+    render->slide = deck->slides[slidenumber];
 
     /* Prepare the families */
-    render.family_body = sliderender_prepare_font(&render, "body", &fontdefault_body);
-    if (!render.family_body)
+    render->family_body = sliderender_prepare_font(render, "body", &fontdefault_body);
+    if (!render->family_body)
     {
         dprintf("Cannot initialise the font family for body\n");
         goto failed;
     }
 
-    render.family_code = sliderender_prepare_font(&render, "code", &fontdefault_code);
-    if (!render.family_code)
+    render->family_code = sliderender_prepare_font(render, "code", &fontdefault_code);
+    if (!render->family_code)
     {
         dprintf("Cannot initialise the font family for code\n");
         goto failed;
@@ -283,8 +373,8 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
         for (n=0; n<MAXHEADING; n++)
         {
             sprintf(name, "h%i", n + 1);
-            render.family_heading[n] = sliderender_prepare_font(&render, name, &fontdefault_headings[n]);
-            if (!render.family_heading[n])
+            render->family_heading[n] = sliderender_prepare_font(render, name, &fontdefault_headings[n]);
+            if (!render->family_heading[n])
             {
                 dprintf("Cannot initialise the font family for heading %i\n", n+1);
                 goto failed;
@@ -292,56 +382,69 @@ int sliderender_show(slidedeck_t *deck, int slidenumber)
         }
     }
 
-    render.in_heading = -1; /* Not in a heading right now */
-
-    render.textblock = textblock_create(64, 64,  1280-64, 960-64,
-                                        TBCREATE_SPACING_150);
-
-    render.font_body = fontfamily_get_font(render.family_body, FONTFAMILY_STYLE_BASE);
-    render.em = text_getemsize(render.font_body);
-
-    for (pass=0; pass<2; pass++)
+    render->font_body = fontfamily_get_font(render->family_body, FONTFAMILY_STYLE_BASE);
+    if (!render->font_body)
     {
-        slideblock_t *block;
-        render.pass = pass;
-        for (block = render.slide->blocks; block; block=block->next)
-        {
-            sliderender_block(&render, block);
-        }
-        textblock_clear(render.textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
+        dprintf("Cannot initialise the font family for body\n");
+        goto failed;
     }
-    sliderender_destroy(&render);
+
+    render->em = text_getemsize(render->font_body);
+
+    render->colour_bg = 0x00000000;
+    render->colour_fg = 0xFFFFFF00;
+
     return 0;
 
 failed:
-    sliderender_destroy(&render);
+    sliderender_clear(render);
+    render->slidenumber = -1;
     return 1;
 }
 
 
-
-int main(int argc, char *argv[])
+/*************************************************** Gerph *********
+ Function:      sliderender_show
+ Description:   Render the actual slide to the screen
+ Parameters:    render-> the render we're going to use.
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_show(sliderender_t *render, int slidenumber)
 {
-    char *in_filename = "file/md";
-    const char *mddata;
-    slidedeck_t *deck;
-    int n;
+    int inset_x = 64;
+    int inset_y = 64;
+    int pass;
+    if (render == NULL)
+        return 1;
 
-    gcontext_initvdu(1);
-
-    mddata = file_read(in_filename);
-    assert(mddata);
-
-    printf("---- MD parsing ----\n");
-    deck = slidemd_parse(mddata, strlen(mddata));
-
-    //_kernel_oscli("PyromaniacDebug traceswiargs");
-    for (n=0; n<deck->nslides; n++)
+    if (!render->textblock)
     {
-        _swix(0x100+12,0);
-        sliderender_show(deck, n);
-        getchar();
+        render->textblock = textblock_create(render->region.x0 + inset_x, render->region.x0 + inset_y,
+                                             render->region.x1 - inset_x, render->region.y1 - inset_y,
+                                             TBCREATE_SPACING_150);
+    }
+    else
+    {
+        textblock_clear(render->textblock, TBCLEAR_ALL);
     }
 
+    render->in_heading = -1; /* Not in a heading right now */
+
+    for (pass=0; pass<2; pass++)
+    {
+        slideblock_t *block;
+        render->pass = pass;
+        if (pass == 1)
+        {
+            /* The redraw pass - fill the background */
+            rect_fill(render->colour_bg, render->region.x0, render->region.y0,
+                                         render->region.x1, render->region.y1);
+        }
+        for (block = render->slide->blocks; block; block=block->next)
+        {
+            sliderender_block(render, block);
+        }
+        textblock_clear(render->textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
+    }
     return 0;
 }

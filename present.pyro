@@ -4,6 +4,7 @@
 config:
     graphics.implementation: wx
     graphicscairo.fonts_fontconfig: true
+    graphicsui.title: "Gerph's RISC OS presentation"
     vdu.alphabet: UTF8
     vdu.mode: 28
 
