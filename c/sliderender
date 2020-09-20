@@ -18,6 +18,8 @@
 #include "slidedeck.h"
 #include "slidedeck_debug.h"
 #include "sliderender.h"
+#include "colours.h"
+
 
 /* Define this to debug this file */
 //#undef DEBUG
@@ -391,8 +393,18 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
 
     render->em = text_getemsize(render->font_body);
 
-    render->colour_bg = 0x00000000;
-    render->colour_fg = 0xFFFFFF00;
+    {
+        const char *colspec;
+        rgb_t col;
+
+        colspec = slide_getproperty(render->slide, "background-colour", "black");
+        col = colours_parse(colspec, -1);
+        render->colour_bg = (col==-1) ? 0x00000000 : col;
+
+        colspec = slide_getproperty(render->slide, "foreground-colour", "white");
+        col = colours_parse(colspec, -1);
+        render->colour_fg = (col==-1) ? 0xFFFFFF00 : col;
+    }
 
     return 0;
 

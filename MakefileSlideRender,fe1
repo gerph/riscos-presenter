@@ -22,6 +22,7 @@ OBJS       = \
 			 o.file \
 			 o.sliderender \
 			 o.test_sliderender \
+			 o.colours \
 			 o.mdnames
 
 include LibraryCommand

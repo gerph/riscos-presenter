@@ -5,6 +5,7 @@
  * Date:        20 Sep 2020
  ******************************************************************/
 
+#include <stdio.h>
 #include "swis.h"
 
 #include "WebColoursSWIs.h"
@@ -41,6 +42,6 @@ rgb_t colours_parse(const char *string, int len)
                                         &colour);
     if (err)
         return RGB_INVALID;
-    dprintf("Colour %s -> %08x\n", string, colour);
+    dprintf("Colour %s -> %08lx\n", string, colour);
     return colour;
 }
