@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
     //_kernel_oscli("PyromaniacDebug traceswiargs");
     for (n=start_slide; n<deck->nslides; n++)
     {
+        char c;
+
         _swix(0x100+30,0);
         printf("Showing slide %i\n", n);
         if (sliderender_set_slide(render, n))
@@ -75,7 +77,14 @@ int main(int argc, char *argv[])
             printf("Could not render slide %i\n", n);
             continue;
         }
-        getchar();
+
+        c = getchar();
+        if (c=='s')
+        {
+            char cli[64];
+            sprintf(cli, "Screensave Slide%i", n);
+            _kernel_oscli(cli);
+        }
     }
 
     return 0;
