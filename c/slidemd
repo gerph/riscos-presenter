@@ -7,11 +7,13 @@
  ******************************************************************/
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "swis.h"
 
+#include "str.h"
 #include "slidedeck.h"
 #include "md4c.h"
 #include "mdnames.h"
@@ -34,13 +36,28 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata);
 void debug_log(const char *msg, void *userdata);
 
 
+/* Working context for the slidemd parser */
+typedef struct slidemd_s {
+    slidedeck_t *deck;
+
+    int starting_slide;         /* Whether we're just starting a slide (about to start with a p / in the p) */
+    int deferred_p;             /* whether we've deferred the creation of a p block */
+    int in_slide_properties;    /* Whether we've recognised that these are properties in this p */
+} slidemd_t;
+
+
 int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
-    slidedeck_t *deck = (slidedeck_t *)userdata;
+    slidemd_t *slidemd = (slidemd_t *)userdata;
+    slidedeck_t *deck = slidemd->deck;
+
     dprintf("enter_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
     switch (type)
     {
         case MD_BLOCK_DOC:
+            /* We're in the very first slide, so we're starting a slide */
+            slidemd->starting_slide = 1;
+            slidemd->deferred_p = 0;
             break;
 
         case MD_BLOCK_QUOTE:
@@ -61,6 +78,10 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
         case MD_BLOCK_HR:
             slidedeck_newslide(deck);
+
+            /* Moved toa new slide, so we're starting a slide */
+            slidemd->starting_slide = 1;
+            slidemd->deferred_p = 0;
             break;
 
         case MD_BLOCK_H:
@@ -79,7 +100,15 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             break;
 
         case MD_BLOCK_P:
-            slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+            if (slidemd->starting_slide)
+            {
+                /* We're now deferring a paragraph block start */
+                slidemd->deferred_p = 1;
+            }
+            else
+            {
+                slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+            }
             break;
 
         case MD_BLOCK_TABLE:
@@ -106,12 +135,23 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             /* Table blocks should not be seen - the option isn't enabled */
             break;
     }
+
+    if (slidemd->starting_slide)
+    {
+        if (type != MD_BLOCK_P && type != MD_BLOCK_DOC && type != MD_BLOCK_HR)
+        {
+            /* If the first block isn't any of these, we're not starting the slide any more */
+            slidemd->starting_slide = 0;
+        }
+    }
     return 0;
 }
 
 int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
-    slidedeck_t *deck = (slidedeck_t *)userdata;
+    slidemd_t *slidemd = (slidemd_t *)userdata;
+    slidedeck_t *deck = slidemd->deck;
+
     dprintf("leave_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
     switch (type)
     {
@@ -145,6 +185,10 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             break;
 
         case MD_BLOCK_P:
+            /* Once we finish a paragraph we are definitely not in the starting slide, or processing properties */
+            slidemd->starting_slide = 0;
+            slidemd->in_slide_properties = 0;
+            slidemd->deferred_p = 0;
             break;
 
         case MD_BLOCK_TABLE:
@@ -171,8 +215,20 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
 int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
 {
-    slidedeck_t *deck = (slidedeck_t *)userdata;
+    slidemd_t *slidemd = (slidemd_t *)userdata;
+    slidedeck_t *deck = slidemd->deck;
+
     dprintf("enter_span: %i (%s)\n", type, MD_SPAN_NAME(type));
+
+    if (slidemd->deferred_p)
+    {
+        /* If we hit any span type, we're not in the starting slide any more */
+        slidemd->deferred_p = 0;
+        slidemd->in_slide_properties = 0;
+        slidemd->starting_slide = 0;
+        slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+    }
+
     switch (type)
     {
         case MD_SPAN_EM:
@@ -220,7 +276,9 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
 
 int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
 {
-    slidedeck_t *deck = (slidedeck_t *)userdata;
+    slidemd_t *slidemd = (slidemd_t *)userdata;
+    slidedeck_t *deck = slidemd->deck;
+
     dprintf("leave_span: %i (%s)\n", type, MD_SPAN_NAME(type));
     switch (type)
     {
@@ -269,13 +327,98 @@ int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
 
 int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
 {
-    slidedeck_t *deck = (slidedeck_t *)userdata;
+    slidemd_t *slidemd = (slidemd_t *)userdata;
+    slidedeck_t *deck = slidemd->deck;
+
     dprintf("text: %i (%s) [%.*s]\n", type, MD_TEXT_NAME(type), size, text);
+
+    if (slidemd->deferred_p)
+    {
+        /* If we hit any text type that isn't 'normal', we're not in the starting slide any more */
+        if (type != MD_TEXT_NORMAL &&
+            type != MD_TEXT_SOFTBR)
+        {
+            slidemd->deferred_p = 0;
+            slidemd->in_slide_properties = 0;
+            slidemd->starting_slide = 0;
+            slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+        }
+    }
 
     switch (type)
     {
         case MD_TEXT_NORMAL:
-            slidedeck_addnspan(deck, text, size);
+            if (slidemd->starting_slide)
+            {
+                /* Properties must be in the format:
+                 *  [a-zA-Z0-9_\.]+:<space>
+                 */
+                int is_property = 0;
+                char *colon = memchr(text, ':', size);
+                if (colon && colon != text && colon - text < size - 2 && colon[1] == ' ')
+                {
+                    int i;
+                    is_property = 1;
+                    for (i=0; i<colon-text; i++)
+                    {
+                        char c = text[i];
+                        if (c != '.' &&
+                            c != '_' &&
+                            !isalpha(c) &&
+                            !isdigit(c))
+                        {
+                            dprintf("  makes it not a property: %c\n", c);
+                            is_property = 0;
+                        }
+                    }
+                }
+                dprintf("  might be a property: %i\n", is_property);
+
+                if (!slidemd->in_slide_properties)
+                {
+                    /* We've not recognised the slide properties yet, so this may be a slide property */
+                    if (is_property)
+                    {
+                        /* It is; all is well ! */
+                        slidemd->in_slide_properties = 1;
+                    }
+                    else
+                    {
+                        /* It's not, so we need to reset the values and start the block we deferred */
+                        if (slidemd->deferred_p)
+                            slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+                        slidemd->deferred_p = 0;
+                        slidemd->in_slide_properties = 0;
+                        slidemd->starting_slide = 0;
+                    }
+                }
+
+                if (slidemd->in_slide_properties)
+                {
+                    if (is_property)
+                    {
+                        /* We have a slide property, so set it */
+                        char *name = strndup(text, colon-text);
+                        char *value;
+                        value = colon + 1;
+                        while (*value == ' ')
+                            value++; /* Skip spaces after the colon */
+                        value = strndup(value, size - (value-text));
+                        dprintf("Set Slide property '%s' to '%s'\n", name, value);
+                        slidedeck_addproperty(deck, name, value);
+                        free(name);
+                        free(value);
+                    }
+                    else
+                    {
+                        dprintf("Cannot parse text that should be a property: '%.*s'\n", size, text);
+                    }
+                }
+            }
+            if (!slidemd->in_slide_properties)
+            {
+                slidedeck_addnspan(deck, text, size);
+            }
             break;
 
         case MD_TEXT_NULLCHAR:
@@ -289,7 +432,8 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
 
         case MD_TEXT_SOFTBR:
             /* Soft BR just means we wrap it to the prior strings */
-            slidedeck_addspan(deck, " ");
+            if (!slidemd->in_slide_properties)
+                slidedeck_addspan(deck, " ");
             break;
 
         case MD_TEXT_ENTITY:
@@ -350,12 +494,17 @@ MD_PARSER parser = {
  ******************************************************************/
 slidedeck_t *slidemd_parse(const char *text, int len)
 {
+    slidemd_t slidemd;
     slidedeck_t *deck;
     deck = slidedeck_create();
     if (deck == NULL)
         return NULL;
 
-    md_parse(text, len == -1 ? strlen(text) : len, &parser, deck);
+    slidemd.deck = deck;
+    slidemd.starting_slide = 0;
+    slidemd.in_slide_properties = 0;
+
+    md_parse(text, len == -1 ? strlen(text) : len, &parser, &slidemd);
 
     return deck;
 }

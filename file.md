@@ -3,12 +3,13 @@
 Nonsense.
 More _Nonsense_.
 
+Smiley: [😀]
+
 * List - `πρ`
 
 ---
 class: foo
 font: bar
-
 
 * More  things go here.
 * Second item
