@@ -35,18 +35,18 @@
 #define MAXHEADING 3
 
 
-typedef struct fontdefaults_ {
-    char *name;
+typedef struct fontconfig_s {
+    const char *name;
     int xsize, ysize;
-} fontdefault_t;
+} fontconfig_t;
 
-fontdefault_t fontdefault_body = {
+fontconfig_t fontdefault_body = {
     "HirukoPro.Book", (12*16), (12*16)
 };
-fontdefault_t fontdefault_code = {
+fontconfig_t fontdefault_code = {
     "FairfaxSMHD.Medium", (12*16), (12*16)
 };
-fontdefault_t fontdefault_headings[MAXHEADING] = {
+fontconfig_t fontdefault_headings[MAXHEADING] = {
     {"Optima.Bold", (22*16), (22*16)},
     {"Optima.Bold", (18*16), (18*16)},
     {"Optima.Regular", (16*16), (16*16)},
@@ -228,30 +228,188 @@ static void sliderender_block(sliderender_t *render,
 
 
 /*************************************************** Gerph *********
- Function:      sliderender_prepare_font
+ Function:      sliderender_fontsize
+ Description:   Get the size of a font from a specification string
+ Parameters:    render-> the render to work with
+                string-> the string to parse
+ Returns:       font size in points * 16, or -1 if failed to parse
+ ******************************************************************/
+static int sliderender_fontsize(sliderender_t *render,
+                                const char *string,
+                                int is_x)
+{
+    const char *end;
+    int multiplier = 1;
+    double num = strtod(string, (char**)&end);
+    if (end == string)
+    {
+        /* Didn't parse at all */
+        return -1;
+    }
+
+    /* Skip spaces */
+    while (*end == ' ')
+        end++;
+
+    if (strcmp(end, "pt")==0)
+    {
+        end += 2, multiplier = 16;
+    }
+    else if (strcmp(end, "in")==0)
+    {
+        end += 2, multiplier = 16 * 72;
+    }
+    else if (strcmp(end, "cm")==0)
+    {
+        end += 2, multiplier = 16 * 28.3125;
+    }
+    else if (strcmp(end, "pc")==0)
+    {
+        end += 2, multiplier = 16 * 12; /* picas */
+    }
+    else if (strcmp(end, "em")==0)
+    {
+        end += 2;
+        if (is_x)
+            multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).width;
+        else
+            multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).height;
+    }
+    else
+    {
+        /* Assume they meant OS units */
+        multiplier = 8;
+    }
+
+    if (*end != '\0')
+    {
+        /* Didn't end after the size specification */
+        return -1;
+    }
+    //dprintf("(fontsize: num=%f, multiplier=%i)\n", num, multiplier);
+    return (int)(num * multiplier);
+}
+
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_get_font_config
+ Description:   Get the font settings to use for the current slide,
+                using the properties from the slide.
+ Parameters:    render-> the render to use
+                fontkeyname-> the name of the key to use for this family
+                stylesuffix-> the suffix to use, prefixed by '.', or NULL
+                              for no suffix
+                fontdefault-> the defaults to use if not set
+ Returns:       none
+ ******************************************************************/
+static fontconfig_t sliderender_get_font_config(sliderender_t *render,
+                                                const char *familykeyname,
+                                                const char *stylesuffix,
+                                                fontconfig_t *fontdefault)
+{
+    char property_name[64];
+    const char *property_value;
+    fontconfig_t config = *fontdefault;
+    int size;
+
+    if (stylesuffix == NULL)
+        stylesuffix = "";
+
+    // Read the properties for the base of the font
+    sprintf(property_name, "%s%s.font", familykeyname, stylesuffix);
+    config.name = slide_getproperty(render->slide, property_name, config.name);
+
+    sprintf(property_name, "%s%s.size", familykeyname, stylesuffix);
+    property_value = slide_getproperty(render->slide, property_name, NULL);
+    if (property_value)
+    {
+        dprintf("Property for %s defines size as %s\n", property_name, property_value);
+        size = sliderender_fontsize(render, property_value, 1);
+        if (size != -1)
+            config.xsize = size;
+        size = sliderender_fontsize(render, property_value, 0);
+        if (size != -1)
+            config.ysize = size;
+        dprintf("  sizes = %i x %i\n", config.xsize, config.ysize);
+    }
+
+    sprintf(property_name, "%s%s.height", familykeyname, stylesuffix);
+    property_value = slide_getproperty(render->slide, property_name, NULL);
+    if (property_value)
+    {
+        dprintf("Property for %s defines height as %s\n", property_name, property_value);
+        size = sliderender_fontsize(render, property_value, 0);
+        if (size != -1)
+            config.ysize = size;
+        dprintf("  height = %i\n", config.ysize);
+    }
+    return config;
+}
+
+/*************************************************** Gerph *********
+ Function:      sliderender_prepare_family
  Description:   Set up a font family for the current slide
  Parameters:    render-> the render to work with
                 keyname-> the name of this family to set up from the slide properties
                 fontdefault-> the defaults to use for this family
  Returns:       fontfamily_t for this font, or NULL if none could be assigned
  ******************************************************************/
-static fontfamily_t sliderender_prepare_font(sliderender_t *render,
-                                             const char *keyname,
-                                             fontdefault_t *fontdefault)
+static fontfamily_t sliderender_prepare_family(sliderender_t *render,
+                                               const char *keyname,
+                                               fontconfig_t *fontdefault)
 {
-    /* FIXME: Use the properties from the slide */
-    const char *font = fontdefault->name;
-    int xsize = fontdefault->xsize;
-    int ysize = fontdefault->ysize;
     fontfamily_t family;
+    fontconfig_t config;
+    fontconfig_t baseconfig;
 
-    dprintf("Preparing family '%s' with font '%s'\n", keyname, font);
-    family = fontfamily_create(font, xsize, ysize);
+    baseconfig = sliderender_get_font_config(render, keyname, NULL, fontdefault);
+
+    dprintf("Preparing family '%s' with font '%s'\n", keyname, baseconfig.name);
+    family = fontfamily_create(baseconfig.name, baseconfig.xsize, baseconfig.ysize);
     if (family == NULL)
     {
         dprintf("Cannot create font family for %s\n", keyname);
         return NULL;
     }
+
+    /* Now populate any of the other fonts */
+    config = sliderender_get_font_config(render, keyname, ".italic", &baseconfig);
+    /* FIXME: We don't support size yet */
+    if (config.name != baseconfig.name)
+    {
+        dprintf("Override family '%s' italic style: %s\n", keyname, config.name);
+        if (fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, config.name))
+        {
+            dprintf("Cannot set %s italic style\n", keyname);
+            return NULL;
+        }
+    }
+
+    config = sliderender_get_font_config(render, keyname, ".bold", &baseconfig);
+    /* FIXME: We don't support size yet */
+    if (config.name != baseconfig.name)
+    {
+        dprintf("Override family '%s' bold style: %s\n", keyname, config.name);
+        if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, config.name))
+        {
+            dprintf("Cannot set %s bold style\n", keyname);
+            return NULL;
+        }
+    }
+
+    config = sliderender_get_font_config(render, keyname, ".bold.italic", &baseconfig);
+    /* FIXME: We don't support size yet */
+    if (config.name != baseconfig.name)
+    {
+        dprintf("Override family '%s' bold italic style: %s\n", keyname, config.name);
+        if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, config.name))
+        {
+            dprintf("Cannot set %s bold italic style\n", keyname);
+            return NULL;
+        }
+    }
+
     if (fontfamily_populate(family))
     {
         dprintf("Cannot populate font family for %s\n", keyname);
@@ -333,7 +491,11 @@ sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *re
         render->region.y1 = 480;
     }
 
-    sliderender_set_slide(render, slidenumber);
+    if (sliderender_set_slide(render, slidenumber))
+    {
+        /* Select the slide failed. */
+        render->slidenumber = -1;
+    }
 
     return render;
 }
@@ -356,14 +518,14 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     render->slide = deck->slides[slidenumber];
 
     /* Prepare the families */
-    render->family_body = sliderender_prepare_font(render, "body", &fontdefault_body);
+    render->family_body = sliderender_prepare_family(render, "body", &fontdefault_body);
     if (!render->family_body)
     {
         dprintf("Cannot initialise the font family for body\n");
         goto failed;
     }
 
-    render->family_code = sliderender_prepare_font(render, "code", &fontdefault_code);
+    render->family_code = sliderender_prepare_family(render, "code", &fontdefault_code);
     if (!render->family_code)
     {
         dprintf("Cannot initialise the font family for code\n");
@@ -375,7 +537,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         for (n=0; n<MAXHEADING; n++)
         {
             sprintf(name, "h%i", n + 1);
-            render->family_heading[n] = sliderender_prepare_font(render, name, &fontdefault_headings[n]);
+            render->family_heading[n] = sliderender_prepare_family(render, name, &fontdefault_headings[n]);
             if (!render->family_heading[n])
             {
                 dprintf("Cannot initialise the font family for heading %i\n", n+1);
@@ -410,6 +572,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
 
 failed:
     sliderender_clear(render);
+    render->slide = NULL;
     render->slidenumber = -1;
     return 1;
 }
@@ -421,13 +584,19 @@ failed:
  Parameters:    render-> the render we're going to use.
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int sliderender_show(sliderender_t *render, int slidenumber)
+int sliderender_show(sliderender_t *render)
 {
     int inset_x = 64;
     int inset_y = 64;
     int pass;
     if (render == NULL)
         return 1;
+
+    if (render->slide == NULL)
+    {
+        dprintf("No slide currently selected for render\n");
+        return 1;
+    }
 
     if (!render->textblock)
     {

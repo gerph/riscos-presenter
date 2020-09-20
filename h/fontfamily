@@ -66,6 +66,17 @@ font_t fontfamily_get_font(fontfamily_t family,
 
 
 /*************************************************** Gerph *********
+ Function:      fontfamily_get_size
+ Description:   Return the font for a given font family style
+ Parameters:    family -> the family to change
+                style = FONTFAMILY_STYLE_* style number
+ Returns:       bounds_t object containing the xsize and ysize
+ ******************************************************************/
+bounds_t fontfamily_get_size(fontfamily_t family,
+                             int style);
+
+
+/*************************************************** Gerph *********
  Function:      fontfamily_populate
  Description:   Populate any font family members not supplied
  Parameters:    family -> the family to change

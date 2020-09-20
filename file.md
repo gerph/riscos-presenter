@@ -1,3 +1,5 @@
+body.font: Optima.Regular
+body.italic.font: Phosphate.Inline
 background-colour: white
 foreground-colour: black
 
@@ -15,7 +17,7 @@ class: foo
 font: bar
 
 * More  things go here.
-* Second item
+* Second item *filler*
 
 1. Using *italic* **bold** ***italic bold*** ordered list
     - Nested

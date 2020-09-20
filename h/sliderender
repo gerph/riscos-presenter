@@ -51,7 +51,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber);
  Parameters:    render-> the render we're going to use.
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int sliderender_show(sliderender_t *render, int slidenumber);
+int sliderender_show(sliderender_t *render);
 
 
 #endif

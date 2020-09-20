@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include "swis.h"
 
@@ -53,8 +54,16 @@ int main(int argc, char *argv[])
     for (n=0; n<deck->nslides; n++)
     {
         _swix(0x100+12,0);
-        sliderender_set_slide(render, n);
-        sliderender_show(render, n);
+        if (sliderender_set_slide(render, n))
+        {
+            printf("Failed to select slide %i\n", n);
+            continue;
+        }
+        if (sliderender_show(render))
+        {
+            printf("Could not render slide %i\n", n);
+            continue;
+        }
         getchar();
     }
 
