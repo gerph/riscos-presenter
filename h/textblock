@@ -153,7 +153,7 @@ int textblock_space(textblock_t textblock, int width, int height,
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
 int textblock_gap(textblock_t textblock, int height,
-                    coords_t *posp);
+                  coords_t *posp);
 
 /*************************************************** Gerph *********
  Function:      textblock_inset

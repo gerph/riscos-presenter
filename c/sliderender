@@ -589,6 +589,8 @@ int sliderender_show(sliderender_t *render)
     int inset_x = 64;
     int inset_y = 64;
     int pass;
+    int spacer = 0;
+    const char *vertical_align;
     if (render == NULL)
         return 1;
 
@@ -600,7 +602,7 @@ int sliderender_show(sliderender_t *render)
 
     if (!render->textblock)
     {
-        render->textblock = textblock_create(render->region.x0 + inset_x, render->region.x0 + inset_y,
+        render->textblock = textblock_create(render->region.x0 + inset_x, render->region.y0 + inset_y,
                                              render->region.x1 - inset_x, render->region.y1 - inset_y,
                                              TBCREATE_SPACING_150);
     }
@@ -608,6 +610,8 @@ int sliderender_show(sliderender_t *render)
     {
         textblock_clear(render->textblock, TBCLEAR_ALL);
     }
+
+    vertical_align = slide_getproperty(render->slide, "vertical-align", NULL);
 
     render->in_heading = -1; /* Not in a heading right now */
 
@@ -621,10 +625,36 @@ int sliderender_show(sliderender_t *render)
             rect_fill(render->colour_bg, render->region.x0, render->region.y0,
                                          render->region.x1, render->region.y1);
         }
+
+        if (spacer)
+            textblock_gap(render->textblock, spacer, NULL);
+
         for (block = render->slide->blocks; block; block=block->next)
         {
             sliderender_block(render, block);
         }
+
+        if (vertical_align && strcmp(vertical_align, "top") != 0)
+        {
+            /* Vertical align is set and it's not 'top' */
+            int low_y = textblock_extent(render->textblock);
+            int remaining_space = low_y - render->region.y0 - inset_y;
+
+            /* FIXME: Due to the way that we always add a newline at the end, we will be
+             *        one line height out here.
+             */
+
+            if (strcmp(vertical_align, "bottom")==0)
+            {
+                /* Align to the bottom (take 4, so that we don't overrun the end) */
+                spacer = remaining_space - 4;
+            }
+            else if (strcmp(vertical_align, "middle")==0)
+            {
+                spacer = remaining_space / 2;
+            }
+        }
+
         textblock_clear(render->textblock, TBCLEAR_TEXTTOP | TBCLEAR_COVERED);
     }
     return 0;

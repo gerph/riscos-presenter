@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     //_kernel_oscli("PyromaniacDebug traceswiargs");
     for (n=start_slide; n<deck->nslides; n++)
     {
-        _swix(0x100+12,0);
+        _swix(0x100+30,0);
         printf("Showing slide %i\n", n);
         if (sliderender_set_slide(render, n))
         {
