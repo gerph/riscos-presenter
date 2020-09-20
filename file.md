@@ -1,3 +1,6 @@
+background-colour: white
+foreground-colour: black
+
 # Stuff
 
 Nonsense.

@@ -351,7 +351,7 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
             if (slidemd->starting_slide)
             {
                 /* Properties must be in the format:
-                 *  [a-zA-Z0-9_\.]+:<space>
+                 *  [a-zA-Z0-9_\.-]+:<space>
                  */
                 int is_property = 0;
                 char *colon = memchr(text, ':', size);
@@ -364,6 +364,7 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
                         char c = text[i];
                         if (c != '.' &&
                             c != '_' &&
+                            c != '-' &&
                             !isalpha(c) &&
                             !isdigit(c))
                         {
