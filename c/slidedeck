@@ -348,11 +348,26 @@ int slidedeck_render_del(slidedeck_t *deck, int state)
 int slidedeck_addproperty(slidedeck_t *deck, const char *id, const char *value)
 {
     slide_t *slide = deck->lastslide;
+    optval *opt;
+    int fail;
 
-    if (opt_add(slide->properties, id, value))
+    /* First change the current slide properties */
+    opt = opt_findopt(slide->properties, id);
+    if (opt)
+        fail = opt_change(opt, value);
+    else
+        fail = opt_add(slide->properties, id, value);
+
+    if (fail)
         return 1;
 
-    if (opt_add(deck->properties, id, value))
+    /* Then the global properties to carry forward */
+    opt = opt_findopt(deck->properties, id);
+    if (opt)
+        fail = opt_change(opt, value);
+    else
+        fail = opt_add(deck->properties, id, value);
+    if (fail)
     {
         opt_remove(slide->properties, opt_findopt(slide->properties, id));
         return 1;
