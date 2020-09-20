@@ -33,8 +33,18 @@ int main(int argc, char *argv[])
     const char *mddata;
     slidedeck_t *deck;
     sliderender_t *render;
+    int start_slide = 0;
     bbox_t region = {0,0, 1280, 960};
     int n;
+
+    if (argc > 1)
+    {
+        in_filename = argv[1];
+    }
+    if (argc > 2)
+    {
+        start_slide = atoi(argv[2]);
+    }
 
     gcontext_initvdu(1);
 
@@ -51,9 +61,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
     //_kernel_oscli("PyromaniacDebug traceswiargs");
-    for (n=0; n<deck->nslides; n++)
+    for (n=start_slide; n<deck->nslides; n++)
     {
         _swix(0x100+12,0);
+        printf("Showing slide %i\n", n);
         if (sliderender_set_slide(render, n))
         {
             printf("Failed to select slide %i\n", n);
