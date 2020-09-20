@@ -69,6 +69,7 @@ struct sliderender_s {
     fontfamily_t family_heading[MAXHEADING];
     fontfamily_t family_body;
     fontfamily_t family_code;
+    int inset_x, inset_y;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -239,12 +240,23 @@ static int sliderender_fontsize(sliderender_t *render,
                                 int is_x)
 {
     const char *end;
+    char copy[16];
     int multiplier = 1;
-    double num = strtod(string, (char**)&end);
-    if (end == string)
+    double num;
+    /* We need to copy the string as otherwise a value like '1em' won't be able to be
+     * parsed, as it looks like an exponentiated number.
+     */
+    if (strlen(string) > 14)
+        return -1; /* Unlikely to be a useful string */
+
     {
-        /* Didn't parse at all */
-        return -1;
+        char *term = &copy[0];
+        strcpy(copy, string);
+        while ((*term >= '0' && *term <= '9') || *term == '.')
+            term++;
+        *term = '\0';
+        num = strtod(copy, (char**)&end);
+        end = (const char *)(string + (term - &copy[0]));
     }
 
     /* Skip spaces */
@@ -278,12 +290,95 @@ static int sliderender_fontsize(sliderender_t *render,
     else
     {
         /* Assume they meant OS units */
-        multiplier = 8;
+        multiplier = 16;
     }
 
     if (*end != '\0')
     {
         /* Didn't end after the size specification */
+        return -1;
+    }
+    //dprintf("(fontsize: num=%f, multiplier=%i)\n", num, multiplier);
+    return (int)(num * multiplier);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_ossize
+ Description:   Get the size of in OS units from a specification string
+ Parameters:    render-> the render to work with
+                string-> the string to parse
+ Returns:       font size in points * 16, or -1 if failed to parse
+ ******************************************************************/
+static int sliderender_ossize(sliderender_t *render,
+                              const char *string,
+                              int is_x)
+{
+    const char *end;
+    char copy[16];
+    int multiplier = 1;
+    double num;
+    /* We need to copy the string as otherwise a value like '1em' won't be able to be
+     * parsed, as it looks like an exponentiated number.
+     */
+    if (strlen(string) > 14)
+        return -1; /* Unlikely to be a useful string */
+
+    {
+        char *term = &copy[0];
+        strcpy(copy, string);
+        while ((*term >= '0' && *term <= '9') || *term == '.')
+            term++;
+        *term = '\0';
+        num = strtod(copy, (char**)&end);
+        end = (const char *)(string + (term - &copy[0]));
+    }
+
+    if (end == string)
+    {
+        /* Didn't parse at all */
+        return -1;
+    }
+
+    /* Skip spaces */
+    while (*end == ' ')
+        end++;
+
+    if (strcmp(end, "pt")==0)
+    {
+        end += 2, multiplier = 2;
+    }
+    else if (strcmp(end, "in")==0)
+    {
+        end += 2, multiplier = 2 * 72;
+    }
+    else if (strcmp(end, "cm")==0)
+    {
+        end += 2, multiplier = 2 * 28.3125;
+    }
+    else if (strcmp(end, "pc")==0)
+    {
+        end += 2, multiplier = 2 * 12; /* picas */
+    }
+    else if (strcmp(end, "em")==0)
+    {
+        end += 2;
+        if (is_x)
+            multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).width / 8;
+        else
+            multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).height / 8;
+    }
+    else if (strcmp(end, "px")==0)
+    {
+        /* Assume they meant OS units */
+        end += 2;
+        multiplier = 2;
+    }
+
+    if (*end != '\0')
+    {
+        /* Didn't end after the size specification */
+        printf("Didn't parse at end: %s\n", end);
         return -1;
     }
     //dprintf("(fontsize: num=%f, multiplier=%i)\n", num, multiplier);
@@ -568,6 +663,35 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->colour_fg = (col==-1) ? 0xFFFFFF00 : col;
     }
 
+    {
+        int inset_x = 0;
+        int inset_y = 0;
+        const char *padding = slide_getproperty(render->slide, "padding", NULL);
+        if (padding)
+        {
+            inset_x = sliderender_ossize(render, padding, 1);
+            inset_y = sliderender_ossize(render, padding, 0);
+        }
+        else
+        {
+            padding = slide_getproperty(render->slide, "padding-horizontal", "16px");
+            inset_x = sliderender_ossize(render, padding, 1);
+
+            padding = slide_getproperty(render->slide, "padding-vertical", "16px");
+            inset_y = sliderender_ossize(render, padding, 0);
+        }
+
+        /* FIXME: For now just ignore any invalid values */
+        if (inset_x == -1)
+            inset_x = 0;
+        if (inset_y == -1)
+            inset_y = 0;
+
+        render->inset_x = inset_x;
+        render->inset_y = inset_y;
+        dprintf("inset = %i, %i", inset_x, inset_y);
+    }
+
     return 0;
 
 failed:
@@ -586,8 +710,6 @@ failed:
  ******************************************************************/
 int sliderender_show(sliderender_t *render)
 {
-    int inset_x = 64;
-    int inset_y = 64;
     int pass;
     int spacer = 0;
     const char *vertical_align;
@@ -602,8 +724,8 @@ int sliderender_show(sliderender_t *render)
 
     if (!render->textblock)
     {
-        render->textblock = textblock_create(render->region.x0 + inset_x, render->region.y0 + inset_y,
-                                             render->region.x1 - inset_x, render->region.y1 - inset_y,
+        render->textblock = textblock_create(render->region.x0 + render->inset_x, render->region.y0 + render->inset_y,
+                                             render->region.x1 - render->inset_x, render->region.y1 - render->inset_y,
                                              TBCREATE_SPACING_150);
     }
     else
@@ -638,7 +760,7 @@ int sliderender_show(sliderender_t *render)
         {
             /* Vertical align is set and it's not 'top' */
             int low_y = textblock_extent(render->textblock);
-            int remaining_space = low_y - render->region.y0 - inset_y;
+            int remaining_space = low_y - render->region.y0 - render->inset_y;
 
             /* FIXME: Due to the way that we always add a newline at the end, we will be
              *        one line height out here.

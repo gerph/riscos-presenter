@@ -12,11 +12,12 @@ Slides are separated by the horizontal rule marker (`---`). The slide separator 
 followed by properties which should be applied to this (and subsequent) slides. The properties take the form of colon-separated key-value pairs, which give the property name and its value. The following properties are defined:
 
 * `background-colour`/`foreground-colour`: Changes the slide background and text foreground colour. It is not currently possible to change the colour of text inline. Colours may be named CSS colours, `#RRGGBB`, `#RGB`, `rgb(r,g,b)` or `rgb(r%,g%,b%)` values (as supported by the WebColours module).
-* `*.font`/`*.size`/`*.height`: Defines font characteristics for the main styles used within the slides. The following font names may be defined (each may be suffixed by `.bold` and `.italic`):
+* `*.font`/`*.size`/`*.height`: Defines font characteristics for the main styles used within the slides. Each font name may be suffixed by `.bold` and `.italic` (in that order) to configure specific font styles. The size and height are only configurable on the base font at the current time. Sizes can be in the form of `#pt`, `#pc`, `#px`, `#in`, `#cm`, `#em` (where `em` is of the base font). The following font names may be defined:
     * `body`
     * `h1`, `h2`, `h3`
     * `code`
 * `vertical-align`: Alignment of the slide content, which may take the value `top`, `middle`, or `bottom`.
+* `padding`/`padding-horizontal`/`padding-vertical`: Defines the size of the slide padding. Sizes can be in the form of `#pt`, `#pc`, `#px`, `#in`, `#cm`, `#em` (where `em` is of the base font).
 
 
 ### Supported markdown
