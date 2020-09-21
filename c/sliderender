@@ -689,7 +689,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
 
         render->inset_x = inset_x;
         render->inset_y = inset_y;
-        dprintf("inset = %i, %i", inset_x, inset_y);
+        dprintf("inset = %i, %i\n", inset_x, inset_y);
     }
 
     return 0;
@@ -724,6 +724,7 @@ int sliderender_show(sliderender_t *render)
 
     if (!render->textblock)
     {
+        /* FIXME: Make spacing a configurable */
         render->textblock = textblock_create(render->region.x0 + render->inset_x, render->region.y0 + render->inset_y,
                                              render->region.x1 - render->inset_x, render->region.y1 - render->inset_y,
                                              TBCREATE_SPACING_150);
@@ -737,16 +738,16 @@ int sliderender_show(sliderender_t *render)
 
     render->in_heading = -1; /* Not in a heading right now */
 
+    /* The redraw pass - fill the background */
+    rect_fill(render->colour_bg, render->region.x0, render->region.y0,
+                                 render->region.x1, render->region.y1);
+
+    /* FIXME: BUG - this pass should be present on each BLOCK, not on the whole slide.
+              Otherwise we clear the sizings and end up with things not actually aligning to the baselines. */
     for (pass=0; pass<2; pass++)
     {
         slideblock_t *block;
         render->pass = pass;
-        if (pass == 1)
-        {
-            /* The redraw pass - fill the background */
-            rect_fill(render->colour_bg, render->region.x0, render->region.y0,
-                                         render->region.x1, render->region.y1);
-        }
 
         if (spacer)
             textblock_gap(render->textblock, spacer, NULL);
