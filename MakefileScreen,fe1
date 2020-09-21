@@ -1,0 +1,12 @@
+# Build the test code
+
+COMPONENT  = Screen
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.screen \
+             o.test_screen
+
+include LibraryCommand

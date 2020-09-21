@@ -1,0 +1,30 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "screen.h"
+
+
+int main(int argc, char *argv[])
+{
+    bbox_t bbox;
+    bounds_t bounds;
+
+    if (screen_get_size(&bounds))
+    {
+        printf("screen_get_size failed\n");
+    }
+    else
+    {
+        printf("screen_get_size: %i x %i\n", bounds.width, bounds.height);
+    }
+
+
+    if (screen_get_graphics_window(&bbox))
+    {
+        printf("screen_get_graphics_window failed\n");
+    }
+    else
+    {
+        printf("screen_get_graphics_window: %i,%i - %i-%i\n", bbox.x0, bbox.y0, bbox.x1, bbox.y1);
+    }
+}
