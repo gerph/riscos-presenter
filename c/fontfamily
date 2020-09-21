@@ -260,7 +260,7 @@ int fontfamily_populate(fontfamily_t family)
             dprintf("Failed to populate style for slant of '%s'\n", new_font);
 
             /* We generated one, so try to just use the base */
-            if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, regular_font))
+            if (fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, regular_font))
             {
                 return 1; /* Allocation failed */
             }
