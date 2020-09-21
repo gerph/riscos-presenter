@@ -42,6 +42,7 @@ typedef struct slidemd_s {
 
     int starting_slide;         /* Whether we're just starting a slide (about to start with a p / in the p) */
     int deferred_p;             /* whether we've deferred the creation of a p block */
+    int in_list;                /* Whether we're in a list */
     int in_slide_properties;    /* Whether we've recognised that these are properties in this p */
 } slidemd_t;
 
@@ -66,10 +67,12 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
         case MD_BLOCK_UL:
             slidedeck_startblock(deck, sbt_list, SLIDEBLOCKINDEX_UNORDERED);
+            slidemd->in_list += 1;
             break;
 
         case MD_BLOCK_OL:
             slidedeck_startblock(deck, sbt_list, SLIDEBLOCKINDEX_ORDERED);
+            slidemd->in_list += 1;
             break;
 
         case MD_BLOCK_LI:
@@ -107,7 +110,8 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             }
             else
             {
-                slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
+                if (!slidemd->in_list)
+                    slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
             }
             break;
 
@@ -163,10 +167,12 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
         case MD_BLOCK_UL:
             slidedeck_endblock(deck);
+            slidemd->in_list -= 1;
             break;
 
         case MD_BLOCK_OL:
             slidedeck_endblock(deck);
+            slidemd->in_list += 1;
             break;
 
         case MD_BLOCK_LI:
@@ -503,6 +509,7 @@ slidedeck_t *slidemd_parse(const char *text, int len)
 
     slidemd.deck = deck;
     slidemd.starting_slide = 0;
+    slidemd.in_list = 0;
     slidemd.in_slide_properties = 0;
 
     md_parse(text, len == -1 ? strlen(text) : len, &parser, &slidemd);
