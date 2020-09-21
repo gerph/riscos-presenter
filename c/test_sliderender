@@ -15,6 +15,8 @@
 #include "slidemd.h"
 #include "file.h"
 #include "sliderender.h"
+#include "screen.h"
+
 
 /* Define this to debug this file */
 //#undef DEBUG
@@ -35,6 +37,7 @@ int main(int argc, char *argv[])
     sliderender_t *render;
     int start_slide = 0;
     bbox_t region = {0,0, 1280, 960};
+    bounds_t screen;
     int n;
 
     if (argc > 1)
@@ -45,6 +48,14 @@ int main(int argc, char *argv[])
     {
         start_slide = atoi(argv[2]);
     }
+
+    if (screen_get_size(&screen))
+    {
+        printf("Screen initialisation failed\n");
+        exit(1);
+    }
+    region.x1 = screen.width;
+    region.y1 = screen.height;
 
     gcontext_initvdu(1);
 

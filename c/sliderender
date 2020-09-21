@@ -90,6 +90,12 @@ struct sliderender_s {
 static void sliderender_block(sliderender_t *render,
                               slideblock_t *block)
 {
+    int list_gap_top      = render->em.height / 4;
+    int list_gap_bottom   = render->em.height / 4;
+    int list_inset        = render->em.height / 2;
+    int item_inset        = render->em.height / 2;
+    int item_text_offset  = render->em.height;
+
     unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
     switch (block->blocktype)
     {
@@ -109,13 +115,13 @@ static void sliderender_block(sliderender_t *render,
             }
 
             /* Entering and leaving a list should insert somee extra space */
-            textblock_gap(render->textblock, render->em.height / 2, NULL);
+            textblock_gap(render->textblock, list_gap_top, NULL);
 
             /* Set up the indentation for the block */
             {
-                int indent = render->em.width / 2;
+                int indent = list_inset;
                 if (block->parent)
-                    indent += render->em.width * 1.5;
+                    indent += item_text_offset;
                 textblock_inset(render->textblock, indent, indent);
             }
             break;
@@ -124,14 +130,14 @@ static void sliderender_block(sliderender_t *render,
             if (block->index == -1)
             {
                 dprintf("  Item unordered\n");
-                textblock_inset(render->textblock, render->em.width * .5, render->em.width * .5);
+                textblock_inset(render->textblock, item_inset, item_inset);
                 textblock_add(render->textblock,
                               render->font_body,
                               // "\xb7",        // Latin-1 encoding of middot
                               "\xe2\x80\xa2",   // UTF-8 encoding of bullet
                               render->colour_bg, render->colour_fg,
                               flags);
-                textblock_inset(render->textblock, render->em.width, render->em.width);
+                textblock_inset(render->textblock, item_text_offset, item_text_offset);
             }
             else
             {
@@ -144,7 +150,8 @@ static void sliderender_block(sliderender_t *render,
                               render->colour_bg, render->colour_fg,
                               flags);
                 // Indent for the spans
-                textblock_inset(render->textblock, render->em.width * 1.5, render->em.width * 1.5);
+                textblock_inset(render->textblock, item_inset + item_text_offset,
+                                                   item_inset + item_text_offset);
             }
 
             break;
@@ -207,19 +214,20 @@ static void sliderender_block(sliderender_t *render,
         case sbt_list:
             /* We're now leaving the list */
             {
-                int indent = render->em.width / 2;
+                int indent = list_inset;
                 if (block->parent)
-                    indent += render->em.width * 1.5;
+                    indent += item_text_offset;
                 textblock_inset(render->textblock, -indent, -indent);
             }
 
-            /* Entering and leaving a list should insert somee extra space */
-            textblock_gap(render->textblock, render->em.height / 2, NULL);
+            /* Entering and leaving a list should insert some extra space */
+            textblock_gap(render->textblock, list_gap_bottom, NULL);
             break;
 
         case sbt_item:
             // Restore the indent as we leave the item
-            textblock_inset(render->textblock, -render->em.width * 1.5, -render->em.width * 1.5);
+            textblock_inset(render->textblock, -(item_inset + item_text_offset),
+                                               -(item_inset + item_text_offset));
             break;
     }
 

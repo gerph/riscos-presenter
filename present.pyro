@@ -6,7 +6,9 @@ config:
     graphicscairo.fonts_fontconfig: true
     graphicsui.title: "Gerph's RISC OS presentation"
     vdu.alphabet: UTF8
-    vdu.mode: 28
+    vdu.mode: 51
+    modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536"
+    kernel.reset_modechange: true
 
 modules:
   - ${ROMODULES}/FontMap,ffa
