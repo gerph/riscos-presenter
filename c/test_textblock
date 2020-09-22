@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     rect_outline(0x44440000, 64+16, ylimit,  640-16, ytexttop);
 
     textblock = textblock_create(64+16, ylimit,  640-16, ytexttop,
-                                 TBCREATE_DEFAULT_SPACING);
+                                 TBCREATE_SPACING_DEFAULT);
 
     f = text_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
     if (f == NULL)
@@ -42,6 +42,10 @@ int main(int argc, char *argv[])
     for (i=0; i < 2 ; i++)
     {
         unsigned long flags = (i==0) ? 0 : TBADD_PAINT;
+    /*
+        textblock_add(textblock, f, "Hello-there-this-is-a-test-of-the-text-block-system.",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+     */
         textblock_add(textblock, f, "Hello there this is a test of the text block system.",
                       0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
 

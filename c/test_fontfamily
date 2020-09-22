@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 #endif
 
     textblock = textblock_create(64+16, ylimit,  640-16, ytexttop,
-                                 TBCREATE_DEFAULT_SPACING);
+                                 TBCREATE_SPACING_DEFAULT);
 
     for (i=0; i < 2 ; i++)
     {
