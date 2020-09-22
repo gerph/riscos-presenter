@@ -33,6 +33,7 @@ struct textblock_s {
     int width, height;                  /* Implicit values, from the above */
 
     int xc, yc;                         /* Current offset within the region, for the top of the char, ie x0+xc, y1-yc */
+    int mark_xc, mark_yc;               /* Marker position for restoring state */
 
     /* User configurables */
     unsigned long line_spacing;         /* 16.16 scaling for the lines */
@@ -113,6 +114,11 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
             textblock->xc = textblock->yc = 0;
             break;
 
+        case TBCLEAR_TEXTMARK:
+            textblock->xc = textblock->mark_xc;
+            textblock->yc = textblock->mark_yc;
+            break;
+
         case TBCLEAR_TEXTNEWLINE:
             if (textblock->xc == 0)
             {
@@ -122,7 +128,7 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
             {
                 /* We're in the midst of a line, so we need to start a new one */
                 int line_spacing = textblock_linespacing(textblock);
-                dprintf("ascent/descent = %i\n", textblock->line_ascent, textblock->line_descent);
+                dprintf("ascent/descent = %i/%i\n", textblock->line_ascent, textblock->line_descent);
                 dprintf("Move to next line: spacing = %i\n", line_spacing);
                 textblock->xc = 0;
                 textblock->yc += line_spacing;
@@ -294,6 +300,19 @@ void textblock_covered(textblock_t textblock, bbox_t *bbox)
     bbox->y0 = textblock->cy0;
     bbox->x1 = textblock->cx1;
     bbox->y1 = textblock->cy1;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_mark
+ Description:   Mark a position, which we can return to later
+ Parameters:    textblock = the handle to work on
+ Returns:       none
+ ******************************************************************/
+void textblock_mark(textblock_t textblock)
+{
+    textblock->mark_xc = textblock->xc;
+    textblock->mark_yc = textblock->yc;
 }
 
 

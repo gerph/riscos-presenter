@@ -173,38 +173,50 @@ static void sliderender_block(sliderender_t *render,
     if (block->spans)
     {
         slidespan_t *span;
-        for (span = block->spans; span; span=span->next)
+        int span_pass;
+        textblock_mark(render->textblock);
+        for (span_pass = 0; span_pass < 2; span_pass++)
         {
-            int fontstyle = 0;
-            int fontflags = flags;
-            fontfamily_t family;
-            font_t font;
-            if (span->render.bold)
-                fontstyle |= FONTFAMILY_STYLE_BOLD;
-            if (span->render.italic)
-                fontstyle |= FONTFAMILY_STYLE_SLANT;
-            if (span->render.underline)
-                fontflags |= TBADD_UNDERLINE;
-            if (span->render.del)
-                fontflags |= TBADD_STRIKETHROUGH;
+            flags = (render->pass==0 || span_pass == 0) ? 0 : TBADD_PAINT;
 
-            if (span->render.code)
-                family = render->family_code;
-            else if (render->in_heading != -1)
-                family = render->family_heading[render->in_heading];
-            else
-                family = render->family_body;
+            for (span = block->spans; span; span=span->next)
+            {
+                int fontstyle = 0;
+                int fontflags = flags;
+                fontfamily_t family;
+                font_t font;
+                if (span->render.bold)
+                    fontstyle |= FONTFAMILY_STYLE_BOLD;
+                if (span->render.italic)
+                    fontstyle |= FONTFAMILY_STYLE_SLANT;
+                if (span->render.underline)
+                    fontflags |= TBADD_UNDERLINE;
+                if (span->render.del)
+                    fontflags |= TBADD_STRIKETHROUGH;
 
-            dprintf("Rendering with family %p\n", family);
-            font = fontfamily_get_font(family, fontstyle);
+                if (span->render.code)
+                    family = render->family_code;
+                else if (render->in_heading != -1)
+                    family = render->family_heading[render->in_heading];
+                else
+                    family = render->family_body;
 
-            dprintf("Text: (style=%i) %s\n", fontstyle, span->text);
-            textblock_add(render->textblock,
-                          font,
-                          span->text,
-                          render->colour_bg, render->colour_fg,
-                          fontflags);
+                dprintf("Rendering with family %p\n", family);
+                font = fontfamily_get_font(family, fontstyle);
+
+                dprintf("Text: (style=%i) %s\n", fontstyle, span->text);
+                textblock_add(render->textblock,
+                              font,
+                              span->text,
+                              render->colour_bg, render->colour_fg,
+                              fontflags);
+            }
+            if (span_pass == 0)
+            {
+                textblock_clear(render->textblock, TBCLEAR_TEXTMARK);
+            }
         }
+
 
         textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
     }
@@ -735,7 +747,7 @@ int sliderender_show(sliderender_t *render)
         /* FIXME: Make spacing a configurable */
         render->textblock = textblock_create(render->region.x0 + render->inset_x, render->region.y0 + render->inset_y,
                                              render->region.x1 - render->inset_x, render->region.y1 - render->inset_y,
-                                             TBCREATE_SPACING_150);
+                                             TBCREATE_SPACING_120);
     }
     else
     {
@@ -750,8 +762,6 @@ int sliderender_show(sliderender_t *render)
     rect_fill(render->colour_bg, render->region.x0, render->region.y0,
                                  render->region.x1, render->region.y1);
 
-    /* FIXME: BUG - this pass should be present on each BLOCK, not on the whole slide.
-              Otherwise we clear the sizings and end up with things not actually aligning to the baselines. */
     for (pass=0; pass<2; pass++)
     {
         slideblock_t *block;

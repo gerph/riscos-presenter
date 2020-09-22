@@ -12,14 +12,15 @@
 typedef struct textblock_s *textblock_t;
 
 /* How to create the block */
-#define TBCREATE_DEFAULT_SPACING (0x10000) /* 100% */
+#define TBCREATE_SPACING_DEFAULT (0x10000) /* 100% */
 #define TBCREATE_SPACING_120     (0x13333) /* 120% */
 #define TBCREATE_SPACING_150     (0x18000) /* 150% */
 
 /* How to clear the text block to a known state */
 #define TBCLEAR_TEXTMASK    (3ul<<0)    /* Clear the text to the top-left of the region */
 #define TBCLEAR_TEXTTOP     (1ul<<0)    /* Clear the text to the top-left of the region */
-#define TBCLEAR_TEXTNEWLINE (2ul<<0)    /* Clear the text for a new line (moves to the left of a new line) */
+#define TBCLEAR_TEXTMARK    (2ul<<0)    /* Clear the text to the marker point for the region */
+#define TBCLEAR_TEXTNEWLINE (3ul<<0)    /* Clear the text for a new line (moves to the left of a new line) */
 #define TBCLEAR_SIZING      (1ul<<2)    /* Clear the sizings, so we calculate line sizings afresh */
 #define TBCLEAR_INSET       (1ul<<3)    /* Clear the inset, so we're at the full width */
 #define TBCLEAR_COVERED     (1ul<<4)    /* Clear the covered bounds */
@@ -88,6 +89,15 @@ int textblock_add(textblock_t textblock, void *font,
  Returns:       none
  ******************************************************************/
 void textblock_covered(textblock_t textblock, bbox_t *bbox);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_mark
+ Description:   Mark a position, which we can return to later
+ Parameters:    textblock = the handle to work on
+ Returns:       none
+ ******************************************************************/
+void textblock_mark(textblock_t textblock);
 
 
 /*************************************************** Gerph *********
