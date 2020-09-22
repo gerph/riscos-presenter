@@ -5,13 +5,14 @@ COMPONENT  = Border
 TYPE       = aif
 INCLUDES   = 
 LIBS       = ${CLIB}
-CDEFINES   = -DTEST_BORDER
+CDEFINES   =
 OBJS       = \
              o.font \
              o.vdu5 \
              o.vdushape \
              o.gcontext \
-			 o.border
+			 o.border \
+			 o.test_border
 
 include LibraryCommand
 

@@ -32,6 +32,15 @@ typedef struct textblock_s *textblock_t;
 #define TBADD_STRIKETHROUGH (1ul<<1)    /* Whether we draw a strike through or not */
 #define TBADD_PAINT         (1ul<<16)   /* Whether we're painting, or just calculating the sizes */
 
+/* How to return the region */
+#define TBREGION_WHERE_WHOLE        (0ul<<0)    /* Return the whole region as supplied */
+#define TBREGION_WHERE_RENDERED     (1ul<<0)    /* Return the rendered region (the top) */
+#define TBREGION_WHERE_REMAINING    (2ul<<0)    /* Return the remaining region (below the rendered region) */
+#define TBREGION_WHERE_MASK         (3ul<<0)    /* Return the remaining region (below the rendered region) */
+#define TBREGION_INSET              (1ul<<2)    /* Apply the current inset */
+#define TBREGION_POSITION           (1ul<<3)    /* Apply the current x position */
+#define TBREGION_BASELINE           (1ul<<4)    /* Apply the current baseline offset to the position (where the next line will start) */
+
 
 /*************************************************** Gerph *********
  Function:      textblock_create
@@ -118,6 +127,18 @@ coords_t textblock_position(textblock_t textblock);
  Returns:       y-position suitable for a new text block
  ******************************************************************/
 int textblock_extent(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_region
+ Description:   Return the bounding box of the textblock, or the
+                remaining region.
+ Parameters:    textblock = the handle to work on
+                bbox-> the bbox to fill in
+                flags = TBREGION_* flags
+ Returns:       none
+ ******************************************************************/
+void textblock_region(textblock_t textblock, bbox_t *bbox, unsigned long flags);
 
 
 /*************************************************** Gerph *********

@@ -341,7 +341,63 @@ coords_t textblock_position(textblock_t textblock)
  ******************************************************************/
 int textblock_extent(textblock_t textblock)
 {
-    return textblock->y1 - textblock->yc - textblock->line_ascent;
+    if (textblock->xc == 0)
+        return textblock->y1 - textblock->yc;
+    else
+        return textblock->y1 - textblock->yc + textblock->line_ascent;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      textblock_region
+ Description:   Return the bounding box of the textblock, or the
+                remaining region.
+ Parameters:    textblock = the handle to work on
+                bbox-> the bbox to fill in
+                flags = TBREGION_* flags
+ Returns:       none
+ ******************************************************************/
+void textblock_region(textblock_t textblock, bbox_t *bbox, unsigned long flags)
+{
+    switch (flags & TBREGION_WHERE_MASK)
+    {
+        default:
+        case TBREGION_WHERE_WHOLE:
+            bbox->x0 = textblock->x0;
+            bbox->y0 = textblock->y0;
+            bbox->x1 = textblock->x1;
+            bbox->y1 = textblock->y1;
+            break;
+
+        case TBREGION_WHERE_REMAINING:
+            bbox->x0 = textblock->x0;
+            bbox->y0 = textblock->y0;
+            bbox->x1 = textblock->x1;
+            bbox->y1 = textblock->y1 - textblock->yc;
+            break;
+
+        case TBREGION_WHERE_RENDERED:
+            bbox->x0 = textblock->x0;
+            bbox->y0 = textblock->y1 - textblock->yc;
+            bbox->x1 = textblock->x1;
+            bbox->y1 = textblock->y1;
+            if (textblock->xc)
+                bbox->y0 -= textblock->line_ascent + textblock->line_descent;
+            break;
+    }
+    if (flags & TBREGION_INSET)
+    {
+        bbox->x0 += textblock->inset_left;
+        bbox->x1 -= textblock->inset_right;
+    }
+    if (flags & TBREGION_POSITION)
+    {
+        bbox->x0 += textblock->xc;
+    }
+    if (flags & TBREGION_BASELINE)
+    {
+        bbox->y1 -= textblock->line_ascent;
+    }
 }
 
 

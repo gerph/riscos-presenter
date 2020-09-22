@@ -12,7 +12,7 @@
 #include "border.h"
 
 /* Define this to debug this file */
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define dprintf if (1) _swix(0x104,0), printf
@@ -359,21 +359,3 @@ void border_drawsimple(bordertype_t type, int size,
   edges.top = edges.left = edges.right = edges.bottom = size;
   border_draw(type,&edges,x,y,width,height,face,opp);
 }
-
-#ifdef TEST_BORDER
-int main(void)
-{
-  int i=0;
-  gcontext_initvdu(1);
-
-  for (i=0; i<8; i++)
-  {
-    int x = 128 + (i % 3) * 320;
-    int y = 900 - (i / 3) * 320;
-    /* border_drawsimple(i, 16, x,y, 256, 256, 0x0, COLOUR_NONE); */
-    /* border_drawsimple(i, 16, x,y, 256, 256, 0x80808000, COLOUR_NONE); */
-    border_drawsimple(i, 16, x,y, 256, 256, COLOUR_RGB(0,255,0), COLOUR_RGB(255,0,0));
-  }
-  getchar();
-}
-#endif

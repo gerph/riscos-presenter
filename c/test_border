@@ -1,0 +1,21 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "gcontext.h"
+#include "border.h"
+
+int main(void)
+{
+  int i=0;
+  gcontext_initvdu(1);
+
+  for (i=0; i<8; i++)
+  {
+    int x = 128 + (i % 3) * 320;
+    int y = 900 - (i / 3) * 320;
+    /* border_drawsimple(i, 16, x,y, 256, 256, 0x0, COLOUR_NONE); */
+    /* border_drawsimple(i, 16, x,y, 256, 256, 0x80808000, COLOUR_NONE); */
+    border_drawsimple(i, 16, x,y, 256, 256, COLOUR_RGB(0,255,0), COLOUR_RGB(255,0,0));
+  }
+  getchar();
+}
