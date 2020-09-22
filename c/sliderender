@@ -70,7 +70,20 @@ struct sliderender_s {
     fontfamily_t family_heading[MAXHEADING];
     fontfamily_t family_body;
     fontfamily_t family_code;
+
+    /* Size configurations for the slide */
     int inset_x, inset_y;
+
+    /* Configurations for blocks */
+    int list_gap_top;
+    int list_gap_bottom;
+    int list_inset;
+    int item_inset;
+    int item_text_offset;
+    int pre_inset;
+    int pre_border_type;
+    int pre_border_size;
+    int pre_padding;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -91,17 +104,6 @@ struct sliderender_s {
 static void sliderender_block(sliderender_t *render,
                               slideblock_t *block)
 {
-    int list_gap_top      = render->em.height / 4;
-    int list_gap_bottom   = render->em.height / 4;
-    int list_inset        = render->em.width / 2;
-    int item_inset        = render->em.width / 2;
-    int item_text_offset  = render->em.width;
-    int pre_inset         = render->em.width;
-    int pre_border_type   = 0;
-    int pre_border_size   = 16;
-    int pre_padding       = 16;
-
-
     unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
     switch (block->blocktype)
     {
@@ -121,13 +123,13 @@ static void sliderender_block(sliderender_t *render,
             }
 
             /* Entering and leaving a list should insert somee extra space */
-            textblock_gap(render->textblock, list_gap_top, NULL);
+            textblock_gap(render->textblock, render->list_gap_top, NULL);
 
             /* Set up the indentation for the block */
             {
-                int indent = list_inset;
+                int indent = render->list_inset;
                 if (block->parent)
-                    indent += item_text_offset;
+                    indent += render->item_text_offset;
                 textblock_inset(render->textblock, indent, indent);
             }
             break;
@@ -136,14 +138,14 @@ static void sliderender_block(sliderender_t *render,
             if (block->index == -1)
             {
                 dprintf("  Item unordered\n");
-                textblock_inset(render->textblock, item_inset, item_inset);
+                textblock_inset(render->textblock, render->item_inset, render->item_inset);
                 textblock_add(render->textblock,
                               render->font_body,
                               // "\xb7",        // Latin-1 encoding of middot
                               "\xe2\x80\xa2",   // UTF-8 encoding of bullet
                               render->colour_bg, render->colour_fg,
                               flags);
-                textblock_inset(render->textblock, item_text_offset, item_text_offset);
+                textblock_inset(render->textblock, render->item_text_offset, render->item_text_offset);
             }
             else
             {
@@ -156,14 +158,14 @@ static void sliderender_block(sliderender_t *render,
                               render->colour_bg, render->colour_fg,
                               flags);
                 // Indent for the spans
-                textblock_inset(render->textblock, item_inset + item_text_offset,
-                                                   item_inset + item_text_offset);
+                textblock_inset(render->textblock, render->item_inset + render->item_text_offset,
+                                                   render->item_inset + render->item_text_offset);
             }
 
             break;
 
         case sbt_pre:
-            textblock_inset(render->textblock, pre_inset, pre_inset);
+            textblock_inset(render->textblock, render->pre_inset, render->pre_inset);
             render->in_pre = 1;
             break;
     }
@@ -196,17 +198,16 @@ static void sliderender_block(sliderender_t *render,
                 if (render->pass && span_pass)
                 {
                     /* Draw a background on the region */
-                    int x0,y0,x1,y1;
                     bbox_t top;
                     textblock_region(render->textblock, &top, TBREGION_WHERE_REMAINING | TBREGION_INSET);
 
-                    border_drawsimple(pre_border_type, pre_border_size,
+                    border_drawsimple(render->pre_border_type, render->pre_border_size,
                                       top.x0, top.y1, top.x1-top.x0, top.y1 - extent.y1,
                                       COLOUR_RGB(0,255,0), COLOUR_RGB(255,0,0));
                 }
-                textblock_gap(render->textblock, pre_border_size + pre_padding, NULL);
-                textblock_inset(render->textblock, (pre_border_size + pre_padding),
-                                                   (pre_border_size + pre_padding));
+                textblock_gap(render->textblock, render->pre_border_size + render->pre_padding, NULL);
+                textblock_inset(render->textblock, (render->pre_border_size + render->pre_padding),
+                                                   (render->pre_border_size + render->pre_padding));
             }
 
             for (span = block->spans; span; span=span->next)
@@ -244,9 +245,9 @@ static void sliderender_block(sliderender_t *render,
 
             if (render->in_pre)
             {
-                textblock_inset(render->textblock, -(pre_border_size + pre_padding),
-                                                   -(pre_border_size + pre_padding));
-                textblock_gap(render->textblock, pre_border_size + pre_padding, NULL);
+                textblock_inset(render->textblock, -(render->pre_border_size + render->pre_padding),
+                                                   -(render->pre_border_size + render->pre_padding));
+                textblock_gap(render->textblock, render->pre_border_size + render->pre_padding, NULL);
             }
 
             textblock_region(render->textblock, &extent, TBREGION_WHERE_REMAINING | TBREGION_INSET);
@@ -265,24 +266,24 @@ static void sliderender_block(sliderender_t *render,
         case sbt_list:
             /* We're now leaving the list */
             {
-                int indent = list_inset;
+                int indent = render->list_inset;
                 if (block->parent)
-                    indent += item_text_offset;
+                    indent += render->item_text_offset;
                 textblock_inset(render->textblock, -indent, -indent);
             }
 
             /* Entering and leaving a list should insert some extra space */
-            textblock_gap(render->textblock, list_gap_bottom, NULL);
+            textblock_gap(render->textblock, render->list_gap_bottom, NULL);
             break;
 
         case sbt_item:
             // Restore the indent as we leave the item
-            textblock_inset(render->textblock, -(item_inset + item_text_offset),
-                                               -(item_inset + item_text_offset));
+            textblock_inset(render->textblock, -(render->item_inset + render->item_text_offset),
+                                               -(render->item_inset + render->item_text_offset));
             break;
 
         case sbt_pre:
-            textblock_inset(render->textblock, -pre_inset, -pre_inset);
+            textblock_inset(render->textblock, -render->pre_inset, -render->pre_inset);
             render->in_pre = 0;
             break;
     }
@@ -753,6 +754,18 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
 
         render->inset_x = inset_x;
         render->inset_y = inset_y;
+
+        /* Size of list items */
+        render->list_gap_top      = render->em.height / 4;
+        render->list_gap_bottom   = render->em.height / 4;
+        render->list_inset        = render->em.width / 2;
+        render->item_inset        = render->em.width / 2;
+        render->item_text_offset  = render->em.width;
+        render->pre_inset         = render->em.width;
+        render->pre_border_type   = 0;
+        render->pre_border_size   = 16;
+        render->pre_padding       = 16;
+
         dprintf("inset = %i, %i\n", inset_x, inset_y);
     }
 
