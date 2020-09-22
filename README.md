@@ -18,7 +18,24 @@ followed by properties which should be applied to this (and subsequent) slides. 
     * `code`
 * `vertical-align`: Alignment of the slide content, which may take the value `top`, `middle`, or `bottom`.
 * `padding`/`padding-horizontal`/`padding-vertical`: Defines the size of the slide padding. Sizes can be in the form of `#pt`, `#pc`, `#px`, `#in`, `#cm`, `#em` (where `em` is of the base font).
-
+* `list.padding.top`/`list.padding.bottom`: Defines the space around lists (sizes described as above)
+* `item.padding.inset`: Defines the inset horizontally of each list item's text (or bullet).
+* `item.padding.offset`: Defines the offset horizontally from the inset point to the text of the item's body.
+* `pre.padding.inset`: Defines the inset horizontally that the preformatted text blocks use
+* `pre.padding.inside`: Defines the space between the border and the content of the preformatted text.
+* `pre.border.width`: Defines the width of the border around preformatted text.
+* `pre.border.type`: Defines the type of border placed around the preformatted region, which can take the following values:
+    * `none`: No border.
+    * `solid`: Single colour, solid border.
+    * `double`: Two borders, each with width 1/3 of the set width.
+    * `inset`: A 3D effect, sunk into the region (light top left).
+    * `outset`: A 3D effect, raised from the region (light top left).
+    * `ridge`: A 3D effect, a ridge around the region (light top left).
+    * `groove`: A 3D effect, a sunken groove around the region (light top left).
+* `pre.border.background-colour`: Defines the colour of the background, or `none` to not use any
+* `pre.border.colour`: Defines the colour of the border, or `none` to not use any
+* `pre.border.fore-colour`: Defines the colour of the 3D effect fore colour, or `none` to not use any
+* `pre.border.opposite-colour`: Defines the colour of the 3D effect opposite colour, or `none` to not use any
 
 ### Supported markdown
 

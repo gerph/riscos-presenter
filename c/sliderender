@@ -19,6 +19,7 @@
 #include "slidedeck_debug.h"
 #include "sliderender.h"
 #include "colours.h"
+#include "border.h"
 
 
 /* Define this to debug this file */
@@ -84,6 +85,9 @@ struct sliderender_s {
     int pre_border_type;
     int pre_border_size;
     int pre_padding;
+    rgb_t pre_fill;
+    rgb_t pre_border_fore;
+    rgb_t pre_border_opp;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -199,11 +203,25 @@ static void sliderender_block(sliderender_t *render,
                 {
                     /* Draw a background on the region */
                     bbox_t top;
+                    rgb_t colour_fore = render->pre_border_fore;
+                    rgb_t colour_opp = render->pre_border_opp;
                     textblock_region(render->textblock, &top, TBREGION_WHERE_REMAINING | TBREGION_INSET);
+
+                    if (render->pre_fill != COLOUR_NONE)
+                    {
+                        rect_fill(render->pre_fill, top.x0, top.y1,
+                                                    top.x1, extent.y1);
+                    }
+
+                    if (colour_fore == COLOUR_NONE &&
+                        colour_opp == COLOUR_NONE)
+                    {
+                        colour_fore = render->pre_fill; /* Use the automatic selection, based on fill */
+                    }
 
                     border_drawsimple(render->pre_border_type, render->pre_border_size,
                                       top.x0, top.y1, top.x1-top.x0, top.y1 - extent.y1,
-                                      COLOUR_RGB(0,255,0), COLOUR_RGB(255,0,0));
+                                      colour_fore, colour_opp);
                 }
                 textblock_gap(render->textblock, render->pre_border_size + render->pre_padding, NULL);
                 textblock_inset(render->textblock, (render->pre_border_size + render->pre_padding),
@@ -662,6 +680,100 @@ sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *re
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_slide_property_osunit
+ Description:   Read the property for a given slide as OS Units
+ Parameters:    render-> the render block to read
+                property-> the name of the property
+                default_size = the default size specification as a string
+                is_x = non-0 if this is an x coordinate,
+                       if is it's a y coordinate
+ Returns:       size in os units
+ ******************************************************************/
+static int sliderender_slide_property_osunit(sliderender_t *render, const char *property,
+                                             const char *default_size, int is_x)
+{
+    const char *value;
+    int size;
+
+    value = slide_getproperty(render->slide, property, default_size);
+    size = sliderender_ossize(render, value, is_x);
+
+    return size;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_slide_property_border
+ Description:   Read the property for a given slide as a border type
+ Parameters:    render-> the render block to read
+                property-> the name of the property
+                default_type = the default border specification as a string
+ Returns:       border type number, or 0 if unrecognised
+ ******************************************************************/
+static int sliderender_slide_property_border(sliderender_t *render, const char *property,
+                                             const char *default_border)
+{
+    static const char *border_type_names[] = {
+            "none",
+            "solid",
+            "double",
+            "sunk",
+            "raised",
+            "ridge",
+            "groove",
+        };
+#define BORDER_TYPE_COUNT (sizeof(border_type_names) / sizeof(border_type_names[0]))
+    const char *value;
+    int type;
+
+    value = slide_getproperty(render->slide, property, default_border);
+
+    for (type=0; type < BORDER_TYPE_COUNT; type++)
+    {
+        if (strcmp(border_type_names[type], value) == 0)
+        {
+            return type;
+        }
+    }
+
+    /* Unrecognised types */
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_slide_property_rgb
+ Description:   Read the property for a given slide as a colour
+ Parameters:    render-> the render block to read
+                property-> the name of the property
+                default_colour = the default colour as an RGB value
+                allow_none = 1 if 'none' should be allowed
+ Returns:       rgb_t colour value
+ ******************************************************************/
+static int sliderender_slide_property_rgb(sliderender_t *render,
+                                          const char *property,
+                                          rgb_t default_colour,
+                                          int allow_none)
+{
+    const char *value;
+    rgb_t colour = default_colour;
+    value = slide_getproperty(render->slide, property, NULL);
+    if (value)
+    {
+        if (allow_none)
+        {
+            if (strcmp(value, "none")==0)
+                return COLOUR_NONE;
+        }
+        colour = colours_parse(value, -1);
+        if (colour == -1)
+            colour = default_colour;
+    }
+    return colour;
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_set_slide
  Description:   Select the slide number that we are going to render
  Parameters:    render-> the render block
@@ -739,11 +851,8 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         }
         else
         {
-            padding = slide_getproperty(render->slide, "padding-horizontal", "16px");
-            inset_x = sliderender_ossize(render, padding, 1);
-
-            padding = slide_getproperty(render->slide, "padding-vertical", "16px");
-            inset_y = sliderender_ossize(render, padding, 0);
+            inset_x = sliderender_slide_property_osunit(render, "padding-horizontal", "16px", 1);
+            inset_y = sliderender_slide_property_osunit(render, "padding-vertical", "16px", 0);
         }
 
         /* FIXME: For now just ignore any invalid values */
@@ -756,15 +865,19 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->inset_y = inset_y;
 
         /* Size of list items */
-        render->list_gap_top      = render->em.height / 4;
-        render->list_gap_bottom   = render->em.height / 4;
-        render->list_inset        = render->em.width / 2;
-        render->item_inset        = render->em.width / 2;
-        render->item_text_offset  = render->em.width;
-        render->pre_inset         = render->em.width;
-        render->pre_border_type   = 0;
-        render->pre_border_size   = 16;
-        render->pre_padding       = 16;
+        render->list_gap_top      = sliderender_slide_property_osunit(render, "list.padding.top", "0.25em", 0);
+        render->list_gap_bottom   = sliderender_slide_property_osunit(render, "list.padding.bottom", "0.25em", 0);
+        render->list_inset        = sliderender_slide_property_osunit(render, "list.padding.inset", "0.5em", 1);
+        render->item_inset        = sliderender_slide_property_osunit(render, "item.padding.inset", "0.5em", 1);
+        render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", 1);
+        render->pre_inset         = sliderender_slide_property_osunit(render, "pre.padding.inset", "1em", 1);
+        render->pre_border_type   = sliderender_slide_property_border(render, "pre.border.type", "none");
+        render->pre_border_size   = sliderender_slide_property_osunit(render, "pre.border.width", "2px", 1);
+        render->pre_padding       = sliderender_slide_property_osunit(render, "pre.padding", "0.25em", 1);
+        render->pre_fill          = sliderender_slide_property_rgb(render, "pre.background-colour", COLOUR_NONE, 1);
+        render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.colour", COLOUR_NONE, 1);
+        render->pre_border_opp    = sliderender_slide_property_rgb(render, "pre.border.opposite-colour", render->pre_border_fore, 1);
+        render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.fore-colour", render->pre_border_fore, 1);
 
         dprintf("inset = %i, %i\n", inset_x, inset_y);
     }
