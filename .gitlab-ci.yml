@@ -1,0 +1,63 @@
+# Definition for CI within GitLab
+# Note:
+#    Prefix any job name with a '.' to disable.
+#
+
+
+# Enable submodules
+variables:
+  GIT_STRATEGY: clone
+  GIT_SUBMODULE_STRATEGY: none
+
+# Common definitions for the jobs
+.common: &common
+  artifacts:
+    when: always
+    paths:
+      - artifacts
+  dependencies: []
+
+
+#### Builds ####
+build-riscos:
+  <<: *common
+  stage: build
+  script:
+    - "#riscos-amu -f Makefile install BUILD32=1 INSTDIR=artifacts"
+    - mkdir artifacts
+    - "# we don't have make, so we cannot use the central makefile"
+    - riscos-amu -f MakefileGContext,fe1 BUILD32=1
+    - riscos-amu -f MakefileBorder,fe1 BUILD32=1
+    - riscos-amu -f MakefileTextBlock,fe1 BUILD32=1
+    - riscos-amu -f MakefileFontFamily,fe1 BUILD32=1
+    - riscos-amu -f MakefileSlidedeck,fe1 BUILD32=1
+    - riscos-amu -f MakefileMD,fe1 BUILD32=1
+    - riscos-amu -f MakefileSlideMD,fe1 BUILD32=1
+    - riscos-amu -f MakefileSlideRender,fe1 BUILD32=1
+    - cp aif32 artifacts
+  tags:
+    - riscos
+
+
+#### Deploy ####
+.deploy:
+  stage: deploy
+  before_script:
+    - git submodule sync ci
+    - git submodule update --init ci
+  script:
+    - eval $(ci/ci-vars)
+    - echo "Building zip for $CI_PROJECT_NAME version $CI_BRANCH_VERSION."
+    - ZIP="${CI_PROJECT_NAME}-${CI_BRANCH_VERSION}.zip"
+    - (cd artifacts && zip -9r ../"${ZIP}" *)
+    - sshpass -p "$SFTP_PASSWORD" sftp -o "StrictHostKeyChecking=no" "$SFTP_USERNAME@$SFTP_HOSTNAME" < <(echo put ${ZIP} ${CI_PROJECT_NAME}/${ZIP})
+  tags:
+    - riscos
+  dependencies:
+    - build-riscos
+
+
+#### Stages to execute ####
+stages:
+  - build
+#  - deploy
