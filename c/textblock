@@ -99,6 +99,21 @@ void textblock_destroy(textblock_t textblock)
 
 
 /*************************************************** Gerph *********
+ Function:      textblock_newline
+ Description:   Explicitly move to a new line.
+ Parameters:    textblock = the handle to work on
+ Returns:       none
+ ******************************************************************/
+void textblock_newline(textblock_t textblock)
+{
+    int line_spacing = textblock_linespacing(textblock);
+    textblock->xc = 0;
+    if (textblock->yc + line_spacing < textblock->height)
+        textblock->yc += line_spacing;
+}
+
+
+/*************************************************** Gerph *********
  Function:      textblock_clear
  Description:   Clear the text block, resetting the block to the top
                 left corner.
@@ -131,7 +146,8 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
                 dprintf("ascent/descent = %i/%i\n", textblock->line_ascent, textblock->line_descent);
                 dprintf("Move to next line: spacing = %i\n", line_spacing);
                 textblock->xc = 0;
-                textblock->yc += line_spacing;
+                if (textblock->yc + line_spacing < textblock->height)
+                    textblock->yc += line_spacing;
             }
             break;
     }

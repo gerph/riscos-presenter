@@ -234,6 +234,15 @@ static void sliderender_block(sliderender_t *render,
                 int fontflags = flags;
                 fontfamily_t family;
                 font_t font;
+
+                if (render->in_pre &&
+                    strcmp(span->text, "\n")==0)
+                {
+                    /* Special case of a plain newline as the only part of the span - means an actual newline */
+                    textblock_newline(render->textblock);
+                    continue;
+                }
+
                 if (span->render.bold)
                     fontstyle |= FONTFAMILY_STYLE_BOLD;
                 if (span->render.italic)
@@ -274,7 +283,6 @@ static void sliderender_block(sliderender_t *render,
                 textblock_clear(render->textblock, TBCLEAR_TEXTMARK);
             }
         }
-
 
         textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
     }

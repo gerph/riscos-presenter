@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
         textblock_add(textblock, f2, "Here's some more text",
                       0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
 
+        textblock_add(textblock, f2, "\n",
+                      0x4444FF00, 0xFFFFFF00, flags | TBADD_UNDERLINE);
+
         textblock_add(textblock, f2, "strike",
                       0x4444FF00, 0xFFFFFF00, flags | TBADD_STRIKETHROUGH);
 

@@ -63,6 +63,15 @@ void textblock_destroy(textblock_t textblock);
 
 
 /*************************************************** Gerph *********
+ Function:      textblock_newline
+ Description:   Explicitly move to a new line.
+ Parameters:    textblock = the handle to work on
+ Returns:       none
+ ******************************************************************/
+void textblock_newline(textblock_t textblock);
+
+
+/*************************************************** Gerph *********
  Function:      textblock_clear
  Description:   Clear the text block, resetting the block to the top
                 left corner.
