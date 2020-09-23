@@ -1,0 +1,44 @@
+/*******************************************************************
+ * File:        image
+ * Purpose:     Image rendering and management functions
+ * Author:      Gerph
+ * Date:        23 Sep 2020
+ ******************************************************************/
+
+#ifndef IMAGE_H
+#define IMAGE_H
+
+
+typedef struct image_s image_t;
+
+
+/*************************************************** Gerph *********
+ Function:      image_create
+ Description:   Create a new holder for image data
+ Parameters:    name-> the name of the image
+ Returns:       image_t pointer, or NULL if failed to create
+ ******************************************************************/
+image_t *image_create(const char *name);
+
+
+/*************************************************** Gerph *********
+ Function:      image_loadfile
+ Description:   Load a file into the image block
+ Parameters:    image-> the image to populate
+                filename-> the filename to load
+ Returns:       1 if failed, or 0 if successful
+ ******************************************************************/
+int image_loadfile(image_t *image, const char *filename);
+
+
+/*************************************************** Gerph *********
+ Function:      image_render_tofit
+ Description:   Given a bounding box, put the image in it
+ Parameters:    image-> the image to draw
+                bbox-> the box to put the image within
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int image_render_tofit(image_t *image, bbox_t *bbox);
+
+
+#endif

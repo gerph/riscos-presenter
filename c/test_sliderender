@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     gcontext_initvdu(1);
 
-    mddata = file_read(in_filename);
+    mddata = file_read_string(in_filename);
     assert(mddata);
 
     printf("---- MD parsing ----\n");

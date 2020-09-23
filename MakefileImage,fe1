@@ -1,0 +1,18 @@
+# Build the test code
+
+COMPONENT  = Image
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.font \
+             o.vdu5 \
+             o.vdushape \
+             o.gcontext \
+             o.image \
+             o.str \
+             o.file \
+             o.test_image
+
+include LibraryCommand

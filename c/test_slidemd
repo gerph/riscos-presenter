@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     const char *mddata;
     slidedeck_t *deck;
 
-    mddata = file_read(in_filename);
+    mddata = file_read_string(in_filename);
     assert(mddata);
 
     printf("---- MD parsing ----\n");

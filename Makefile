@@ -4,6 +4,7 @@
 all:
 	riscos-amu -f MakefileGContext,fe1 BUILD32=1
 	riscos-amu -f MakefileColours,fe1 BUILD32=1
+	riscos-amu -f MakefileImage,fe1 BUILD32=1
 	riscos-amu -f MakefileScreen,fe1 BUILD32=1
 	riscos-amu -f MakefileBorder,fe1 BUILD32=1
 	riscos-amu -f MakefileMD,fe1 BUILD32=1

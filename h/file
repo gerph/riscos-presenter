@@ -8,12 +8,30 @@
 #ifndef FILE_H
 #define FILE_H
 
+typedef struct filedata_s {
+    char *data;
+    int datalen;
+    int filetype;
+} filedata_t;
+
+
 /*************************************************** Gerph *********
- Function:      file_read
- Description:   Read the contents of a file into a block.
+ Function:      file_read_string
+ Description:   Read the contents of a file into a block, 0-terminated
  Parameters:    filename-> the file to read
  Returns:       pointer to the file content
  ******************************************************************/
-const char *file_read(const char *filename);
+const char *file_read_string(const char *filename);
+
+
+/*************************************************** Gerph *********
+ Function:      file_read_data
+ Description:   Read the file into an allocated block, and return its details
+ Parameters:    filename-> the file to load
+                filedata-> where to put the information about what we loaded
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int file_read_data(const char *filename, filedata_t *filedata);
+
 
 #endif

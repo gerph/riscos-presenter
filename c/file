@@ -7,16 +7,29 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "swis.h"
 
 #include "file.h"
 
+
+/* Define this to debug this file */
+//#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
 /*************************************************** Gerph *********
- Function:      file_read
- Description:   Read the contents of a file into a block.
+ Function:      file_read_string
+ Description:   Read the contents of a file into a block, 0-terminated
  Parameters:    filename-> the file to read
  Returns:       pointer to the file content
  ******************************************************************/
-const char *file_read(const char *filename)
+const char *file_read_string(const char *filename)
 {
     char *content;
     long size;
@@ -40,3 +53,44 @@ const char *file_read(const char *filename)
     content[size] = '\0';
     return content;
 }
+
+
+/*************************************************** Gerph *********
+ Function:      file_read_data
+ Description:   Read the file into an allocated block, and return its details
+ Parameters:    filename-> the file to load
+                filedata-> where to put the information about what we loaded
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int file_read_data(const char *filename, filedata_t *filedata)
+{
+    dprintf("file_readdata: %s\n", filename);
+
+    dprintf("About to load\n");
+    {
+        int type, filetype, length;
+        if (_swix(OS_File, _INR(0,1)|_OUT(0)|_OUT(4)|_OUT(6),
+                           23, filename, &type, &length, &filetype) || type!=1)
+        {
+            dprintf("Error loading file\n");
+            return 1;
+        }
+        filedata->data = malloc(length);
+        if (filedata->data == NULL)
+            return 1;
+
+        if (_swix(OS_File, _INR(0,3),
+                           255, filename, filedata->data, 0))
+        {
+            free(filedata->data);
+            filedata->data = NULL;
+            return 1;
+        }
+
+        filedata->filetype = filetype;
+        filedata->datalen = length;
+    }
+    return 0;
+}
+
+
