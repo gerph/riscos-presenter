@@ -1,12 +1,22 @@
 background-colour: white
 foreground-colour: black
+padding: 1em
 body.font: Optima.Regular
-body.size: 14pt
+body.size: 24pt
+code.size: 0.9em
+code.bold.italic.font: Candara.Bold
 h1.font: Optima.Bold
-h1.size: 32pt
+h1.size: 58pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: middle
+padding: 2em
+pre.padding: 0.5em
+pre.border.type: solid
+pre.border.width: 2px
+pre.border.colour: slategray
+pre.background-colour: gainsboro
+
 
 # Building for RISC OS, Online
 ## and what makes it tick
@@ -18,21 +28,22 @@ Gerph, November 2020
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 
 # 0. Introduction
 
 
 November
+
 2020
 
 ---
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # Introduction
@@ -55,11 +66,10 @@ vertical-align: top
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
 # 1. Background
-
 
 March
 
@@ -69,9 +79,9 @@ March
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # Background
@@ -117,8 +127,9 @@ vertical-align: top
 
 * Source control:
   * Move things to Git, because CVS is so very painful.
-  * Tech: Gitlab, running on my linux server - it's publicly accessible, but most of the 1100-odd projects are private.
   * \<picture / link>
+
+***`Tech`***: Gitlab, running on my linux server - it's publicly accessible, but most of the 1100-odd projects are private.
 
 ---
 # Background
@@ -126,7 +137,8 @@ vertical-align: top
 
 * Cross compiling:
   * Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
-  * Tech: Port the toolchain to 64bit Linux and to 64bit macOS.
+
+***`Tech`***: Port the toolchain to 64bit Linux and to 64bit macOS.
 
 ---
 # Background
@@ -134,9 +146,9 @@ vertical-align: top
 
 * Managed environments:
   * How do I get my toolchain? find my libraries? store built components?
-  * Tech: Artifactory for artifacts, and created some tools for pushing and pulling resources.
+  * ***`Tech`***: Artifactory for artifacts, and created some tools for pushing and pulling resources.
 * Automation:
-  * Tech: GitLab CI triggers on every change - pulls resources from Artifactory, builds, pushes result to Artifactory.
+  * ***`Tech`***: GitLab CI triggers on every change - pulls resources from Artifactory, builds, pushes result to Artifactory.
   * \<put a diagram here>
 
 ---
@@ -145,7 +157,7 @@ vertical-align: top
 
 * Managed environments: \(cont'd\)
   * What if I don't want to download my toolchain all the time?
-  * Tech: Docker RISC OS development environment.
+  * ***`Tech`***: Docker RISC OS development environment.
   * \<picture / demo>
 
 ---
@@ -154,13 +166,14 @@ vertical-align: top
 
 * Feature and regression testing:
   * I need a way to test things…
-  * Tech: … we'll come to that later …
+
+***`Tech`***: … we'll come to that later …
 
 ---
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
 # 2. JFPatch-as-a-service
@@ -174,9 +187,9 @@ March
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # JFPatch-as-a-Service
@@ -184,7 +197,7 @@ vertical-align: top
 
 * A friend said to me…
   * “I can't wait until you csa.announce \<this> and confuse the bejesus out of the RISC OS civilians.”
-* To which the answer was…
+* To which my answer was…
   * “JFPatch as a service would be a doddle to do right now. A service that nobody asked for, or needed.”
 
 ---
@@ -207,7 +220,7 @@ vertical-align: top
 * BASIC assembler
 * Objasm assembler.
 
-Tech: They're all built for 32bit RISC OS, automatically taken from Artifactory.
+***`Tech`***: They're all built for 32bit RISC OS, automatically taken from Artifactory.
 
 ---
 # JFPatch-as-a-Service
@@ -235,7 +248,7 @@ About robuild-client. FIXME
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
 # 3. How The Service Works
@@ -248,9 +261,9 @@ March
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # How The Service Works
@@ -259,7 +272,8 @@ vertical-align: top
 * Takes its inspiration from Matthew Godbolt's Compiler explorer.
 * \<website image / demo?>
 * \<architecture diagram>
-* Tech:
+
+***`Tech`***:
   * Infrastructure - AWS SSL, routing and linux server.
   * Front End - Static site, using custom CodeMirror colouring, websockets to talk to back end
   * Back End - Python REST JSON API and WebSockets service
@@ -273,18 +287,18 @@ vertical-align: top
 # How The Service Works
 ## Wait what?
 
-* “ Wait, RISC OS is running in Docker?
-* But Docker runs on Linux?
-* You're running RISC OS on Linux then? ”
+> “ Wait, RISC OS is running in Docker?\
+But Docker runs on Linux?\
+You're running RISC OS on Linux then? ”
 
 ---
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
-# 
+# ...
 
 June
 
@@ -302,9 +316,9 @@ June
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # RISC OS Pyromaniac
@@ -355,7 +369,7 @@ vertical-align: top
 * A reimplementation, which uses none of the code that went before.
 * Focused on being able to test software and diagnose issues more easily.
 
-Tech: RISC OS Pyromaniac, able to run programs on other systems\!
+***`Tech`***: RISC OS Pyromaniac, able to run programs on other systems\!
 
 ---
 # RISC OS Pyromaniac
@@ -376,6 +390,18 @@ Tech: RISC OS Pyromaniac, able to run programs on other systems\!
 ---
 # RISC OS Pyromaniac
 ## Graphics demo\!
+
+---
+# RISC OS Pyromaniac
+## Graphics demo\! (presentation)
+
+***`Tech`***:
+
+* Slide presentation system
+* Markdown parser
+* FontMap for font remappings.
+* WebColours module for colour parsing.
+* ImageFileRender for general image rendering, DrawFile for vectors
 
 ---
 # RISC OS Pyromaniac
@@ -401,13 +427,29 @@ Tech: RISC OS Pyromaniac, able to run programs on other systems\!
 
 ---
 # RISC OS Pyromaniac
+## How do you use it?
+
+* Command line:
+
+```
+charles@laputa ~/projects/RO/pyromaniac> ./pyro.py --load-internal-modules --command 'gos'
+Supervisor
+
+*fx0
+
+Error: RISC OS 7.14 (02 Aug 2020) [Pyromaniac 0.14 on Darwin/x86_64] (Error number &f7)
+*quit
+```
+
+---
+# RISC OS Pyromaniac
 ## Configuration
 
 * RISC OS Pyromaniac is highly configurable - over 240 directly configurable options, in 59 groups.
 * Configuration can be on the command line or in configuration files.
 * Example:
-  * `./pyro.py --config modules.rominit\_noisy=true --load-internal-modules --command gos`
-  * `./pyro.py --config memorymap.rom\_base=90000000 --load-internal-modules --command modules`
+  * `./pyro.py --config modules.rominit_noisy=true --load-internal-modules --command gos`
+  * `./pyro.py --config memorymap.rom_base=90000000 --load-internal-modules --command modules`
 
 ---
 # RISC OS Pyromaniac
@@ -415,22 +457,23 @@ Tech: RISC OS Pyromaniac, able to run programs on other systems\!
 
 ```
 %YAML 1.1
-\---
-\# Configuration for loading the ROM for RISC OS 5
+---
+# Configuration for loading the ROM for RISC OS 5
+
 debug:
-- modules
-- traceregionfunc
-- podules
-- swimisuse
+  - modules
+  - traceregionfunc
+  - podules
+  - swimisuse
 
 config:
-    podule.extensionrom1: ROMs/riscos5
-    modules.rominit_noisy: true
-    memorymap.rom_base: 0x8800000
-    modules.unplug: extrom1:Podule,ParallelDeviceDriver,TaskWindow,SpriteExtend,SystemDevices,...
+  podule.extensionrom1: ROMs/riscos5
+  modules.rominit_noisy: true
+  memorymap.rom_base: 0x8800000
+  modules.unplug: extrom1:Podule,ParallelDeviceDriver,TaskWindow,SpriteExtend,SystemDevices,...
 
 modules:
-    internal: true
+  internal: true
 ```
 
 ---
@@ -467,35 +510,37 @@ Tracing SWI arguments:
 
 ```
 >GCOL 0, 255,192,0
-383f848: SWI     ColourTrans\_SetGCOL
-=> r0  = &00c0ff00   12648192  colour
-r3  = &00000100        256  flags
-r4  = &00000000          0  action
-<= r0  = &00000000          0  gcol
-r2  = &00000002          2  log2\_bpp
-r3  = &00000000          0  corrupted
+ 383f848: SWI     ColourTrans_SetGCOL
+          => r0  = &00c0ff00   12648192  colour
+             r3  = &00000100        256  flags
+             r4  = &00000000          0  action
+          <= r0  = &00000000          0  gcol
+             r2  = &00000002          2  log2_bpp
+             r3  = &00000000          0  corrupted
+
 ```
 
-Tech: OSLib parser and templating system
+***`Tech`***: OSLib parser and templating system
 
 ---
 # RISC OS Pyromaniac
 ## Tracing and debugging
 
 ```
-$ pyro testcode/bin/word\_time\_string --debug trace
-700013c: ADR     r1, &07000174             ; -> \[&00000000, &00000000, &00000000, &00000000\]
-7000140: MOV     r0, \#&e                   ; \#14
-7000144: MOV     r2, \#0
-7000148: STRB    r2, \[r1\]                  ; R2 = &00000000, R1 = &07000174
-700014c: SWI     OS\_Word
-7000150: SWI     OS\_WriteS
-7000164: MOV     r0, r1                    ; R1 = &07000174
-7000168: SWI     OS\_Write0
-700016c: SWI     OS\_NewLine
+$ pyro testcode/bin/word_time_string --debug trace
+ 700013c: ADR     r1, &07000174             ; -> [&00000000, &00000000,
+                                                  &00000000, &00000000]
+ 7000140: MOV     r0, #&e                   ; #14
+ 7000144: MOV     r2, #0
+ 7000148: STRB    r2, [r1]                  ; R2 = &00000000, R1 = &07000174
+ 700014c: SWI     OS_Word
+ 7000150: SWI     OS_WriteS
+ 7000164: MOV     r0, r1                    ; R1 = &07000174
+ 7000168: SWI     OS_Write0
+ 700016c: SWI     OS_NewLine
 Time string: Sun,06 Sep 2020 08:22:38
-7000170: MOV     pc, lr                    ; R14 = &04107fe0
-4107fe0: SWI     &FEED05
+ 7000170: MOV     pc, lr                    ; R14 = &04107fe0
+ 4107fe0: SWI     &FEED05
 ```
 
 ---
@@ -518,21 +563,7 @@ MORE
 ## What does it look like?
 
 ```
-"""
-OS\_ReadEscapeState implementation.
-"""
 
-from riscos import handlers
-import riscos.constants.swis as swis
-
-@handlers.swi.register\(swis.OS\_ReadEscapeState\)
-def swi\_OS\_ReadEscapeState\(ro, swin, regs\):
-    """
-    OS\_ReadEscapeState
-
-    <= C flag is set if an escape condition has occurred
-    """
-    regs.cpsr\_c = ro.kernel.progenv.escape\_condition
 ```
 
 ---
@@ -540,27 +571,29 @@ def swi\_OS\_ReadEscapeState\(ro, swin, regs\):
 ## What does it look like?
 
 ```
-\# Preserve and enable VDU paging
-with self.ro.kernel.api.vdupaging\(\):
-    \# Enumerate and print variables
-    for varname, vartype, value in self.ro.kernel.api.os\_readvarval\_enumerate\(args\):
-        if vartype in \(sysvars.TYPE\_STRING, sysvars.TYPE\_MACRO\):
-            \# String returned parameters should have their value escaped GSTrans style
-            value = self.ro.kernel.gstrans.escape\(value,
-                                escape\_chars='|"<' if vartype \!= sysvars.TYPE\_MACRO else '',
-                                escape\_control=True,
-                                escape\_topbit=True\)
-        suffix = ''
-        if vartype == sysvars.TYPE\_NUMBER:
-            suffix = '\(number\)'
-        elif vartype == sysvars.TYPE\_MACRO:
-            suffix = '\(macro\)'
-        self.ro.kernel.writeln\('%s%s : %s' % \(varname, suffix, value\)\)
+"""
+OS_ReadEscapeState implementation.
+"""
+
+from riscos import handlers
+import riscos.constants.swis as swis
+
+@handlers.swi.register(swis.OS_ReadEscapeState)
+def swi_OS_ReadEscapeState(ro, swin, regs):
+    """
+    OS_ReadEscapeState
+
+    <= C flag is set if an escape condition has occurred
+    """
+
+    regs.cpsr_c = ro.kernel.progenv.escape_condition
 ```
 
 ---
 # RISC OS Pyromaniac
 ## Other technologies\!
+
+***`Tech`***:
 
 * RISC OS Alphabets in Python Codecs
 * RISC OS Zip file decoding in Python
@@ -611,7 +644,7 @@ with self.ro.kernel.api.vdupaging\(\):
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
 # 5. Conclusion
@@ -620,9 +653,9 @@ vertical-align: middle
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
-h1.size: 24pt
+h1.size: 42pt
 h2.font: Optima.Bold
-h2.size: 16pt
+h2.size: 28pt
 vertical-align: top
 
 # Conclusion
@@ -636,7 +669,7 @@ Create _pyromaniac.riscos.online_ as a resource for this?
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
-h1.size: 32pt
+h1.size: 58pt
 vertical-align: middle
 
 # 6. Questions
