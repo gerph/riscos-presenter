@@ -36,6 +36,8 @@ followed by properties which should be applied to this (and subsequent) slides. 
 * `pre.border.colour`: Defines the colour of the border, or `none` to not use any
 * `pre.border.fore-colour`: Defines the colour of the 3D effect fore colour, or `none` to not use any
 * `pre.border.opposite-colour`: Defines the colour of the 3D effect opposite colour, or `none` to not use any
+* `quote.padding.top`/`quote.padding.bottom`: Defines the space around a block quote (sizes described as above)
+* `quote.padding.inset`: Defines the inset horizontally of the block quote.
 
 ### Supported markdown
 
@@ -50,6 +52,8 @@ The markdown supported is in line with most implementations but is limited - the
 * Strikethrough, indicated by `~` surrounding text.
 * Ordered lists, indicated by a line starting with a `1.` (or other digit sequence), which may be indented to indicate nesting levels.
 * Unordered lists, indicated by a line starting with a `*` or `-`, which may be indented to indicate nesting levels.
+* Block quotes, indicated by a line starting with a `>`.
+* Code blocks delimited by three backticks.
 
 The encoding used for rendering is the default alphabet (no specific alphabet is selected by the Font system at the current time).
 
@@ -57,7 +61,6 @@ The encoding used for rendering is the default alphabet (no specific alphabet is
 
 Any features not documented above are not supported, though partial support may exist within the system. Non-exhaustively, the following are not supported:
 
-* Code blocks delimited by three backticks.
 * Tables in any form.
 * Wiki links and task lists.
 * HTML blocks.

@@ -67,6 +67,7 @@ struct sliderender_s {
 
     int in_heading; /* Which heading we're in, or -1 if we're not in a heading */
     int in_pre;     /* If we're in the pre */
+    int in_quote;   /* Quote level we're in (0 for none, 1+ for in quotes) */
 
     fontfamily_t family_heading[MAXHEADING];
     fontfamily_t family_body;
@@ -88,6 +89,9 @@ struct sliderender_s {
     rgb_t pre_fill;
     rgb_t pre_border_fore;
     rgb_t pre_border_opp;
+    int quote_gap_top;
+    int quote_gap_bottom;
+    int quote_inset;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -126,7 +130,7 @@ static void sliderender_block(sliderender_t *render,
                 dprintf("  List ordered, next index %i\n", block->index);
             }
 
-            /* Entering and leaving a list should insert somee extra space */
+            /* Entering and leaving a list should insert some extra space */
             textblock_gap(render->textblock, render->list_gap_top, NULL);
 
             /* Set up the indentation for the block */
@@ -171,6 +175,14 @@ static void sliderender_block(sliderender_t *render,
         case sbt_pre:
             textblock_inset(render->textblock, render->pre_inset, render->pre_inset);
             render->in_pre = 1;
+            break;
+
+        case sbt_quote:
+            /* Entering and leaving a quote should insert somee extra space */
+            textblock_gap(render->textblock, render->quote_gap_top, NULL);
+
+            textblock_inset(render->textblock, render->quote_inset, render->quote_inset);
+            render->in_quote = block->index + 1;
             break;
     }
 
@@ -235,11 +247,15 @@ static void sliderender_block(sliderender_t *render,
                 fontfamily_t family;
                 font_t font;
 
-                if (render->in_pre &&
-                    strcmp(span->text, "\n")==0)
+                if (strcmp(span->text, "\n")==0)
                 {
                     /* Special case of a plain newline as the only part of the span - means an actual newline */
-                    textblock_newline(render->textblock);
+
+                    /* Inside a pre, it's always a newline; elsewhere, just make sure we're on a new line */
+                    if (render->in_pre)
+                        textblock_newline(render->textblock);
+                    else
+                        textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
                     continue;
                 }
 
@@ -311,6 +327,14 @@ static void sliderender_block(sliderender_t *render,
         case sbt_pre:
             textblock_inset(render->textblock, -render->pre_inset, -render->pre_inset);
             render->in_pre = 0;
+            break;
+
+        case sbt_quote:
+            /* Entering and leaving a list should insert some extra space */
+            textblock_gap(render->textblock, render->quote_gap_bottom, NULL);
+
+            textblock_inset(render->textblock, -render->quote_inset, -render->quote_inset);
+            render->in_quote = 0;
             break;
     }
 
@@ -886,6 +910,9 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.colour", COLOUR_NONE, 1);
         render->pre_border_opp    = sliderender_slide_property_rgb(render, "pre.border.opposite-colour", render->pre_border_fore, 1);
         render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.fore-colour", render->pre_border_fore, 1);
+        render->quote_gap_top     = sliderender_slide_property_osunit(render, "quote.padding.top", "1em", 0);
+        render->quote_gap_bottom  = sliderender_slide_property_osunit(render, "quote.padding.bottom", "1em", 0);
+        render->quote_inset       = sliderender_slide_property_osunit(render, "quote.padding.inset", "1.5em", 1);
 
         dprintf("inset = %i, %i\n", inset_x, inset_y);
     }

@@ -16,7 +16,8 @@ Blocks are defined by a type:
     - heading blocks contain a list of spans.
     - list blocks contain a list of blocks
     - item blocks contain a list of spans
-    - pre blocks contain a list of blocks(?)
+    - pre blocks contain a list of spans
+    - quote blocks contain a list of spans
 Blocks are layed out down the slide.
 Blocks may vary the indentation of their containers.
 Spans are layed out across the page and wrap.
@@ -56,7 +57,8 @@ typedef enum slideblocktype_s {
     sbt_heading,
     sbt_list,
     sbt_item,
-    sbt_pre
+    sbt_pre,
+    sbt_quote
 } slideblocktype_t;
 
 /* sbt_list index values */
@@ -64,6 +66,8 @@ typedef enum slideblocktype_s {
 #define SLIDEBLOCKINDEX_UNORDERED   (-1)
 /* sbt_heading index values */
 #define SLIDEBLOCKINDEX_HEADING(n)  (n)
+/* sbt_quote index values */
+#define SLIDEBLOCKINDEX_QUOTE(n)    (n)
 /* sbt_* index values */
 #define SLIDEBLOCKINDEX_NOINDEX     (0)
 

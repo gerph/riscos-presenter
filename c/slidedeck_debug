@@ -14,6 +14,7 @@ const char *slideblocktype_names[] = {
         "LIST",
         "ITEM",
         "PRE",
+        "QUOTE",
     };
 #define SLIDEBLOCKTYPE_NAMES_COUNT (sizeof(slideblocktype_names) / sizeof(slideblocktype_names[0]))
 #define SLIDEBLOCKTYPE_NAMES_NAME(type) ((type) < SLIDEBLOCKTYPE_NAMES_COUNT ? slideblocktype_names[type] : "unknown")
