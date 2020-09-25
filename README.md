@@ -38,6 +38,10 @@ followed by properties which should be applied to this (and subsequent) slides. 
 * `pre.border.opposite-colour`: Defines the colour of the 3D effect opposite colour, or `none` to not use any
 * `quote.padding.top`/`quote.padding.bottom`: Defines the space around a block quote (sizes described as above)
 * `quote.padding.inset`: Defines the inset horizontally of the block quote.
+* `logo.PLACE`: Defines an image to place in a given location (`top-left`, `top`, `top-right`, `left`, `centre`, `right`, `bottom-left`, `bottom`, `bottom-right`)
+* `logo.PLACE.inset`: Defines the gap around the outside of the image to leave.
+* `logo.PLACE.width`/`logo.PLACE.height`: Defines the width/height of the image (which will be limited by the available slide space)
+
 
 ### Supported markdown
 

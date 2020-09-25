@@ -3,6 +3,12 @@ body.italic.font: Phosphate.Inline
 background-colour: white
 foreground-colour: black
 code.bold.italic.font: Copperplate.Regular
+logo.centre: rgbcircles
+Xlogo.centre.inset: 3em
+logo.centre.width: 10em
+logo.centre.height: 10em
+logo.bottom-left: rgbcircles
+logo.bottom-left.inset: 1em
 
 # Stuff
 

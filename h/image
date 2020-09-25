@@ -45,9 +45,10 @@ int image_loadfile(image_t *image, const char *filename);
  Description:   Given a bounding box, put the image in it
  Parameters:    image-> the image to draw
                 bbox-> the box to put the image within
+                border = border size, in OS units
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int image_render_tofit(image_t *image, bbox_t *bbox);
+int image_render_tofit(image_t *image, bbox_t *bbox, int border);
 
 
 #endif

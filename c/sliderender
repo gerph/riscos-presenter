@@ -20,6 +20,8 @@
 #include "sliderender.h"
 #include "colours.h"
 #include "border.h"
+#include "image.h"
+#include "str.h"
 
 
 /* Define this to debug this file */
@@ -52,6 +54,15 @@ fontconfig_t fontdefault_headings[MAXHEADING] = {
     {"Optima.Bold", (18*16), (18*16)},
     {"Optima.Regular", (16*16), (16*16)},
 };
+
+
+typedef struct staticimage_s {
+    const char *name;
+    int inset;
+    int width;
+    int height;
+    image_t *data;
+} staticimage_t;
 
 
 /* Rendering context for a slide */
@@ -94,6 +105,9 @@ struct sliderender_s {
     int quote_inset;
 
     font_t font_body; /* A reference to the base font in family_body */
+
+    /* Image configuration - one for each position tl, tc, tr, cl, cc, cr, bl, bc, br */
+    staticimage_t images[9];
 
     textblock_t textblock;
     int pass;
@@ -662,6 +676,7 @@ static void sliderender_clear(sliderender_t *render)
 {
     int n;
 
+    /* Font families */
     fontfamily_destroy(render->family_body);
     render->family_body = NULL;
     fontfamily_destroy(render->family_code);
@@ -672,8 +687,20 @@ static void sliderender_clear(sliderender_t *render)
         fontfamily_destroy(render->family_heading[n]);
         render->family_heading[n] = NULL;
     }
+
+    /* Text regions */
     textblock_destroy(render->textblock);
     render->textblock = NULL;
+
+    /* Image patterns */
+    for (n=0; n<9; n++)
+    {
+        staticimage_t *image = &render->images[n];
+        free((char*)image->name);
+        image->name = NULL;
+        image_destroy(image->data);
+        image->data = NULL;
+    }
 }
 
 
@@ -804,10 +831,10 @@ static int sliderender_slide_property_border(sliderender_t *render, const char *
                 allow_none = 1 if 'none' should be allowed
  Returns:       rgb_t colour value
  ******************************************************************/
-static int sliderender_slide_property_rgb(sliderender_t *render,
-                                          const char *property,
-                                          rgb_t default_colour,
-                                          int allow_none)
+static rgb_t sliderender_slide_property_rgb(sliderender_t *render,
+                                            const char *property,
+                                            rgb_t default_colour,
+                                            int allow_none)
 {
     const char *value;
     rgb_t colour = default_colour;
@@ -824,6 +851,48 @@ static int sliderender_slide_property_rgb(sliderender_t *render,
             colour = default_colour;
     }
     return colour;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_prepare_background
+ Description:   Set up the background images we use for the slide
+ Parameters:    render-> the render to work with
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+static int sliderender_prepare_background(sliderender_t *render)
+{
+    static char *posname[9] = {
+            "logo.top-left",    "logo.top",    "logo.top-right",
+            "logo.mid-left",    "logo.centre", "logo.mid-right",
+            "logo.bottom-left", "logo.bottom", "logo.bottom-right",
+        };
+    int n;
+    for (n=0; n<9; n++)
+    {
+        staticimage_t *simage = &render->images[n];
+        char buffer[32];
+        char *prefix = posname[n];
+        const char *value = slide_getproperty(render->slide, prefix, NULL);
+        if (value != NULL)
+        {
+            /* We have a value set, so we should decide what image to use */
+            simage->name = strdup(value);
+            if (simage->name == NULL)
+            {
+                /* FIXME: We don't free the earlier image info */
+                return 1;
+            }
+            sprintf(buffer, "%s.inset", prefix);
+            simage->inset = sliderender_slide_property_osunit(render, buffer, "0", 0);
+            sprintf(buffer, "%s.width", prefix);
+            simage->width = sliderender_slide_property_osunit(render, buffer, "0", 1);
+            sprintf(buffer, "%s.height", prefix);
+            simage->height = sliderender_slide_property_osunit(render, buffer, "0", 0);
+        }
+    }
+
+    return 0;
 }
 
 
@@ -918,7 +987,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->inset_x = inset_x;
         render->inset_y = inset_y;
 
-        /* Size of list items */
+        /* Size of lists, items, pre code and quote sections */
         render->list_gap_top      = sliderender_slide_property_osunit(render, "list.padding.top", "0.25em", 0);
         render->list_gap_bottom   = sliderender_slide_property_osunit(render, "list.padding.bottom", "0.25em", 0);
         render->list_inset        = sliderender_slide_property_osunit(render, "list.padding.inset", "0.5em", 1);
@@ -936,6 +1005,9 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->quote_gap_bottom  = sliderender_slide_property_osunit(render, "quote.padding.bottom", "1em", 0);
         render->quote_inset       = sliderender_slide_property_osunit(render, "quote.padding.inset", "1.5em", 1);
 
+        /* Set up the background */
+        sliderender_prepare_background(render);
+
         dprintf("inset = %i, %i\n", inset_x, inset_y);
     }
 
@@ -946,6 +1018,109 @@ failed:
     render->slide = NULL;
     render->slidenumber = -1;
     return 1;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_render_background
+ Description:   Render a background for this slide
+ Parameters:    render-> the render to work with
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+static int sliderender_render_background(sliderender_t *render)
+{
+#define POS_HLEFT   (0)
+#define POS_HMID    (1)
+#define POS_HRIGHT  (2)
+#define POS_HMASK   (3)
+#define POS_VTOP    (0<<2)
+#define POS_VMID    (1<<2)
+#define POS_VBOTTOM (2<<2)
+#define POS_VMASK   (3<<2)
+    static char posmap[9] = {
+            (POS_HLEFT | POS_VTOP),    (POS_HMID | POS_VTOP),    (POS_HRIGHT | POS_VTOP),
+            (POS_HLEFT | POS_VMID),    (POS_HMID | POS_VMID),    (POS_HRIGHT | POS_VMID),
+            (POS_HLEFT | POS_VBOTTOM), (POS_HMID | POS_VBOTTOM), (POS_HRIGHT | POS_VBOTTOM),
+        };
+    int n;
+    for (n=0; n<9; n++)
+    {
+        bbox_t bbox;
+        int pos;
+        int size;
+        staticimage_t *simage = &render->images[n];
+        if (simage->name == NULL)
+            continue;
+
+        if (simage->data == NULL)
+        {
+            /* Resolve the image data */
+            simage->data = image_create(simage->name);
+            if (simage->data == NULL)
+            {
+                return 1;
+            }
+            if (image_loadfile(simage->data, simage->name))
+            {
+                image_destroy(simage->data);
+                simage->data = NULL;
+                return 1;
+            }
+        }
+
+        /* We have the data; now to work out where to put it */
+        pos = posmap[n];
+        size = (render->region.x1 - render->region.x0);
+        switch (pos & POS_HMASK)
+        {
+            case POS_HLEFT:
+                bbox.x0 = 0;
+                bbox.x1 = (simage->width && simage->width < size) ? simage->width : size / 4;
+                break;
+
+            case POS_HMID:
+                bbox.x0 = (simage->width && simage->width < size) ? (size - simage->width) / 2 : 0;
+                bbox.x1 = (simage->width && simage->width < size) ? (size + simage->width) / 2 : size;
+                break;
+
+            case POS_HRIGHT:
+                bbox.x0 = (simage->width && simage->width < size) ? size - simage->width : size / 4;
+                bbox.x1 = size;
+                break;
+        }
+
+        size = (render->region.y1 - render->region.y0);
+        switch (pos & POS_VMASK)
+        {
+            case POS_VBOTTOM:
+                bbox.y0 = 0;
+                bbox.y1 = (simage->height && simage->height < size) ? simage->height : size / 4;
+                break;
+
+            case POS_VMID:
+                bbox.y0 = (simage->height && simage->height < size) ? (size - simage->height) / 2 : 0;
+                bbox.y1 = (simage->height && simage->height < size) ? (size + simage->height) / 2 : size;
+                break;
+
+            case POS_VTOP:
+                bbox.y0 = (simage->height && simage->height < size) ? size - simage->height : size / 4;
+                bbox.y1 = size;
+                break;
+        }
+
+        bbox.x0 += render->region.x0;
+        bbox.y0 += render->region.y0;
+        bbox.x1 += render->region.x0;
+        bbox.y1 += render->region.y0;
+
+        dprintf("Logo '%s' at %i,%i - %i,%i; inset %i", simage->name, bbox.x0, bbox.y0, bbox.x1, bbox.y1, simage->inset);
+
+        if (image_render_tofit(simage->data, &bbox, simage->inset))
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
@@ -989,6 +1164,9 @@ int sliderender_show(sliderender_t *render)
     /* The redraw pass - fill the background */
     rect_fill(render->colour_bg, render->region.x0, render->region.y0,
                                  render->region.x1, render->region.y1);
+
+    /* Draw any background images */
+    sliderender_render_background(render);
 
     for (pass=0; pass<2; pass++)
     {

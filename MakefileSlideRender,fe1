@@ -25,6 +25,7 @@ OBJS       = \
 			 o.colours \
 			 o.screen \
 			 o.border \
+			 o.image \
 			 o.mdnames
 
 include LibraryCommand
