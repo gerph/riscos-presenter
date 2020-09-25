@@ -22,6 +22,8 @@ Second line
 ^^ Blank line
 ```
 
+Image: ![my picture](rgbcircles (20x20))
+
 ---
 class: foo
 font: bar

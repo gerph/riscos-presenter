@@ -103,6 +103,64 @@ struct sliderender_s {
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_span_text
+ Description:   Render the content of a single span of text within a block
+ Parameters:    render-> the sliderender we're in
+                block-> the slideblock we're in
+                span-> the text span to render
+ Returns:       none
+ ******************************************************************/
+static void sliderender_span_text(sliderender_t *render,
+                                  slideblock_t *block,
+                                  slidespan_t *span)
+{
+    unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
+    int fontstyle = 0;
+    int fontflags = flags;
+    fontfamily_t family;
+    font_t font;
+
+    if (strcmp(span->data.text.text, "\n")==0)
+    {
+        /* Special case of a plain newline as the only part of the span - means an actual newline */
+
+        /* Inside a pre, it's always a newline; elsewhere, just make sure we're on a new line */
+        if (render->in_pre)
+            textblock_newline(render->textblock);
+        else
+            textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
+        return;
+    }
+
+    if (span->data.text.render.bold)
+        fontstyle |= FONTFAMILY_STYLE_BOLD;
+    if (span->data.text.render.italic)
+        fontstyle |= FONTFAMILY_STYLE_SLANT;
+    if (span->data.text.render.underline)
+        fontflags |= TBADD_UNDERLINE;
+    if (span->data.text.render.del)
+        fontflags |= TBADD_STRIKETHROUGH;
+
+    if (span->data.text.render.code || render->in_pre)
+        family = render->family_code;
+    else if (render->in_heading != -1)
+        family = render->family_heading[render->in_heading];
+    else
+        family = render->family_body;
+
+    dprintf("Rendering with family %p\n", family);
+    font = fontfamily_get_font(family, fontstyle);
+
+    dprintf("Text: (style=%i) %s\n", fontstyle, span->data.text.text);
+    textblock_add(render->textblock,
+                  font,
+                  span->data.text.text,
+                  render->colour_bg, render->colour_fg,
+                  fontflags);
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_block
  Description:   Render a single block from a slide
  Parameters:    render-> the render to use
@@ -242,48 +300,12 @@ static void sliderender_block(sliderender_t *render,
 
             for (span = block->spans; span; span=span->next)
             {
-                int fontstyle = 0;
-                int fontflags = flags;
-                fontfamily_t family;
-                font_t font;
-
-                if (strcmp(span->text, "\n")==0)
+                switch (span->type)
                 {
-                    /* Special case of a plain newline as the only part of the span - means an actual newline */
-
-                    /* Inside a pre, it's always a newline; elsewhere, just make sure we're on a new line */
-                    if (render->in_pre)
-                        textblock_newline(render->textblock);
-                    else
-                        textblock_clear(render->textblock, TBCLEAR_TEXTNEWLINE);
-                    continue;
+                    case sst_text:
+                        sliderender_span_text(render, block, span);
+                        break;
                 }
-
-                if (span->render.bold)
-                    fontstyle |= FONTFAMILY_STYLE_BOLD;
-                if (span->render.italic)
-                    fontstyle |= FONTFAMILY_STYLE_SLANT;
-                if (span->render.underline)
-                    fontflags |= TBADD_UNDERLINE;
-                if (span->render.del)
-                    fontflags |= TBADD_STRIKETHROUGH;
-
-                if (span->render.code || render->in_pre)
-                    family = render->family_code;
-                else if (render->in_heading != -1)
-                    family = render->family_heading[render->in_heading];
-                else
-                    family = render->family_body;
-
-                dprintf("Rendering with family %p\n", family);
-                font = fontfamily_get_font(family, fontstyle);
-
-                dprintf("Text: (style=%i) %s\n", fontstyle, span->text);
-                textblock_add(render->textblock,
-                              font,
-                              span->text,
-                              render->colour_bg, render->colour_fg,
-                              fontflags);
             }
 
             if (render->in_pre)

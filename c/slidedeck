@@ -219,35 +219,37 @@ int slidedeck_endblock(slidedeck_t *deck)
 
 
 /*************************************************** Gerph *********
- Function:      slidedeck_addnspan
- Description:   Add a span element to the current block, for limited number of bytes
+ Function:      slidedeck_addspan_textn
+ Description:   Add a text span element to the current block, for limited number of bytes
  Parameters:    deck-> the slide deck to add a span to
                 text-> text to add
                 len = length of text to add from the string
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int slidedeck_addnspan(slidedeck_t *deck, const char *text, int len)
+int slidedeck_addspan_textn(slidedeck_t *deck, const char *text, int len)
 {
     slide_t *slide = deck->lastslide;
     slideblock_t *block = SLIDE_BLOCK(slide);
     slidespan_t *span;
     assert(block != NULL);
 
-    dprintf("slidedeck_addspan(%p, '%.*s')\n", deck, len, text);
+    dprintf("slidedeck_addspan_textn(%p, '%.*s')\n", deck, len, text);
     dprintf("  slide = %p, block = %p\n", slide, block);
 
     span = calloc(1, sizeof(*span));
     if (span == NULL)
         return 1;
 
+    span->type = sst_text;
+
     /* Configure the span */
-    span->text = strndup(text, len);
-    if (span->text == NULL)
+    span->data.text.text = strndup(text, len);
+    if (span->data.text.text == NULL)
     {
         free(span);
         return 1;
     }
-    span->render = block->current_render;
+    span->data.text.render = block->current_render;
 
     /* Link to chain */
     if (block->lastspan)
@@ -261,15 +263,71 @@ int slidedeck_addnspan(slidedeck_t *deck, const char *text, int len)
 
 
 /*************************************************** Gerph *********
- Function:      slidedeck_addspan
- Description:   Add a span element to the current block
+ Function:      slidedeck_addspan_text
+ Description:   Add a text span element to the current block
  Parameters:    deck-> the slide deck to add a span to
                 text-> text to add
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int slidedeck_addspan(slidedeck_t *deck, const char *text)
+int slidedeck_addspan_text(slidedeck_t *deck, const char *text)
 {
-    return slidedeck_addnspan(deck, text, strlen(text));
+    return slidedeck_addspan_textn(deck, text, strlen(text));
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan_imagen
+ Description:   Add an image span element to the current block, for limited number of bytes
+ Parameters:    deck-> the slide deck to add a span to
+                name-> image name to add
+                len = length of text to add from the string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan_imagen(slidedeck_t *deck, const char *name, int len)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+    slidespan_t *span;
+    assert(block != NULL);
+
+    dprintf("slidedeck_addspan_imagen(%p, '%.*s')\n", deck, len, name);
+    dprintf("  slide = %p, block = %p\n", slide, block);
+
+    span = calloc(1, sizeof(*span));
+    if (span == NULL)
+        return 1;
+
+    span->type = sst_image;
+
+    /* Configure the span */
+    span->data.image.name = strndup(name, len);
+    if (span->data.image.name == NULL)
+    {
+        free(span);
+        return 1;
+    }
+
+    /* Link to chain */
+    if (block->lastspan)
+        block->lastspan->next = span;
+    else
+        block->spans = span;
+    block->lastspan = span;
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan_image
+ Description:   Add an image span element to the current block
+ Parameters:    deck-> the slide deck to add a span to
+                name-> image name to add
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan_image(slidedeck_t *deck, const char *name)
+{
+    return slidedeck_addspan_imagen(deck, name, strlen(name));
 }
 
 

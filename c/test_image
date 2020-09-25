@@ -5,30 +5,44 @@
 #include "image.h"
 
 
-int main(int argc, char *argv[])
+void draw_image(unsigned long colour, const char *filename, int x0, int y0, int x1, int y1)
 {
     image_t *image;
     bbox_t bbox;
-    gcontext_initvdu(1);
 
-    image = image_create("image");
+    image = image_create(filename);
 
-    if (image_loadfile(image, "gerph-black/jpeg"))
+    if (image_loadfile(image, filename))
     {
-        printf("Failed to load image\n");
-        exit(1);
+        printf("Failed to load image %s\n", filename);
+        image_destroy(image);
+        return;
     }
 
-    rect_fill(COLOUR_RGB(0,0,255), 64, 64,  640, 320); /* blue rectangle */
+    rect_fill(colour, x0, y0, x1, y1);
 
-    bbox.x0 = 64;
-    bbox.y0 = 64;
-    bbox.x1 = 640;
-    bbox.y1 = 320;
+    bbox.x0 = x0;
+    bbox.y0 = y0;
+    bbox.x1 = x1;
+    bbox.y1 = y1;
     if (image_render_tofit(image, &bbox))
     {
-        printf("Image render failed\n");
+        printf("Image render of %s failed\n", filename);
     }
+
+    image_destroy(image);
+}
+
+int main(int argc, char *argv[])
+{
+    gcontext_initvdu(1);
+
+    rect_fill(COLOUR_RGB(64,64,64), 0,0, 1280, 1024);
+
+//    draw_image(COLOUR_RGB(64,64,192), "gerph-black/jpeg", 64, 64,  640, 320); /* blue rectangle */
+
+//    draw_image(COLOUR_RGB(255,0,0), "gerphlogo", 64, 360,  640, 640); /* red rectangle */
+    draw_image(COLOUR_RGB(192,64,64), "rgbcircles", 64, 360,  640, 640); /* red rectangle */
 
     getchar();
 }

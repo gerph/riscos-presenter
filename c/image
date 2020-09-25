@@ -68,6 +68,24 @@ image_t *image_create(const char *name)
     return image;
 }
 
+
+/*************************************************** Gerph *********
+ Function:      image_destroy
+ Description:   Destroy the space used by an image
+ Parameters:    image-> the image to destroy
+ Returns:       none
+ ******************************************************************/
+void image_destroy(image_t *image)
+{
+    if (!image)
+        return;
+
+    free(image->imagedata.data);
+    image->imagedata.data = NULL;
+    free(image);
+}
+
+
 /*************************************************** Gerph *********
  Function:      image_loadfile
  Description:   Load a file into the image block
@@ -110,7 +128,7 @@ int image_render_tofit(image_t *image, bbox_t *bbox)
     }
 
     tofit.width = bbox->x1 - bbox->x0;
-    tofit.height = bbox->y1 - bbox->x0;
+    tofit.height = bbox->y1 - bbox->y0;
     tofit.border = 0;
     tofit.angle = 0;
 

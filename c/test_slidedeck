@@ -13,38 +13,38 @@ int main(int argc, char *argv[])
     slidedeck_addproperty(deck, "font", "homerton");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "Hello ");
-    slidedeck_addspan(deck, "World!");
+    slidedeck_addspan_text(deck, "Hello ");
+    slidedeck_addspan_text(deck, "World!");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "And again");
+    slidedeck_addspan_text(deck, "And again");
     slidedeck_render_bold(deck, 1);
-    slidedeck_addspan(deck, " (but bold");
+    slidedeck_addspan_text(deck, " (but bold");
     slidedeck_render_italic(deck, 1);
-    slidedeck_addspan(deck, ", and italic)");
+    slidedeck_addspan_text(deck, ", and italic)");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "More");
+    slidedeck_addspan_text(deck, "More");
 
     slidedeck_newblock(deck, sbt_heading, SLIDEBLOCKINDEX_HEADING(1));
-    slidedeck_addspan(deck, "HEADING");
+    slidedeck_addspan_text(deck, "HEADING");
 
     slidedeck_startblock(deck, sbt_list, SLIDEBLOCKINDEX_ORDERED);
     slidedeck_newblock(deck, sbt_item, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "Item 1");
+    slidedeck_addspan_text(deck, "Item 1");
     slidedeck_newblock(deck, sbt_item, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "Item 2");
+    slidedeck_addspan_text(deck, "Item 2");
     slidedeck_endblock(deck);
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "Top level text");
+    slidedeck_addspan_text(deck, "Top level text");
 
     slidedeck_newslide(deck);
 
     slidedeck_addproperty(deck, "font-size", "12pt");
 
     slidedeck_newblock(deck, sbt_plain, SLIDEBLOCKINDEX_NOINDEX);
-    slidedeck_addspan(deck, "Top level text");
+    slidedeck_addspan_text(deck, "Top level text");
 
     printf("----\n");
     slidedeck_dump(deck);

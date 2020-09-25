@@ -259,6 +259,12 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
 
         case MD_SPAN_IMG:
             // FIXME: No image support
+            {
+                MD_SPAN_IMG_DETAIL *img = (MD_SPAN_IMG_DETAIL *)detail;
+                dprintf("  Image source '%.*s'\n", img->src.size, img->src.text);
+                dprintf("  Image title '%.*s'\n", img->title.size, img->title.text);
+                slidedeck_addspan_imagen(deck, img->src.text, img->src.size);
+            }
             break;
 
         case MD_SPAN_CODE:
@@ -432,7 +438,7 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
             }
             if (!slidemd->in_slide_properties)
             {
-                slidedeck_addnspan(deck, text, size);
+                slidedeck_addspan_textn(deck, text, size);
             }
             break;
 
@@ -442,13 +448,13 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
 
         case MD_TEXT_BR:
             /* Literal <br> should probably becomes a linebreak - we detect a span with just \n in */
-            slidedeck_addspan(deck, "\n");
+            slidedeck_addspan_text(deck, "\n");
             break;
 
         case MD_TEXT_SOFTBR:
             /* Soft BR just means we wrap it to the prior strings */
             if (!slidemd->in_slide_properties)
-                slidedeck_addspan(deck, " ");
+                slidedeck_addspan_text(deck, " ");
             break;
 
         case MD_TEXT_ENTITY:
@@ -459,7 +465,7 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
             // The text for a code block may include a \n
             // FIXME: We don't support those form of multiline yet?
             // Maybe split each of these into sub blocks? Not thought about it.
-            slidedeck_addnspan(deck, text, size);
+            slidedeck_addspan_textn(deck, text, size);
             break;
 
         case MD_TEXT_HTML:

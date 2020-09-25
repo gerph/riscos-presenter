@@ -46,10 +46,25 @@ typedef struct renderattribs_s {
 
 extern renderattribs_t sliderender_default;
 
+typedef enum slidespantype_s {
+    sst_text,
+    sst_image
+} slidespantype_t;
+
 typedef struct slidespan_s {
     struct slidespan_s *next;
-    renderattribs_t render;
-    const char *text;
+    slidespantype_t type;
+    union {
+        struct {
+            renderattribs_t render;
+            const char *text;
+        } text;
+        struct {
+            const char *name;
+            int width;
+            int height;
+        } image;
+    } data;
 } slidespan_t;
 
 typedef enum slideblocktype_s {
@@ -160,24 +175,34 @@ int slidedeck_endblock(slidedeck_t *deck);
 
 
 /*************************************************** Gerph *********
- Function:      slidedeck_addnspan
+ Function:      slidedeck_addspan_textn
  Description:   Add a span element to the current block, for limited number of bytes
  Parameters:    deck-> the slide deck to add a span to
                 text-> text to add
                 len = length of text to add from the string
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int slidedeck_addnspan(slidedeck_t *deck, const char *text, int len);
+int slidedeck_addspan_textn(slidedeck_t *deck, const char *text, int len);
 
 
 /*************************************************** Gerph *********
- Function:      slidedeck_addspan
+ Function:      slidedeck_addspan_text
  Description:   Add a span element to the current block
  Parameters:    deck-> the slide deck to add a span to
                 text-> text to add
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
-int slidedeck_addspan(slidedeck_t *deck, const char *text);
+int slidedeck_addspan_text(slidedeck_t *deck, const char *text);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan_image
+ Description:   Add an image span element to the current block
+ Parameters:    deck-> the slide deck to add a span to
+                name-> image name to add
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan_image(slidedeck_t *deck, const char *name);
 
 
 /*************************************************** Gerph *********

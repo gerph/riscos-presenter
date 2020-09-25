@@ -34,6 +34,72 @@ static void slidedeck_dumpindent(int indent)
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_dumpspan_text
+ Description:   Dump a text span from a slide
+ Parameters:    deck-> the deck to dump from
+                span-> the span to dump
+                indent = count of the indentation level
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_dumpspan_text(slidedeck_t *deck, slidespan_t *span, int indent)
+{
+    int has_attribs = 0;
+    slidedeck_dumpindent(indent);
+    printf("Span text: '%s'\n", span->data.text.text);
+
+    if (span->data.text.render.code)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Code");
+    }
+    if (span->data.text.render.italic)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Italic");
+    }
+    if (span->data.text.render.bold)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Bold");
+    }
+    if (span->data.text.render.underline)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Underline");
+    }
+    if (span->data.text.render.del)
+    {
+        if (!has_attribs)
+            slidedeck_dumpindent(indent), has_attribs = 1;
+        printf("  Del");
+    }
+
+    if (has_attribs)
+        printf("\n");
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_dumpspan_image
+ Description:   Dump a image span from a slide
+ Parameters:    deck-> the deck to dump from
+                span-> the span to dump
+                indent = count of the indentation level
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_dumpspan_image(slidedeck_t *deck, slidespan_t *span, int indent)
+{
+    slidedeck_dumpindent(indent);
+    printf("Span image: '%s'\n", span->data.image.name);
+    /* FIXME: Add width and height and anything else */
+}
+
+
+/*************************************************** Gerph *********
  Function:      slidedeck_dumpspan
  Description:   Dump a span from a slide
  Parameters:    deck-> the deck to dump from
@@ -43,43 +109,16 @@ static void slidedeck_dumpindent(int indent)
  ******************************************************************/
 static void slidedeck_dumpspan(slidedeck_t *deck, slidespan_t *span, int indent)
 {
-    int has_attribs = 0;
-    slidedeck_dumpindent(indent);
-    printf("Span text: '%s'\n", span->text);
+    switch (span->type)
+    {
+        case sst_text:
+            slidedeck_dumpspan_text(deck, span, indent);
+            break;
 
-    if (span->render.code)
-    {
-        if (!has_attribs)
-            slidedeck_dumpindent(indent), has_attribs = 1;
-        printf("  Code");
+        case sst_image:
+            slidedeck_dumpspan_image(deck, span, indent);
+            break;
     }
-    if (span->render.italic)
-    {
-        if (!has_attribs)
-            slidedeck_dumpindent(indent), has_attribs = 1;
-        printf("  Italic");
-    }
-    if (span->render.bold)
-    {
-        if (!has_attribs)
-            slidedeck_dumpindent(indent), has_attribs = 1;
-        printf("  Bold");
-    }
-    if (span->render.underline)
-    {
-        if (!has_attribs)
-            slidedeck_dumpindent(indent), has_attribs = 1;
-        printf("  Underline");
-    }
-    if (span->render.del)
-    {
-        if (!has_attribs)
-            slidedeck_dumpindent(indent), has_attribs = 1;
-        printf("  Del");
-    }
-
-    if (has_attribs)
-        printf("\n");
 }
 
 

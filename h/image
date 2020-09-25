@@ -22,6 +22,15 @@ image_t *image_create(const char *name);
 
 
 /*************************************************** Gerph *********
+ Function:      image_destroy
+ Description:   Destroy the space used by an image
+ Parameters:    image-> the image to destroy
+ Returns:       none
+ ******************************************************************/
+void image_destroy(image_t *image);
+
+
+/*************************************************** Gerph *********
  Function:      image_loadfile
  Description:   Load a file into the image block
  Parameters:    image-> the image to populate
