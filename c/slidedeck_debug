@@ -5,6 +5,10 @@
  * Date:        18 Sep 2020
  ******************************************************************/
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "slidedeck.h"
 
 

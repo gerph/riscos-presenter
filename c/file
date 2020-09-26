@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "file.h"
 
 

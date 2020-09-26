@@ -131,6 +131,15 @@ slidedeck_t *slidedeck_create(void);
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_destroy
+ Description:   Create a new slide deck, with an initial slide
+ Parameters:    deck-> the slide deck to destroy
+ Returns:       none
+ ******************************************************************/
+void slidedeck_destroy(slidedeck_t *deck);
+
+
+/*************************************************** Gerph *********
  Function:      slidedeck_newslide
  Description:   Create a new slide within the deck
  Parameters:    deck-> the slide deck to add to
@@ -193,6 +202,17 @@ int slidedeck_addspan_textn(slidedeck_t *deck, const char *text, int len);
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
 int slidedeck_addspan_text(slidedeck_t *deck, const char *text);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_addspan_imagen
+ Description:   Add an image span element to the current block, for limited number of bytes
+ Parameters:    deck-> the slide deck to add a span to
+                name-> image name to add
+                len = length of text to add from the string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_addspan_imagen(slidedeck_t *deck, const char *name, int len);
 
 
 /*************************************************** Gerph *********

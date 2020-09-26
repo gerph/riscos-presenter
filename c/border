@@ -11,6 +11,10 @@
 #include "gcontext.h"
 #include "border.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 /* Define this to debug this file */
 //#define DEBUG
 

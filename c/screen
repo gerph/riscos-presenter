@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "gcontext.h"
 #include "vdu.h"
 #include "screen.h"

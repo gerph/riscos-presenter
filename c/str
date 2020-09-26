@@ -9,13 +9,18 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
+
 /*********************************************** <c> Gerph *********
  Function:     strdup
  Description:  Copy a string into a new block of memory
  Parameters:   x-> string to copy
  Returns:      pointer to new copy of string, or NULL if failed
  ******************************************************************/
-char *strdup(char const *x)
+char *(strdup)(char const *x)
 {
   char *n=malloc(strlen(x)+1);
   if (n!=NULL) strcpy(n,x);
@@ -29,7 +34,7 @@ char *strdup(char const *x)
                n = number of CHARACTERS to copy
  Returns:      pointer to new string
  ******************************************************************/
-char *strndup(char *str,int n)
+char *(strndup)(char const *str,int n)
 {
   char *s=malloc(n+1);
   if (s!=NULL)
@@ -67,3 +72,29 @@ int stricmp(const char *str1, const char *str2)
   }
   return 0;
 }
+
+
+#ifdef FORTIFY
+char *strdup_label(char const *x, const char *file, int line)
+{
+    char *dup = strdup(x);
+    if (dup)
+    {
+        char label[256];
+        sprintf(label, "strndup at %s, line %i", file, line);
+        (Fortify_LabelPointer)(dup, label, file, line);
+    }
+    return dup;
+}
+char *strndup_label(char const *x, int n, const char *file, int line)
+{
+    char *dup = strndup(x, n);
+    if (dup)
+    {
+        char label[256];
+        sprintf(label, "strndup at %s, line %i", file, line);
+        (Fortify_LabelPointer)(dup, label, file, line);
+    }
+    return dup;
+}
+#endif

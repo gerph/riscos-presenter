@@ -13,6 +13,10 @@
 #include <string.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "str.h"
 #include "slidedeck.h"
 #include "md4c.h"

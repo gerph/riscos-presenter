@@ -28,8 +28,9 @@ OBJS       = \
 			 o.image \
 			 o.mdnames
 
-include LibraryCommand
+FORTIFY = no
 
+include LibraryCommand
 
 #---------------------------------------------------------------------------
 # Dynamic dependencies:

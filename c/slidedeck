@@ -12,6 +12,10 @@
 #include <string.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "slidedeck.h"
 #include "str.h"
 
@@ -62,6 +66,113 @@ slidedeck_t *slidedeck_create(void)
         return NULL;
     }
     return deck;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_destroyspan
+ Description:   Destroy a given span
+ Parameters:    span-> the span to destroy
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_destroyspan(slidespan_t *span)
+{
+    switch (span->type)
+    {
+        case sst_text:
+            {
+                free((char*)span->data.text.text);
+                span->data.text.text = NULL;
+            }
+            break;
+
+        case sst_image:
+            {
+                free((char*)span->data.image.name);
+                span->data.image.name = NULL;
+            }
+            break;
+    }
+    free(span);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_destroyblock
+ Description:   Destroy a given block
+ Parameters:    block-> the block to destroy
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_destroyblock(slideblock_t *block)
+{
+    slideblock_t *inner_block;
+    slidespan_t *span;
+
+    /* Destroy all the blocks inside this block */
+    for (inner_block=block->blocks; inner_block; )
+    {
+        slideblock_t *next = inner_block->next;
+        slidedeck_destroyblock(inner_block);
+        inner_block = next;
+    }
+    block->blocks = NULL;
+
+    /* And all the spans */
+    for (span=block->spans; span; )
+    {
+        slidespan_t *next = span->next;
+        slidedeck_destroyspan(span);
+        span = next;
+    }
+    block->spans = NULL;
+    free(block);
+}
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_destroyslide
+ Description:   Destroy a given slide
+ Parameters:    slide-> the slide to destroy
+ Returns:       none
+ ******************************************************************/
+static void slidedeck_destroyslide(slide_t *slide)
+{
+    slideblock_t *block;
+    for (block=slide->blocks; block; )
+    {
+        slideblock_t *next = block->next;
+        slidedeck_destroyblock(block);
+        block = next;
+    }
+    slide->blocks = NULL;
+    opt_destroy(slide->properties);
+    slide->properties = NULL;
+    free(slide);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_destroy
+ Description:   Create a new slide deck, with an initial slide
+ Parameters:    deck-> the slide deck to destroy
+ Returns:       none
+ ******************************************************************/
+void slidedeck_destroy(slidedeck_t *deck)
+{
+    int n;
+    if (!deck)
+        return;
+
+    for (n=0; n<deck->nslides; n++)
+    {
+        slide_t *slide = deck->slides[n];
+        deck->slides[n] = NULL;
+        slidedeck_destroyslide(slide);
+    }
+    opt_destroy(deck->properties);
+    deck->properties = NULL;
+    free(deck->slides);
+    deck->slides = NULL;
+    free(deck);
 }
 
 

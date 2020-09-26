@@ -5,11 +5,14 @@
  * Date:        18 Sep 2020
  ******************************************************************/
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "swis.h"
+
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
 
 #include "gcontext.h"
 #include "textblock.h"
@@ -863,8 +866,10 @@ static rgb_t sliderender_slide_property_rgb(sliderender_t *render,
 static int sliderender_prepare_background(sliderender_t *render)
 {
     static char *posname[9] = {
+            /* We store centre first, so that all other logos appear on top */
+            "logo.centre",
             "logo.top-left",    "logo.top",    "logo.top-right",
-            "logo.mid-left",    "logo.centre", "logo.mid-right",
+            "logo.left",                       "logo.right",
             "logo.bottom-left", "logo.bottom", "logo.bottom-right",
         };
     int n;
@@ -874,7 +879,7 @@ static int sliderender_prepare_background(sliderender_t *render)
         char buffer[32];
         char *prefix = posname[n];
         const char *value = slide_getproperty(render->slide, prefix, NULL);
-        if (value != NULL)
+        if (value != NULL && *value != '\0')
         {
             /* We have a value set, so we should decide what image to use */
             simage->name = strdup(value);
@@ -1038,8 +1043,10 @@ static int sliderender_render_background(sliderender_t *render)
 #define POS_VBOTTOM (2<<2)
 #define POS_VMASK   (3<<2)
     static char posmap[9] = {
+            /* Centre is first so that all the other backgrounds are on top */
+            (POS_HMID | POS_VMID),
             (POS_HLEFT | POS_VTOP),    (POS_HMID | POS_VTOP),    (POS_HRIGHT | POS_VTOP),
-            (POS_HLEFT | POS_VMID),    (POS_HMID | POS_VMID),    (POS_HRIGHT | POS_VMID),
+            (POS_HLEFT | POS_VMID),                              (POS_HRIGHT | POS_VMID),
             (POS_HLEFT | POS_VBOTTOM), (POS_HMID | POS_VBOTTOM), (POS_HRIGHT | POS_VBOTTOM),
         };
     int n;

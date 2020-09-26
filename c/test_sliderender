@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "gcontext.h"
 #include "slidemd.h"
 #include "file.h"
@@ -49,6 +53,10 @@ int main(int argc, char *argv[])
         start_slide = atoi(argv[2]);
     }
 
+#ifdef FORTIFY
+    Fortify_EnterScope();
+#endif
+
     if (screen_get_size(&screen))
     {
         printf("Screen initialisation failed\n");
@@ -64,6 +72,8 @@ int main(int argc, char *argv[])
 
     printf("---- MD parsing ----\n");
     deck = slidemd_parse(mddata, strlen(mddata));
+    assert(deck != NULL);
+    free((char*)mddata);
 
     render = sliderender_create(deck, 0, &region);
     if (render == NULL)
@@ -97,6 +107,13 @@ int main(int argc, char *argv[])
             _kernel_oscli(cli);
         }
     }
+
+    sliderender_destroy(render);
+    slidedeck_destroy(deck);
+
+#ifdef FORTIFY
+    Fortify_LeaveScope();
+#endif
 
     return 0;
 }

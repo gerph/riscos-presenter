@@ -36,4 +36,13 @@ char *strndup(const char *str,int n);
  ******************************************************************/
 int stricmp(const char *str1,const char *str2);
 
+
+#ifdef FORTIFY
+/* Label the callers of these functions */
+char *strdup_label(char const *x, const char *file, int line);
+char *strndup_label(char const *x, int n, const char *file, int line);
+#define strdup(x)       strdup_label((x), __FILE__, __LINE__)
+#define strndup(x, y)   strndup_label((x), (y), __FILE__, __LINE__)
+#endif
+
 #endif

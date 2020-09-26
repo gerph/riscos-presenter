@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "slidedeck.h"
 #include "slidedeck_debug.h"
 #include "slidemd.h"
@@ -21,14 +25,34 @@ int main(int argc, char *argv[])
     const char *mddata;
     slidedeck_t *deck;
 
+    if (argc > 1)
+    {
+        in_filename = argv[1];
+    }
+
+#ifdef FORTIFY
+    Fortify_EnterScope();
+#endif
+
     mddata = file_read_string(in_filename);
-    assert(mddata);
+    if (mddata == NULL)
+    {
+        printf("Could not read %s", in_filename);
+        return 1;
+    }
 
     printf("---- MD parsing ----\n");
     deck = slidemd_parse(mddata, strlen(mddata));
+    free((char*)mddata);
 
     printf("---- Slides dump ----\n");
-    slidedeck_dump(deck);
+    //slidedeck_dump(deck);
+
+    slidedeck_destroy(deck);
+
+#ifdef FORTIFY
+    Fortify_LeaveScope();
+#endif
 
     return 0;
 }

@@ -16,6 +16,8 @@ OBJS       = \
 			 o.test_slidemd \
 			 o.mdnames
 
+FORTIFY = no
+
 include LibraryCommand
 
 

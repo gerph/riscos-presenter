@@ -12,6 +12,10 @@
 #include <stdio.h>
 #include "swis.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 #include "fontfamily.h"
 #include "gcontext.h"
 #include "fontmapif.h"
@@ -219,6 +223,7 @@ int fontfamily_populate(fontfamily_t family)
                 return 1;
 
             dprintf("Failed to populate style for bold-slant of '%s'\n", new_font);
+            free((char *)new_font);
 
             /* We generated one, so try to just use the base */
             new_font = fontmap_makefont_bold(base_font);
@@ -227,10 +232,13 @@ int fontfamily_populate(fontfamily_t family)
 
             if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, new_font))
             {
+                free((char*)new_font);
                 return 1; /* Allocation failed */
             }
             dprintf("  but was ok with just the bold variant\n");
         }
+        if (new_font != regular_font)
+            free((char *)new_font);
     }
 
     /* Now bold */
@@ -242,6 +250,9 @@ int fontfamily_populate(fontfamily_t family)
 
         if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, new_font))
             return 1; /* Allocation failed */
+
+        if (new_font != regular_font)
+            free((char *)new_font);
     }
 
     /* Finally italic */
@@ -266,6 +277,9 @@ int fontfamily_populate(fontfamily_t family)
             }
             dprintf("  but was ok with just the regular variant\n");
         }
+
+        if (new_font != regular_font)
+            free((char *)new_font);
     }
 
     return 0;

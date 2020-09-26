@@ -8,8 +8,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "font.h"
 #include "swis.h"
+
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
+#include "font.h"
 #include "gcontext.h"
 
 /* Define this to debug this file */

@@ -11,6 +11,10 @@
 #include "str.h"
 #include "optlist.h"
 
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
 /* Define this to debug the code */
 /* #define DEBUG */
 

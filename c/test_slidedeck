@@ -49,4 +49,5 @@ int main(int argc, char *argv[])
     printf("----\n");
     slidedeck_dump(deck);
 
+    slidedeck_destroy(deck);
 }
