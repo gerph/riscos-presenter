@@ -52,12 +52,63 @@ typedef struct slidemd_s {
 } slidemd_t;
 
 
+/*************************************************** Gerph *********
+ Function:      slidedeck_apply_template
+ Description:   Apply a template to the current slide
+ Parameters:    deck-> the deck to work on
+                template_name-> the template name to use
+ Returns:       1 if failed, 0 if successfuly
+ ******************************************************************/
+int slidedeck_apply_template(slidedeck_t *deck, const char *template_name)
+{
+    int n;
+    slide_t *template_slide = NULL;
+    for (n=0; n < deck->nslides; n++)
+    {
+        slide_t *slide = deck->slides[n];
+        const char *name = slide_getproperty(slide, "name", NULL);
+        if (name && strcmp(name, template_name)==0)
+        {
+            template_slide = slide;
+            break;
+        }
+    }
+
+    /* First, we erase all the properties of the current slide */
+    if (slidedeck_clearproperties(deck))
+        return 1;
+
+    if (!template_slide)
+    {
+        dprintf("Could not find template '%s'; leaving the slide unstyled\n", template_name);
+        return 1;
+    }
+
+    /* Now copy the properties from the other slide to this one */
+    if (slidedeck_copyproperties(deck, template_slide))
+        return 1;
+
+    /* Remove the 'name' property, as we are not the template base */
+    if (slidedeck_delproperty(deck, "name"))
+        return 1;
+
+    /* FIXME: We don't currently copy any structure; in the future we
+     *        might make that an option with a flag.
+     */
+
+    return 0;
+}
+
+
 int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
     slidemd_t *slidemd = (slidemd_t *)userdata;
     slidedeck_t *deck = slidemd->deck;
 
     dprintf("enter_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     switch (type)
     {
         case MD_BLOCK_DOC:
@@ -87,6 +138,9 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
 
         case MD_BLOCK_HR:
             slidedeck_newslide(deck);
+
+            /* Remove any 'name' from the new slide; they're unique to a given slide */
+            slidedeck_delproperty(deck, "name");
 
             /* Moved toa new slide, so we're starting a slide */
             slidemd->starting_slide = 1;
@@ -156,6 +210,9 @@ int enter_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             slidemd->starting_slide = 0;
         }
     }
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     return 0;
 }
 
@@ -165,6 +222,9 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
     slidedeck_t *deck = slidemd->deck;
 
     dprintf("leave_block: %i (%s)\n", type, MD_BLOCK_NAME(type));
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     switch (type)
     {
         case MD_BLOCK_DOC:
@@ -228,6 +288,9 @@ int leave_block(MD_BLOCKTYPE type, void *detail, void *userdata)
             break;
 
     }
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     return 0;
 }
 
@@ -237,6 +300,9 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
     slidedeck_t *deck = slidemd->deck;
 
     dprintf("enter_span: %i (%s)\n", type, MD_SPAN_NAME(type));
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
 
     if (slidemd->deferred_p)
     {
@@ -332,6 +398,9 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
             slidedeck_render_underline(deck, 1);
             break;
     }
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     return 0;
 }
 
@@ -341,6 +410,9 @@ int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
     slidedeck_t *deck = slidemd->deck;
 
     dprintf("leave_span: %i (%s)\n", type, MD_SPAN_NAME(type));
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     switch (type)
     {
         case MD_SPAN_EM:
@@ -383,6 +455,9 @@ int leave_span(MD_SPANTYPE type, void *detail, void *userdata)
             slidedeck_render_underline(deck, 0);
             break;
     }
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     return 0;
 }
 
@@ -392,6 +467,9 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
     slidedeck_t *deck = slidemd->deck;
 
     dprintf("text: %i (%s) [%.*s]\n", type, MD_TEXT_NAME(type), size, text);
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
 
     if (slidemd->deferred_p)
     {
@@ -478,8 +556,17 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
                             while (*value == ' ' && left)
                                 value++, left--; /* Skip spaces after the colon */
                             value = strndup(value, left);
-                            dprintf("Set Slide property '%s' to '%s'\n", name, value);
-                            slidedeck_addproperty(deck, name, value);
+                            if (strcmp(name, "template") == 0)
+                            {
+                                /* Actually in this file */
+                                dprintf("Apply templates from '%s'\n", value);
+                                slidedeck_apply_template(deck, value);
+                            }
+                            else
+                            {
+                                dprintf("Set Slide property '%s' to '%s'\n", name, value);
+                                slidedeck_addproperty(deck, name, value);
+                            }
                             free(value);
                         }
                         free(name);
@@ -531,6 +618,9 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
             break;
 
     }
+#ifdef FORTIFY
+    Fortify_CheckAllMemory();
+#endif
     return 0;
 }
 

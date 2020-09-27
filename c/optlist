@@ -152,9 +152,13 @@ optval *opt_remove(opts *top,optval *opt)
       if (last==NULL) top->head=next;
       else last->next=next;    /* relink us */
       cur=last;
+      break;
     }
     last=cur; cur=next; /* move on to next */
   }
+  if (opt==top->tail)
+    top->tail = last;
+
   return NULL;
 }
 

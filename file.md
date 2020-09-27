@@ -1,3 +1,4 @@
+name: first
 body.font: Optima.Regular
 body.italic.font: Phosphate.Inline
 background-colour: white
@@ -31,6 +32,7 @@ Second line
 Image: ![my picture](rgbcircles (20x20))
 
 ---
+name: second
 class: foo
 font: bar
 
@@ -43,6 +45,9 @@ font: bar
 3. How about some `code` in the mix?
 
 ---
+template: first
+background-colour: another
+background-colour: more
 
 Text
 

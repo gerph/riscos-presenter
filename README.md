@@ -13,6 +13,8 @@ followed by properties which should be applied to this (and subsequent) slides. 
 
 The following properties are defined:
 
+* `name`: Declares a name for this slide (used by the templates)
+* `template`: Declares the slide name which should be used as the basis for this slide - must be the first property of the slide. The templates only take property information from the templated slide.
 * `background-colour`/`foreground-colour`: Changes the slide background and text foreground colour. It is not currently possible to change the colour of text inline. Colours may be named CSS colours, `#RRGGBB`, `#RGB`, `rgb(r,g,b)` or `rgb(r%,g%,b%)` values (as supported by the WebColours module).
 * `*.font`/`*.size`/`*.height`: Defines font characteristics for the main styles used within the slides. Each font name may be suffixed by `.bold` and `.italic` (in that order) to configure specific font styles. The size and height are only configurable on the base font at the current time. The following font names may be defined:
     * `body`

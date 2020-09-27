@@ -29,6 +29,7 @@ Gerph, November 2020
 
 
 ---
+name: section-title
 background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
@@ -42,6 +43,7 @@ November
 2020
 
 ---
+name: body-text
 background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
@@ -67,11 +69,7 @@ vertical-align: top
 * What powers it...
 
 ---
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # 1. Background
 
@@ -80,13 +78,7 @@ March
 2019
 
 ---
-background-colour: white
-foreground-colour: black
-h1.font: Optima.Bold
-h1.size: 42pt
-h2.font: Optima.Bold
-h2.size: 28pt
-vertical-align: top
+template: body-text
 
 # Background
 ## Who am I?
@@ -174,11 +166,7 @@ vertical-align: top
 ***`Tech`***: … we'll come to that later …
 
 ---
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # 2. JFPatch-as-a-service
 
@@ -188,13 +176,7 @@ March
 
 
 ---
-background-colour: white
-foreground-colour: black
-h1.font: Optima.Bold
-h1.size: 42pt
-h2.font: Optima.Bold
-h2.size: 28pt
-vertical-align: top
+template: body-text
 
 # JFPatch-as-a-Service
 ## Why?
@@ -250,11 +232,7 @@ About robuild-client. FIXME
 
 ---
 
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # 3. How The Service Works
 
@@ -263,13 +241,7 @@ March
 2020
 
 ---
-background-colour: white
-foreground-colour: black
-h1.font: Optima.Bold
-h1.size: 42pt
-h2.font: Optima.Bold
-h2.size: 28pt
-vertical-align: top
+template: body-text
 
 # How The Service Works
 ## What is the service?
@@ -297,11 +269,7 @@ But Docker runs on Linux?\
 You're running RISC OS on Linux then? ”
 
 ---
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # ...
 
@@ -318,13 +286,7 @@ June
 2019
 
 ---
-background-colour: white
-foreground-colour: black
-h1.font: Optima.Bold
-h1.size: 42pt
-h2.font: Optima.Bold
-h2.size: 28pt
-vertical-align: top
+template: body-text
 
 # RISC OS Pyromaniac
 ## How do you test RISC OS software without RISC OS ?
@@ -660,22 +622,12 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 * Using it for actual testing - that was what it was for!
 
 ---
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # 5. Conclusion
 
 ---
-background-colour: white
-foreground-colour: black
-h1.font: Optima.Bold
-h1.size: 42pt
-h2.font: Optima.Bold
-h2.size: 28pt
-vertical-align: top
+template: body-text
 
 # Conclusion
 ## References
@@ -685,11 +637,7 @@ FIXME: Include a link to where you can find more information.
 Create _pyromaniac.riscos.online_ as a resource for this?
 
 ---
-background-colour: #56C1FF
-foreground-colour: white
-h1.font: Optima.Regular
-h1.size: 58pt
-vertical-align: middle
+template: section-title
 
 # 6. Questions
 

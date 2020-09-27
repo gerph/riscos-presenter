@@ -275,6 +275,26 @@ int slidedeck_delproperty(slidedeck_t *deck, const char *id);
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_clearproperties
+ Description:   Clear all the properties on the current slide and the deck
+ Parameters:    deck-> the slide deck to add a property to
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_clearproperties(slidedeck_t *deck);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_copyproperties
+ Description:   Copy all the properties from a given slide to the
+                current slide and the deck
+ Parameters:    deck-> the slide deck to add a property to
+                slide_Src-> the slide to copy from
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_copyproperties(slidedeck_t *deck, slide_t *slide_src);
+
+
+/*************************************************** Gerph *********
  Function:      slide_getproperty
  Description:   Read a property from a slide
  Parameters:    slide-> the slide to read

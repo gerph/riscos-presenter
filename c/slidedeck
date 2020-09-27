@@ -582,6 +582,60 @@ int slidedeck_delproperty(slidedeck_t *deck, const char *id)
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_clearproperties
+ Description:   Clear all the properties on the current slide and the deck
+ Parameters:    deck-> the slide deck to add a property to
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_clearproperties(slidedeck_t *deck)
+{
+    slide_t *slide = deck->lastslide;
+
+    /* Clear the slide properties */
+    opt_destroy(slide->properties);
+    slide->properties = opt_create();
+    if (slide->properties == NULL)
+        return 1;
+
+    /* Clear the deck's properties */
+    opt_destroy(deck->properties);
+    deck->properties = opt_create();
+    if (deck->properties == NULL)
+        return 1;
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_copyproperties
+ Description:   Copy all the properties from a given slide to the
+                current slide and the deck
+ Parameters:    deck-> the slide deck to add a property to
+                slide_Src-> the slide to copy from
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_copyproperties(slidedeck_t *deck, slide_t *slide_src)
+{
+    slide_t *slide_dst = deck->lastslide;
+    optval *opt;
+
+    for (opt=opt_firstopt(slide_src->properties);
+         opt;
+         opt=opt_nextopt(opt))
+    {
+        if (slidedeck_addproperty(deck, opt->id, opt->value))
+        {
+            dprintf("Failed to copy properties from slide\n");
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
  Function:      slide_getproperty
  Description:   Read a property from a slide
  Parameters:    slide-> the slide to read
