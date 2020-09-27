@@ -16,6 +16,10 @@ pre.border.type: solid
 pre.border.width: 2px
 pre.border.colour: slategray
 pre.background-colour: gainsboro
+logo.bottom-right: GerphG
+logo.bottom-right.inset: 1em
+logo.bottom-right.width: 4em
+logo.bottom-right.height: 4em
 
 
 # Building for RISC OS, Online
@@ -232,6 +236,7 @@ vertical-align: top
   * CObey \(C module\) \(github link\)
   * ErrorCancel \(ObjAsm\) \(github link\)
   * Pico \(C command line tool\) \(github link\)
+  * DDEUtils \(JFPatch module\) \(github link\)
 
 ---
 # JFPatch-as-a-Service
@@ -597,9 +602,9 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 
 * RISC OS Alphabets in Python Codecs
 * RISC OS Zip file decoding in Python
-* Dump of selected test code for RISC OS
 * SublimeText syntax for RISC OS command files
 * NanoRC syntaxes for some RISC OS file types
+* Tool for building hourglass modules
 * Tool testing tool
 * Miscellaneous toolchain updates
 
@@ -610,6 +615,8 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 * RISC OS Pyromaniac has tests - about a thousand at present.
 * Tests take about 18 minutes to run - and run on Linux and macOS in parallel.
 * Code coverage hovers at around 65%.
+
+***`Tech`***: Some of the tests exported out to GitHub
 
 ---
 # RISC OS Pyromaniac
@@ -636,9 +643,21 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 ## “Releases”?
 
 * Released once a month, just to myself.
+    * October's version is 0.16.
+    * Releases are a way to stop it being unusably 'half finished'.
+    * Releases are a great incentive - I really have achieved a lot this month!
 * Long lived development, for example...
   * Font Manager lived on a branch for about 6 months.
   * EasySockets is still on a branch.
+
+---
+# RISC OS Pyromaniac
+## Future work
+
+* More APIs.
+* Better handling of corner cases.
+* Back Trace Structures
+* Using it for actual testing - that was what it was for!
 
 ---
 background-colour: #56C1FF
