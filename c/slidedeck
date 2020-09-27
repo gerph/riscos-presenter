@@ -90,6 +90,8 @@ static void slidedeck_destroyspan(slidespan_t *span)
             {
                 free((char*)span->data.image.name);
                 span->data.image.name = NULL;
+                opt_destroy(span->data.image.properties);
+                span->data.image.properties = NULL;
             }
             break;
     }
@@ -418,6 +420,14 @@ int slidedeck_addspan_imagen(slidedeck_t *deck, const char *name, int len)
         return 1;
     }
 
+    span->data.image.properties = opt_create();
+    if (span->data.image.properties == NULL)
+    {
+        free((char*)span->data.image.name);
+        free(span);
+        return 1;
+    }
+
     /* Link to chain */
     if (block->lastspan)
         block->lastspan->next = span;
@@ -556,7 +566,6 @@ int slidedeck_delproperty(slidedeck_t *deck, const char *id)
 {
     slide_t *slide = deck->lastslide;
     optval *opt;
-    int fail;
 
     /* First change the current slide properties */
     opt = opt_findopt(slide->properties, id);
@@ -578,7 +587,8 @@ int slidedeck_delproperty(slidedeck_t *deck, const char *id)
  Parameters:    slide-> the slide to read
                 id-> property id string
                 default_value-> value to return if no property present
- Returns:       1 if failed, 0 if successful
+ Returns:       pointer to the property value,
+                or the default if it does not exist
  ******************************************************************/
 const char *slide_getproperty(slide_t *slide, const char *id, const char *default_value)
 {
@@ -586,4 +596,59 @@ const char *slide_getproperty(slide_t *slide, const char *id, const char *defaul
     if (value == NULL)
         value = default_value;
     return value;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidespan_image_getproperty
+ Description:   Read a property from an image span
+ Parameters:    slide-> the slide to read
+                id-> property id string
+                default_value-> value to return if no property present
+ Returns:       pointer to the property value,
+                or the default if it does not exist,
+                or NULL if this was not an image span
+ ******************************************************************/
+const char *slidespan_image_getproperty(slidespan_t *span, const char *id, const char *default_value)
+{
+    const char *value;
+    if (span->type != sst_image)
+        return NULL;
+
+    value = opt_lookup(span->data.image.properties, id);
+    if (value == NULL)
+        value = default_value;
+    return value;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_image_addproperty
+ Description:   Set a property on the most recent image span
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+                value-> property value string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_image_addproperty(slidedeck_t *deck, const char *id, const char *value)
+{
+    slide_t *slide = deck->lastslide;
+    slideblock_t *block = SLIDE_BLOCK(slide);
+    slidespan_t *span;
+    optval *opt;
+    int fail;
+
+    span = block->lastspan;
+    if (!span)
+        return 1;
+
+    if (span->type != sst_image)
+        return 1;
+
+    /* Add to the properties of the span's image */
+    fail = opt_add(span->data.image.properties, id, value);
+    if (fail)
+        return 1;
+
+    return 0;
 }

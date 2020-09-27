@@ -76,8 +76,7 @@ typedef struct slidespan_s {
         } text;
         struct {
             const char *name;
-            int width;
-            int height;
+            opts *properties;
         } image;
     } data;
 } slidespan_t;
@@ -281,9 +280,34 @@ int slidedeck_delproperty(slidedeck_t *deck, const char *id);
  Parameters:    slide-> the slide to read
                 id-> property id string
                 default_value-> value to return if no property present
- Returns:       1 if failed, 0 if successful
+ Returns:       pointer to the property value,
+                or the default if it does not exist
  ******************************************************************/
 const char *slide_getproperty(slide_t *slide, const char *id, const char *default_value);
+
+
+/*************************************************** Gerph *********
+ Function:      slidespan_image_getproperty
+ Description:   Read a property from an image span
+ Parameters:    slide-> the slide to read
+                id-> property id string
+                default_value-> value to return if no property present
+ Returns:       pointer to the property value,
+                or the default if it does not exist,
+                or NULL if this was not an image span
+ ******************************************************************/
+const char *slidespan_image_getproperty(slidespan_t *span, const char *id, const char *default_value);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_image_addproperty
+ Description:   Set a property on the most recent image span
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+                value-> property value string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_image_addproperty(slidedeck_t *deck, const char *id, const char *value);
 
 
 #endif

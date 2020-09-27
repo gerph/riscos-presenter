@@ -176,11 +176,11 @@ int textblock_linespacing(textblock_t textblock);
                 width = width of the space to create
                 height = height of the space to create (may push the
                 ascent higher)
-                posp-> where to store the coords of the bottom left
+                posp-> where to store the bbox of the space created
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
 int textblock_space(textblock_t textblock, int width, int height,
-                    coords_t *posp);
+                    bbox_t *boxp);
 
 
 /*************************************************** Gerph *********

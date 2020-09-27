@@ -99,7 +99,21 @@ static void slidedeck_dumpspan_image(slidedeck_t *deck, slidespan_t *span, int i
 {
     slidedeck_dumpindent(indent);
     printf("Span image: '%s'\n", span->data.image.name);
-    /* FIXME: Add width and height and anything else */
+    {
+        optval *val;
+        int first = 1;
+        for (val = opt_firstopt(span->data.image.properties); val; val = opt_nextopt(val))
+        {
+            if (first)
+            {
+                slidedeck_dumpindent(indent);
+                printf("  Properties:\n");
+                first = 0;
+            }
+            slidedeck_dumpindent(indent);
+            printf("    %s: '%s'\n", opt_id(val), opt_value(val));
+        }
+    }
 }
 
 

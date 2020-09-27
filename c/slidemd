@@ -262,12 +262,49 @@ int enter_span(MD_SPANTYPE type, void *detail, void *userdata)
             break;
 
         case MD_SPAN_IMG:
-            // FIXME: No image support
             {
                 MD_SPAN_IMG_DETAIL *img = (MD_SPAN_IMG_DETAIL *)detail;
                 dprintf("  Image source '%.*s'\n", img->src.size, img->src.text);
                 dprintf("  Image title '%.*s'\n", img->title.size, img->title.text);
                 slidedeck_addspan_imagen(deck, img->src.text, img->src.size);
+
+                /* Add any properties that have been specified */
+                if (img->title.text)
+                {
+                    char *properties = strndup(img->title.text, img->title.size);
+                    char *p = properties;
+                    if (!properties)
+                    {
+                        /* Failed to create the properties we'll work on */
+                        break;
+                    }
+                    while (*p)
+                    {
+                        char *sep;
+                        char *id, *value;
+                        while (*p == ' ')
+                            p++;
+                        if (!*p)
+                            break;
+
+                        sep = strchr(p, '=');
+                        if (sep == NULL)
+                            break; /* No more key-value pairs */
+                        *sep = '\0';
+                        id = p;
+                        value = sep + 1;
+                        sep = strchr(value, ' ');
+                        if (sep != NULL)
+                            *sep++ = '\0';
+                        else
+                            sep = value + strlen(value);
+                        p = sep;
+
+                        dprintf("    Property %s: '%s'\n", id, value);
+                        slidedeck_image_addproperty(deck, id, value);
+                    }
+                    free(properties);
+                }
             }
             break;
 

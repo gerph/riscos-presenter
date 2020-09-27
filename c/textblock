@@ -451,11 +451,11 @@ int textblock_linespacing(textblock_t textblock)
                 width = width of the space to create
                 height = height of the space to create (may push the
                 ascent higher)
-                posp-> where to store the coords of the bottom left
+                posp-> where to store the bbox of the space created
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
 int textblock_space(textblock_t textblock, int width, int height,
-                    coords_t *posp)
+                    bbox_t *boxp)
 {
     int xspace = textblock->width - textblock->xc;
     int y0;
@@ -475,12 +475,15 @@ int textblock_space(textblock_t textblock, int width, int height,
     if (y0 - textblock->line_descent < textblock->y0)
         return 0;
 
-    if (posp)
+    if (boxp)
     {
-        posp->x = textblock->x0 + textblock->inset_left + textblock->xc;
-        posp->y = y0;
+        boxp->x0 = textblock->x0 + textblock->inset_left + textblock->xc;
+        boxp->y0 = y0;
+        boxp->x1 = boxp->x0 + width;
+        boxp->y1 = boxp->y0 + height;
     }
     textblock->line_ascent = new_line_ascent;
+    textblock->xc += width;
     return 1;
 }
 

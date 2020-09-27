@@ -37,6 +37,7 @@ struct image_s {
     const char *name;
 
     filedata_t imagedata;
+    bbox_t bbox;
 };
 
 typedef struct ifr_tofit_s {
@@ -45,6 +46,13 @@ typedef struct ifr_tofit_s {
     int border;
     int angle;
 } ifr_tofit_t;
+
+typedef struct ifr_scale_s {
+    int xmult;
+    int ymult;
+    int xdiv;
+    int ydiv;
+} ifr_scale_t;
 
 
 /*************************************************** Gerph *********
@@ -68,6 +76,10 @@ image_t *image_create(const char *name)
     image->imagedata.data = NULL;
     image->imagedata.datalen = 0;
     image->imagedata.filetype = -1;
+    image->bbox.x0 = 0;
+    image->bbox.y0 = 0;
+    image->bbox.x1 = -1;
+    image->bbox.y1 = -1;
 
     return image;
 }
@@ -156,5 +168,52 @@ int image_render_tofit(image_t *image, bbox_t *bbox, int border)
         return 1;
     }
 
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      image_bbox
+ Description:   Return the natural size for the image, in OS units
+ Parameters:    image-> the image to draw
+                bbox-> the box to fill with the details
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int image_bbox(image_t *image, bbox_t *bbox)
+{
+    if (image->bbox.x0 > image->bbox.x1)
+    {
+        /* Image size hasn't been calculated yet */
+        ifr_scale_t scale;
+        _kernel_oserror *err;
+
+        scale.xmult = 1;
+        scale.ymult = 1;
+        scale.xdiv = 1;
+        scale.ydiv = 1;
+
+        err = _swix(ImageFileRender_BBox, _INR(0,7),
+                                          TRANSFORMTYPE_SCALE |
+                                            FLAG_IGNORE_DOCUMENT_OFFSET |
+                                            FLAG_RETURN_OSUNITS,
+                                          image->imagedata.filetype,
+                                          image->imagedata.data,
+                                          image->imagedata.datalen,
+                                          NULL, /* Ext data */
+                                          SEQUENCE_LAST, /* Last item */
+                                          &scale,
+                                          &image->bbox);
+        if (err)
+        {
+            dprintf("Failed to get size: %s\n", err->errmess);
+            /* Ensure the box is still invalid */
+            image->bbox.x0 = 0;
+            image->bbox.x1 = -1;
+            return 1;
+        }
+    }
+
+    /* Return the cached bounding box */
+    *bbox = image->bbox;
     return 0;
 }
