@@ -457,16 +457,23 @@ static int sliderender_fontsize(sliderender_t *render,
 }
 
 
+/* Flags to use to get the sizes for sliderender_ossize functions for the relative sizes */
+#define OSSIZE_IS_X         (1lu<<0) /* The measure is in the x-dimension */
+#define OSSIZE_IS_Y         (0lu<<0) /* The measure is in the y-dimension */
+#define OSSIZE_IS_SLIDE     (1lu<<1) /* The measure is relative to the slide dimentions */
+#define OSSIZE_IS_SPACE     (0lu<<1) /* The measure is relative to the space remaining */
+
 /*************************************************** Gerph *********
  Function:      sliderender_ossize
  Description:   Get the size of in OS units from a specification string
  Parameters:    render-> the render to work with
                 string-> the string to parse
+                flags = the OSSIZE_* flags for parsing the string
  Returns:       font size in points * 16, or -1 if failed to parse
  ******************************************************************/
 static int sliderender_ossize(sliderender_t *render,
                               const char *string,
-                              int is_x)
+                              unsigned long flags)
 {
     const char *end;
     char copy[16];
@@ -517,16 +524,46 @@ static int sliderender_ossize(sliderender_t *render,
     else if (strcmp(end, "em")==0)
     {
         end += 2;
-        if (is_x)
+        if (flags & OSSIZE_IS_X)
             multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).width / 8;
         else
             multiplier = fontfamily_get_size(render->family_body, FONTFAMILY_STYLE_BASE).height / 8;
     }
     else if (strcmp(end, "px")==0)
     {
-        /* Assume they meant OS units */
+        /* Although they said PX they meant the common pixel size (an EX0 EY0 mode will be have same scale) */
         end += 2;
         multiplier = 2;
+    }
+    else if (strcmp(end, "%")==0)
+    {
+        /* Portion of the slide or the remaining region */
+        int limit;
+        if (flags & OSSIZE_IS_SLIDE)
+        {
+            /* Portion of the slide */
+            if (flags & OSSIZE_IS_X)
+                limit = render->region.x1 - render->region.x0;
+            else
+                limit = render->region.y1 - render->region.y0;
+        }
+        else
+        {
+            /* Remaining space in the block */
+            bbox_t bbox;
+            textblock_region(render->textblock, &bbox,
+                             TBREGION_WHERE_REMAINING | TBREGION_INSET | TBREGION_POSITION);
+            if (flags & OSSIZE_IS_X)
+                limit = bbox.x1 - bbox.x0;
+            else
+                limit = bbox.y1 - bbox.y0;
+        }
+        if (num < 0)
+            num = 0;
+        if (num > 100)
+            num = 100;
+        num = num * limit / 100.0;
+        end += 1;
     }
 
     if (*end != '\0')
@@ -762,25 +799,24 @@ sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *re
     return render;
 }
 
-
 /*************************************************** Gerph *********
  Function:      sliderender_slide_property_osunit
  Description:   Read the property for a given slide as OS Units
  Parameters:    render-> the render block to read
                 property-> the name of the property
                 default_size = the default size specification as a string
-                is_x = non-0 if this is an x coordinate,
-                       if is it's a y coordinate
+                flags = OSSIZE_* flags for the scaling
  Returns:       size in os units
  ******************************************************************/
 static int sliderender_slide_property_osunit(sliderender_t *render, const char *property,
-                                             const char *default_size, int is_x)
+                                             const char *default_size,
+                                             unsigned long flags)
 {
     const char *value;
     int size;
 
     value = slide_getproperty(render->slide, property, default_size);
-    size = sliderender_ossize(render, value, is_x);
+    size = sliderender_ossize(render, value, flags);
 
     return size;
 }
@@ -889,11 +925,14 @@ static int sliderender_prepare_background(sliderender_t *render)
                 return 1;
             }
             sprintf(buffer, "%s.inset", prefix);
-            simage->inset = sliderender_slide_property_osunit(render, buffer, "0", 0);
+            simage->inset = sliderender_slide_property_osunit(render, buffer, "0",
+                                                              OSSIZE_IS_X | OSSIZE_IS_SLIDE);
             sprintf(buffer, "%s.width", prefix);
-            simage->width = sliderender_slide_property_osunit(render, buffer, "0", 1);
+            simage->width = sliderender_slide_property_osunit(render, buffer, "0",
+                                                              OSSIZE_IS_X | OSSIZE_IS_SLIDE);
             sprintf(buffer, "%s.height", prefix);
-            simage->height = sliderender_slide_property_osunit(render, buffer, "0", 0);
+            simage->height = sliderender_slide_property_osunit(render, buffer, "0",
+                                                               OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         }
     }
 
@@ -974,13 +1013,15 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         const char *padding = slide_getproperty(render->slide, "padding", NULL);
         if (padding)
         {
-            inset_x = sliderender_ossize(render, padding, 1);
-            inset_y = sliderender_ossize(render, padding, 0);
+            inset_x = sliderender_ossize(render, padding, OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+            inset_y = sliderender_ossize(render, padding, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         }
         else
         {
-            inset_x = sliderender_slide_property_osunit(render, "padding-horizontal", "16px", 1);
-            inset_y = sliderender_slide_property_osunit(render, "padding-vertical", "16px", 0);
+            inset_x = sliderender_slide_property_osunit(render, "padding-horizontal", "16px",
+                                                        OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+            inset_y = sliderender_slide_property_osunit(render, "padding-vertical", "16px",
+                                                        OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         }
 
         /* FIXME: For now just ignore any invalid values */
@@ -993,22 +1034,22 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->inset_y = inset_y;
 
         /* Size of lists, items, pre code and quote sections */
-        render->list_gap_top      = sliderender_slide_property_osunit(render, "list.padding.top", "0.25em", 0);
-        render->list_gap_bottom   = sliderender_slide_property_osunit(render, "list.padding.bottom", "0.25em", 0);
-        render->list_inset        = sliderender_slide_property_osunit(render, "list.padding.inset", "0.5em", 1);
-        render->item_inset        = sliderender_slide_property_osunit(render, "item.padding.inset", "0.5em", 1);
-        render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", 1);
-        render->pre_inset         = sliderender_slide_property_osunit(render, "pre.padding.inset", "1em", 1);
+        render->list_gap_top      = sliderender_slide_property_osunit(render, "list.padding.top", "0.25em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+        render->list_gap_bottom   = sliderender_slide_property_osunit(render, "list.padding.bottom", "0.25em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+        render->list_inset        = sliderender_slide_property_osunit(render, "list.padding.inset", "0.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->item_inset        = sliderender_slide_property_osunit(render, "item.padding.inset", "0.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->pre_inset         = sliderender_slide_property_osunit(render, "pre.padding.inset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->pre_border_type   = sliderender_slide_property_border(render, "pre.border.type", "none");
-        render->pre_border_size   = sliderender_slide_property_osunit(render, "pre.border.width", "2px", 1);
-        render->pre_padding       = sliderender_slide_property_osunit(render, "pre.padding", "0.25em", 1);
-        render->pre_fill          = sliderender_slide_property_rgb(render, "pre.background-colour", COLOUR_NONE, 1);
-        render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.colour", COLOUR_NONE, 1);
+        render->pre_border_size   = sliderender_slide_property_osunit(render, "pre.border.width", "2px", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->pre_padding       = sliderender_slide_property_osunit(render, "pre.padding", "0.25em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->pre_fill          = sliderender_slide_property_rgb(render, "pre.background-colour", COLOUR_NONE, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.colour", COLOUR_NONE, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->pre_border_opp    = sliderender_slide_property_rgb(render, "pre.border.opposite-colour", render->pre_border_fore, 1);
         render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.fore-colour", render->pre_border_fore, 1);
-        render->quote_gap_top     = sliderender_slide_property_osunit(render, "quote.padding.top", "1em", 0);
-        render->quote_gap_bottom  = sliderender_slide_property_osunit(render, "quote.padding.bottom", "1em", 0);
-        render->quote_inset       = sliderender_slide_property_osunit(render, "quote.padding.inset", "1.5em", 1);
+        render->quote_gap_top     = sliderender_slide_property_osunit(render, "quote.padding.top", "1em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+        render->quote_gap_bottom  = sliderender_slide_property_osunit(render, "quote.padding.bottom", "1em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+        render->quote_inset       = sliderender_slide_property_osunit(render, "quote.padding.inset", "1.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
 
         /* Set up the background */
         sliderender_prepare_background(render);
