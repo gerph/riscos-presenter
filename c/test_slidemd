@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     free((char*)mddata);
 
     printf("---- Slides dump ----\n");
-    //slidedeck_dump(deck);
+    slidedeck_dump(deck);
 
     slidedeck_destroy(deck);
 

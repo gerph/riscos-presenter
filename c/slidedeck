@@ -546,6 +546,33 @@ int slidedeck_addproperty(slidedeck_t *deck, const char *id, const char *value)
 
 
 /*************************************************** Gerph *********
+ Function:      slidedeck_delproperty
+ Description:   Remove a property on the current slide, and the whole deck.
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_delproperty(slidedeck_t *deck, const char *id)
+{
+    slide_t *slide = deck->lastslide;
+    optval *opt;
+    int fail;
+
+    /* First change the current slide properties */
+    opt = opt_findopt(slide->properties, id);
+    if (opt)
+        opt_remove(slide->properties, opt);
+
+    /* Then the global properties to carry forward */
+    opt = opt_findopt(deck->properties, id);
+    if (opt)
+        opt_remove(deck->properties, opt);
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
  Function:      slide_getproperty
  Description:   Read a property from a slide
  Parameters:    slide-> the slide to read

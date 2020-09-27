@@ -376,10 +376,14 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
             {
                 /* Properties must be in the format:
                  *  [a-zA-Z0-9_\.-]+:<space>
+                 * OR:
+                 *  -[a-zA-Z0-9_\.-]+:
                  */
                 int is_property = 0;
                 char *colon = memchr(text, ':', size);
-                if (colon && colon != text && colon - text < size - 2 && colon[1] == ' ')
+                if (colon && colon != text &&
+                    ((colon - text < size - 2 && colon[1] == ' ') ||
+                     (colon - text == size - 1)))
                 {
                     int i;
                     is_property = 1;
@@ -424,15 +428,24 @@ int text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
                     {
                         /* We have a slide property, so set it */
                         char *name = strndup(text, colon-text);
-                        char *value;
-                        value = colon + 1;
-                        while (*value == ' ')
-                            value++; /* Skip spaces after the colon */
-                        value = strndup(value, size - (value-text));
-                        dprintf("Set Slide property '%s' to '%s'\n", name, value);
-                        slidedeck_addproperty(deck, name, value);
+                        assert(name != NULL);
+                        if (*name == '-')
+                        {
+                            dprintf("Clear Slide property '%s'\n", &name[1]);
+                            slidedeck_delproperty(deck, &name[1]);
+                        }
+                        else
+                        {
+                            char *value = colon + 1;
+                            int left = size - (value-text);
+                            while (*value == ' ' && left)
+                                value++, left--; /* Skip spaces after the colon */
+                            value = strndup(value, left);
+                            dprintf("Set Slide property '%s' to '%s'\n", name, value);
+                            slidedeck_addproperty(deck, name, value);
+                            free(value);
+                        }
                         free(name);
-                        free(value);
                     }
                     else
                     {

@@ -8,21 +8,36 @@
 
 /*
 
-A slide deck contains multiple slides.
-Slides can be added at the end of the deck.
-Slides consist of blocks - horizontal regions of content.
-Blocks are defined by a type:
-    - regular blocks contain a list of spans.
-    - heading blocks contain a list of spans.
-    - list blocks contain a list of blocks
-    - item blocks contain a list of spans
-    - pre blocks contain a list of spans
-    - quote blocks contain a list of spans
-Blocks are layed out down the slide.
-Blocks may vary the indentation of their containers.
-Spans are layed out across the page and wrap.
-Spans contain text which has rendering properties.
-The block type and the span render properties determine the font used.
+* A slide deck contains multiple slides.
+    * Slides can be added at the end of the deck.
+    * Slides consist of:
+        * Blocks, horizontal regions of content:
+            * Blocks are defined by a type:
+                - regular blocks contain a list of spans.
+                - heading blocks contain a list of spans.
+                - list blocks contain a list of blocks
+                - item blocks contain a list of spans
+                - pre blocks contain a list of spans
+                - quote blocks contain a list of spans
+            * Blocks are layed out down the slide.
+            * Blocks may vary the indentation of their containers.
+        * Spans within blocks:
+            * Spans are layed out across the page and wrap.
+            * Spans contain one of two types of content:
+                - text which has rendering flags such as italic, and
+                  underline
+                - images which has rendering proprties
+            * The block type and the span render flags determine the
+              font used.
+        * Properties of the slide:
+            * Properties are key-value pairs which apply to the slide
+              as a whole
+    * Slide decks have properties, which match those of the most
+      recent slide.
+        * All new properties are added to the current slide, and to the
+          deck properties.
+        * When new slides are created, the current deck properties are
+          copied to the slide properties.
 
 */
 
@@ -248,6 +263,16 @@ int slidedeck_render_del(slidedeck_t *deck, int state);
  Returns:       1 if failed, 0 if successful
  ******************************************************************/
 int slidedeck_addproperty(slidedeck_t *deck, const char *id, const char *value);
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_delproperty
+ Description:   Remove a property on the current slide, and the whole deck.
+ Parameters:    deck-> the slide deck to add a property to
+                id-> property id string
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slidedeck_delproperty(slidedeck_t *deck, const char *id);
 
 
 /*************************************************** Gerph *********
