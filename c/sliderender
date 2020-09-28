@@ -1070,6 +1070,37 @@ sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *re
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_set_region
+ Description:   Set the size of the region to use for rendering.
+ Parameters:    render-> the renderer to work with
+                bbox-> the new bbox to use for the render region
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_set_region(sliderender_t *render, bbox_t *bbox)
+{
+    if (memcmp(bbox, &render->region, sizeof(*bbox))==0)
+        return 0; /* Nothing to do; it's already set */
+
+    /* Update our bounding box */
+    render->region = *bbox;
+
+    if (render->slidenumber != -1)
+    {
+        /* Recalculate the relative sizes */
+
+        render->slidenumber = -1; /* Force invalid so that we re-select this slide */
+        if (sliderender_set_slide(render, render->slidenumber))
+        {
+            /* It failed to select; reset to fake slide */
+            render->slidenumber = -1;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_prepare_background
  Description:   Set up the background images we use for the slide
  Parameters:    render-> the render to work with
@@ -1128,6 +1159,9 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     slidedeck_t *deck = render->deck;
     if (slidenumber >= deck->nslides || slidenumber < 0)
         return 1; /* Invalid slide number */
+
+    if (render->slidenumber == slidenumber)
+        return 0; /* Slide is already selected */
 
     sliderender_clear(render);
     render->slide = deck->slides[slidenumber];

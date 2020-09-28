@@ -1,0 +1,218 @@
+/*******************************************************************
+ * File:        present
+ * Purpose:     The main front end for the slide presentation tool
+ * Author:      Gerph
+ * Date:        18 Sep 2020
+ ******************************************************************/
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "swis.h"
+
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
+#include "gcontext.h"
+#include "slidemd.h"
+#include "file.h"
+#include "sliderender.h"
+#include "screen.h"
+
+
+/* Define this to debug this file */
+//#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
+typedef struct slides_s {
+    slidedeck_t *deck;
+    sliderender_t *render;
+} slides_t;
+
+
+/*************************************************** Gerph *********
+ Function:      slides_create
+ Description:   Create the slide system, loading a file
+ Parameters:    filename-> the file to load
+ Returns:       slides_t for the loaded slides, or NULL if failed
+ ******************************************************************/
+slides_t *slides_create(const char *filename)
+{
+    slides_t *slides = calloc(1, sizeof(*slides));
+    slidedeck_t *deck;
+    const char *mddata;
+
+    mddata = file_read_string(filename);
+    if (mddata == NULL)
+    {
+        free(slides);
+        return NULL;
+    }
+
+    deck = slidemd_parse(mddata, strlen(mddata));
+    if (deck == NULL)
+    {
+        free((char*)mddata);
+        free(slides);
+        return NULL;
+    }
+    free((char*)mddata);
+
+    slides->deck = deck;
+    slides->render = sliderender_create(deck, 0, NULL);
+    if (slides->render == NULL)
+    {
+        slidedeck_destroy(slides->deck);
+        free(slides);
+        return NULL;
+    }
+    return slides;
+}
+
+/*************************************************** Gerph *********
+ Function:      slides_destroy
+ Description:   Destroy the slides system
+ Parameters:    slides-> the slides to destroy
+ Returns:       none
+ ******************************************************************/
+void slides_destroy(slides_t *slides)
+{
+    if (slides == NULL)
+        return;
+
+    sliderender_destroy(slides->render);
+    slidedeck_destroy(slides->deck);
+    slides->deck = NULL;
+    free(slides);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slides_setregion
+ Description:   Set the render region for the slides
+ Parameters:    slides-> the slides to set the region for
+                bbox-> the bbox to set the region to
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_setregion(slides_t *slides, bbox_t *bbox)
+{
+    /* Currently nothing else to update in our cache */
+    return sliderender_set_region(slides->render, bbox);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slides_setregion_screen
+ Description:   Set the render region for the slides to the whole screen
+ Parameters:    slides-> the slides to set the region for
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_setregion_screen(slides_t *slides)
+{
+    bbox_t bbox = {0};
+    bounds_t screen;
+
+    if (screen_get_size(&screen))
+        return 1;
+
+    bbox.x1 = screen.width;
+    bbox.y1 = screen.height;
+
+    return sliderender_set_region(slides->render, &bbox);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slides_select
+ Description:   Select a slide to show
+ Parameters:    slides-> the slides to show
+                slide_number = slide number to select
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_select(slides_t *slides, int slide_number)
+{
+    if (sliderender_set_slide(slides->render, slide_number))
+    {
+        /* Failed to select slide */
+        return 1;
+    }
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slides_show
+ Description:   Show the current slide
+ Parameters:    slides-> the slides to show
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_show(slides_t *slides)
+{
+    /* Currently nothing else to do in this step */
+    /* FIXME: Hourglass around the rendering */
+    return sliderender_show(slides->render);
+}
+
+
+int main(int argc, char *argv[])
+{
+    char *in_filename = "file/md";
+    slides_t *slides;
+    int start_slide = 0;
+
+    if (argc > 1)
+    {
+        in_filename = argv[1];
+    }
+    if (argc > 2)
+    {
+        start_slide = atoi(argv[2]);
+    }
+
+#ifdef FORTIFY
+    Fortify_EnterScope();
+#endif
+
+    gcontext_initvdu(1);
+
+    slides = slides_create(in_filename);
+    if (slides == NULL)
+    {
+        printf("Failed to create slides\n");
+        exit(1);
+    }
+    if (slides_setregion_screen(slides))
+    {
+        printf("Could not select screen region\n");
+    }
+
+    if (slides_select(slides, start_slide))
+    {
+        printf("Could not select slide %i\n", start_slide);
+        exit(1);
+    }
+
+    if (slides_show(slides))
+    {
+        printf("Could not render slide %i\n", start_slide);
+        exit(1);
+    }
+
+    slides_destroy(slides);
+
+#ifdef FORTIFY
+    Fortify_LeaveScope();
+#endif
+
+    return 0;
+}
