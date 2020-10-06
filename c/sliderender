@@ -1070,6 +1070,19 @@ sliderender_t *sliderender_create(slidedeck_t *deck, int slidenumber, bbox_t *re
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_get_region
+ Description:   Get the size of the region to use for rendering.
+ Parameters:    render-> the renderer to work with
+                bbox-> the bbox to fill in
+ Returns:       none
+ ******************************************************************/
+void sliderender_get_region(sliderender_t *render, bbox_t *bbox)
+{
+    *bbox = render->region;
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_set_region
  Description:   Set the size of the region to use for rendering.
  Parameters:    render-> the renderer to work with
@@ -1087,9 +1100,10 @@ int sliderender_set_region(sliderender_t *render, bbox_t *bbox)
     if (render->slidenumber != -1)
     {
         /* Recalculate the relative sizes */
+        int slidenumber = render->slidenumber;
 
         render->slidenumber = -1; /* Force invalid so that we re-select this slide */
-        if (sliderender_set_slide(render, render->slidenumber))
+        if (sliderender_set_slide(render, slidenumber))
         {
             /* It failed to select; reset to fake slide */
             render->slidenumber = -1;
@@ -1287,6 +1301,18 @@ failed:
 int sliderender_get_slide(sliderender_t *render)
 {
     return render->slidenumber;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_get_bodyfont
+ Description:   Read the body font from the slides
+ Parameters:    render-> the render block
+ Returns:       font handle
+ ******************************************************************/
+font_t sliderender_get_bodyfont(sliderender_t *render)
+{
+    return render->font_body;
 }
 
 

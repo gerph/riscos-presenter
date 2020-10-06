@@ -218,6 +218,135 @@ void beep(void)
 }
 
 
+#include "font.h"
+#include "border.h"
+#include "textblock.h"
+
+#define PROMPT_BG COLOUR_RGB(224, 224, 224)
+#define PROMPT_FG COLOUR_RGB(0, 0, 0)
+#define PROMPT_MARGIN  (16)
+#define PROMPT_PADDING (32)
+#define PROMPT_BORDER  (16)
+
+
+/*************************************************** Gerph *********
+ Function:      prompt
+ Description:   Prompt for some input
+ Parameters:    slides-> the slides context to prompt in
+                message-> message to write to the screen
+                buffer-> the buffer to write to
+                bufferlen = the length of the string to input
+                width = width in OS units
+                valid-> valid characters (or NULL to accept any ascii)
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int prompt(slides_t *slides,
+           const char *message,
+           char *buffer, int bufferlen,
+           int width,
+           const char *valid)
+{
+    textblock_t textblock;
+    bbox_t region;
+    bbox_t textbox;
+    font_t font = sliderender_get_bodyfont(slides->render);
+    bounds_t em = font_getem(font);
+    int height = em.height * 2.5;
+    int index = 0;
+    int failed = -1;
+
+    if (width == 0)
+        width = em.width * strlen(message);
+
+    sliderender_get_region(slides->render, &region);
+
+    textbox.x0 = (region.x1 + region.x0 - width) / 2;
+    textbox.x1 = (region.x1 + region.x0 + width) / 2;
+    textbox.y0 = (region.y1 + region.y0 - height) / 2;
+    textbox.y1 = (region.y1 + region.y0 + height) / 2;
+
+    dprintf("Prompt textbox = %i,%i - %i,%i\n", textbox.x0, textbox.y0, textbox.x1, textbox.y1);
+
+    *buffer = '\0';
+
+    textblock  = textblock_create(textbox.x0, textbox.y0,
+                                  textbox.x1, textbox.y1,
+                                  TBCREATE_SPACING_120);
+
+    while (failed == -1)
+    {
+        int pass;
+        unsigned int ch;
+
+        rect_fill(PROMPT_BG, textbox.x0 - (PROMPT_PADDING + PROMPT_BORDER + PROMPT_MARGIN),
+                             textbox.y0 - (PROMPT_PADDING + PROMPT_BORDER + PROMPT_MARGIN),
+                             textbox.x1 + (PROMPT_PADDING + PROMPT_BORDER + PROMPT_MARGIN),
+                             textbox.y1 + (PROMPT_PADDING + PROMPT_BORDER + PROMPT_MARGIN));
+
+        border_drawsimple(bt_groove, PROMPT_BORDER,
+                          textbox.x0 - (PROMPT_PADDING + PROMPT_BORDER),
+                          textbox.y1 + (PROMPT_PADDING + PROMPT_BORDER),
+                          textbox.x1 - textbox.x0 + (PROMPT_PADDING + PROMPT_BORDER) * 2,
+                          textbox.y1 - textbox.y0 + (PROMPT_PADDING + PROMPT_BORDER) * 2,
+                          PROMPT_BG, COLOUR_NONE);
+
+        /* Redraw the text block */
+        for (pass=0; pass<2; pass++)
+        {
+            unsigned long flags = pass ? TBADD_PAINT : 0;
+            textblock_add(textblock, font,
+                          message,
+                          PROMPT_BG, PROMPT_FG,
+                          flags);
+            textblock_newline(textblock);
+            textblock_add(textblock, font,
+                          "? ",
+                          PROMPT_BG, PROMPT_FG,
+                          flags);
+            textblock_add(textblock, font,
+                          buffer,
+                          PROMPT_BG, PROMPT_FG,
+                          flags);
+            textblock_clear(textblock, TBCLEAR_TEXTTOP);
+        }
+
+        ch = input_key_block();
+        switch (ch)
+        {
+            case KEY_DELETE:
+                if (index > 0)
+                    buffer[--index] = '\0';
+                break;
+
+            case KEY_ESCAPE:
+                failed = 1;
+                break;
+
+            case KEY_ENTER:
+                failed = 0;
+                break;
+
+            default:
+                if (ch >= 32 && ch < 127)
+                {
+                    int is_addable = (!valid || strchr(valid, ch));
+                    if (is_addable)
+                    {
+                        if (index < bufferlen - 1)
+                        {
+                            buffer[index++] = ch;
+                            buffer[index] = '\0';
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    return failed;
+}
+
+
 /*************************************************** Gerph *********
  Function:      special_key
  Description:   Special handling, just for this talk - NOT part of
@@ -231,41 +360,58 @@ int special_key(slides_t *slides, int key)
     static int special_escape = 0;
     static int hourglass = 0;
     static int pointer = 0;
+
+    /*
+        xC => Drop to CLI.
+        xH => Hourglass on/off.
+        xP => Pointer on/off.
+     */
     switch (key)
     {
         case 'X':
         case 'x':
             special_escape = 1;
             return 1;
+    }
 
-        case 'H':
-        case 'h':
-            if (special_escape)
-            {
-                hourglass = !hourglass;
-                if (hourglass)
-                    hourglass_on();
-                else
-                    hourglass_smash();
-                special_escape = 0;
-                return 1;
-            }
-            break;
+    if (special_escape)
+    {
+        switch (key)
+        {
+            case 'C':
+            case 'c':
+                _swix(0x100 + 30, 0);
+                _swix(OS_CLI, _IN(0), "GOS");
+                break;
 
-        case 'P':
-        case 'p':
-            if (special_escape)
-            {
-                pointer = !pointer;
-                if (pointer)
-                    _swix(OS_CLI, _IN(0), "Pointer 1");
-                else
-                    _swix(OS_CLI, _IN(0), "Pointer 0");
-                special_escape = 0;
-                return 1;
-            }
-            break;
+            case 'H':
+            case 'h':
+                if (special_escape)
+                {
+                    hourglass = !hourglass;
+                    if (hourglass)
+                        hourglass_on();
+                    else
+                        hourglass_smash();
+                    special_escape = 0;
+                    return 1;
+                }
+                break;
 
+            case 'P':
+            case 'p':
+                if (special_escape)
+                {
+                    pointer = !pointer;
+                    if (pointer)
+                        _swix(OS_CLI, _IN(0), "Pointer 1");
+                    else
+                        _swix(OS_CLI, _IN(0), "Pointer 0");
+                    special_escape = 0;
+                    return 1;
+                }
+                break;
+        }
     }
 
     special_escape = 0;
@@ -311,6 +457,15 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+#if 0
+    {
+        char buffer[6];
+        printf("Prompting ...\n");
+        prompt(slides, "Testing", buffer, sizeof(buffer), 0, NULL);
+        exit(1);
+    }
+#endif
+
     if (slides_show(slides))
     {
         printf("Could not render slide %i\n", start_slide);
@@ -335,12 +490,6 @@ int main(int argc, char *argv[])
                     quit = 1;
                     break;
 
-                case 'C':
-                case 'c':
-                    _swix(0x100 + 30, 0);
-                    _swix(OS_CLI, _IN(0), "GOS");
-                    break;
-
                 case KEY_RIGHT:
                 case 'n':
                     if (slides_next(slides))
@@ -356,6 +505,27 @@ int main(int argc, char *argv[])
                     {
                         // Previous slide failed
                         beep();
+                    }
+                    break;
+
+                case ':':
+                    {
+                        /* Select a slide number */
+                        char buffer[5];
+                        int failed;
+                        failed = prompt(slides, "Select slide number", buffer, sizeof(buffer), 0, "0123456789");
+                        if (!failed && buffer[0] != '\0')
+                        {
+                            int slide_number = atoi(buffer);
+                            printf("Selected slide: %i\n", slide_number);
+                            if (slides_select(slides, slide_number))
+                            {
+                                beep();
+                            }
+
+                            /* Refresh the screen, as we've corrupted it with the prompt */
+                            slides_show(slides);
+                        }
                     }
                     break;
 

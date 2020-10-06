@@ -21,6 +21,8 @@ typedef struct mousestate_s {
 
 /* Keys returned by key read */
 #define KEY_NONE        (0xFFFFFFFFu)
+#define KEY_DELETE      8
+#define KEY_ESCAPE      27
 #define KEY_ENTER       10
 #define KEY_UP          139
 #define KEY_DOWN        138

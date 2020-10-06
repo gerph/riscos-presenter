@@ -55,6 +55,25 @@ int sliderender_get_slide(sliderender_t *render);
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_get_bodyfont
+ Description:   Read the body font from the slides
+ Parameters:    render-> the render block
+ Returns:       font handle
+ ******************************************************************/
+font_t sliderender_get_bodyfont(sliderender_t *render);
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_get_region
+ Description:   Get the size of the region to use for rendering.
+ Parameters:    render-> the renderer to work with
+                bbox-> the bbox to fill in
+ Returns:       none
+ ******************************************************************/
+void sliderender_get_region(sliderender_t *render, bbox_t *bbox);
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_set_region
  Description:   Set the size of the region to use for rendering.
  Parameters:    render-> the renderer to work with
