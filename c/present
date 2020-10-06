@@ -218,6 +218,61 @@ void beep(void)
 }
 
 
+/*************************************************** Gerph *********
+ Function:      special_key
+ Description:   Special handling, just for this talk - NOT part of
+                the general presentation system.
+ Parameters:    slides-> the slides objects we're working with
+                key = the key press we're dealing with
+ Returns:       1 if handled, 0 if not handled
+ ******************************************************************/
+int special_key(slides_t *slides, int key)
+{
+    static int special_escape = 0;
+    static int hourglass = 0;
+    static int pointer = 0;
+    switch (key)
+    {
+        case 'X':
+        case 'x':
+            special_escape = 1;
+            return 1;
+
+        case 'H':
+        case 'h':
+            if (special_escape)
+            {
+                hourglass = !hourglass;
+                if (hourglass)
+                    hourglass_on();
+                else
+                    hourglass_smash();
+                special_escape = 0;
+                return 1;
+            }
+            break;
+
+        case 'P':
+        case 'p':
+            if (special_escape)
+            {
+                pointer = !pointer;
+                if (pointer)
+                    _swix(OS_CLI, _IN(0), "Pointer 1");
+                else
+                    _swix(OS_CLI, _IN(0), "Pointer 0");
+                special_escape = 0;
+                return 1;
+            }
+            break;
+
+    }
+
+    special_escape = 0;
+    return 0;
+}
+
+
 int main(int argc, char *argv[])
 {
     char *in_filename = "file/md";
@@ -269,6 +324,10 @@ int main(int argc, char *argv[])
         {
             unsigned int key = input_key_block();
             printf("Key: %i\n", key);
+
+            if (special_key(slides, key))
+                continue;
+
             switch (key)
             {
                 case 'Q':
@@ -298,6 +357,10 @@ int main(int argc, char *argv[])
                         // Previous slide failed
                         beep();
                     }
+                    break;
+
+                default:
+                    /* Any fallback? */
                     break;
             }
         }

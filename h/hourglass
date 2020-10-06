@@ -18,11 +18,29 @@ void hourglass_on(void);
 
 
 /*************************************************** Gerph *********
+ Function:      hourglass_start
+ Description:   Turn on the hourglass, with a short delay
+ Parameters:    delay = cs to start the hourglass after
+ Returns:       none
+ ******************************************************************/
+void hourglass_start(int delay);
+
+
+/*************************************************** Gerph *********
  Function:      hourglass_off
  Description:   Turn off the hourglass
  Parameters:    none
  Returns:       none
  ******************************************************************/
 void hourglass_off(void);
+
+
+/*************************************************** Gerph *********
+ Function:      hourglass_smash
+ Description:   Turn off the hourglass, however many times it was turned on
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_smash(void);
 
 #endif

@@ -20,6 +20,18 @@ void hourglass_on(void)
 
 
 /*************************************************** Gerph *********
+ Function:      hourglass_start
+ Description:   Turn on the hourglass, with a short delay
+ Parameters:    delay = cs to start the hourglass after
+ Returns:       none
+ ******************************************************************/
+void hourglass_start(int delay)
+{
+    _swix(Hourglass_Start, _IN(0), delay);
+}
+
+
+/*************************************************** Gerph *********
  Function:      hourglass_off
  Description:   Turn off the hourglass
  Parameters:    none
@@ -28,4 +40,16 @@ void hourglass_on(void)
 void hourglass_off(void)
 {
     _swix(Hourglass_Off, 0);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      hourglass_smash
+ Description:   Turn off the hourglass, however many times it was turned on
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_smash(void)
+{
+    _swix(Hourglass_Smash, 0);
 }
