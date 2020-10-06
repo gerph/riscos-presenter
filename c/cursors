@@ -1,0 +1,66 @@
+/*******************************************************************
+ * File:     cursors
+ * Purpose:  Manipulation of the cursor on the screen
+ * Author:   Justin Fletcher
+ * Date:     20 Jan 2004
+ ******************************************************************/
+
+#include "swis.h"
+
+#ifdef FORTIFY
+#include "fortify.h"
+#endif
+
+static int old_cursor_state = -1;
+static int cursor_is_on = 1;
+
+/*************************************************** Gerph *********
+ Function:     cursors_off
+ Description:  Turn off the cursor so that we don't have it flickering
+               all the time
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+void cursors_off(void)
+{
+  if (cursor_is_on)
+  {
+    /* Don't use OS_RestoreCursors/OS_RemoveCursors as those are
+       intended for internal graphics operations. */
+    char off[] = { 23, 1, 0, 0,0,0,0,0,0,0,0 };
+    _swix(OS_WriteN, _INR(0,1), off, 10);
+
+    /* We also need to disable the cursor editing, otherwise we get
+       silly effects as the cursor moves when we press the cursor
+       keys.
+     */
+    _swix(OS_Byte, _INR(0,1)|_OUT(1), 4, 1, &old_cursor_state);
+
+    cursor_is_on = 0;
+  }
+}
+
+/*************************************************** Gerph *********
+ Function:     cursors_on
+ Description:  Put the cursor back on the screen so that we can see
+               it
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+void cursors_on(void)
+{
+  if (!cursor_is_on)
+  {
+    /* See comments in cursors_off */
+    char on[] = { 23, 1, 1, 0,0,0,0,0,0,0,0 };
+    _swix(OS_WriteN, _INR(0,1), on, 10);
+
+    if (old_cursor_state != -1)
+    {
+      _swix(OS_Byte, _INR(0,1), 4, old_cursor_state);
+      old_cursor_state = -1;
+    }
+
+    cursor_is_on = 1;
+  }
+}

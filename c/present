@@ -20,6 +20,8 @@
 #include "file.h"
 #include "sliderender.h"
 #include "screen.h"
+#include "input.h"
+#include "cursors.h"
 
 
 /* Define this to debug this file */
@@ -164,6 +166,43 @@ int slides_show(slides_t *slides)
 }
 
 
+/*************************************************** Gerph *********
+ Function:      slides_next
+ Description:   Move to the next slide
+ Parameters:    slides-> the slides to control
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_next(slides_t *slides)
+{
+    /* Currently nothing else to do in this step */
+    int slide = sliderender_get_slide(slides->render);
+    slide += 1;
+    printf("Selecting slide %i\n", slide);
+    if (sliderender_set_slide(slides->render, slide))
+        return 1;
+
+    return slides_show(slides);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      slides_previous
+ Description:   Move to the previous slide
+ Parameters:    slides-> the slides to control
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_previous(slides_t *slides)
+{
+    /* Currently nothing else to do in this step */
+    int slide = sliderender_get_slide(slides->render);
+    slide -= 1;
+    if (sliderender_set_slide(slides->render, slide))
+        return 1;
+
+    return slides_show(slides);
+}
+
+
 int main(int argc, char *argv[])
 {
     char *in_filename = "file/md";
@@ -206,6 +245,34 @@ int main(int argc, char *argv[])
     {
         printf("Could not render slide %i\n", start_slide);
         exit(1);
+    }
+
+    {
+        int quit = 0;
+        cursors_off();
+        while (!quit)
+        {
+            unsigned int key = input_key_block();
+            printf("Key: %i\n", key);
+            switch (key)
+            {
+                case 'Q':
+                case 'q':
+                    quit = 1;
+                    break;
+
+                case KEY_RIGHT:
+                case 'n':
+                    slides_next(slides);
+                    break;
+
+                case KEY_LEFT:
+                case 'p':
+                    slides_previous(slides);
+                    break;
+            }
+        }
+        cursors_on();
     }
 
     slides_destroy(slides);

@@ -26,6 +26,8 @@ OBJS       = \
 			 o.border \
 			 o.image \
 			 o.mdnames \
+			 o.cursors \
+			 o.input \
 			 o.present
 
 FORTIFY = no

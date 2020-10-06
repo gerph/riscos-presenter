@@ -1,0 +1,29 @@
+/*******************************************************************
+ * File:     cursors
+ * Purpose:  Manipulation of the cursor on the screen
+ * Author:   Justin Fletcher
+ * Date:     20 Jan 2004
+ ******************************************************************/
+
+#ifndef CURSORS_H
+#define CURSORS_H
+
+/*************************************************** Gerph *********
+ Function:     cursors_off
+ Description:  Turn off the cursor so that we don't have it flickering
+               all the time
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+void cursors_off(void);
+
+/*************************************************** Gerph *********
+ Function:     cursors_on
+ Description:  Put the cursor back on the screen so that we can see
+               it
+ Parameters:   none
+ Returns:      none
+ ******************************************************************/
+void cursors_on(void);
+
+#endif

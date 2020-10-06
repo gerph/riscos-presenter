@@ -1267,6 +1267,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         dprintf("inset = %i, %i\n", inset_x, inset_y);
     }
 
+    render->slidenumber = slidenumber;
     return 0;
 
 failed:
@@ -1274,6 +1275,18 @@ failed:
     render->slide = NULL;
     render->slidenumber = -1;
     return 1;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_get_slide
+ Description:   Read the slide number that we are set for
+ Parameters:    render-> the render block
+ Returns:       slide number or -1 if invalid
+ ******************************************************************/
+int sliderender_get_slide(sliderender_t *render)
+{
+    return render->slidenumber;
 }
 
 

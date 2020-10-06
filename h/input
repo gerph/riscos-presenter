@@ -1,0 +1,63 @@
+/*******************************************************************
+ * File:        keys
+ * Purpose:     Keys handling
+ * Author:      Gerph
+ * Date:        28 Sep 2020
+ ******************************************************************/
+
+#ifndef KEYS_H
+#define KEYS_H
+
+/* Mouse details */
+typedef struct mousestate_s {
+    int x;
+    int y;
+    unsigned long buttons;
+} mousestate_t;
+
+#define MOUSE_SELECT    (1lu<<2)
+#define MOUSE_MENU      (1lu<<1)
+#define MOUSE_ADJUST    (1lu<<0)
+
+/* Keys returned by key read */
+#define KEY_NONE        (0xFFFFFFFFu)
+#define KEY_ENTER       10
+#define KEY_UP          139
+#define KEY_DOWN        138
+#define KEY_LEFT        136
+#define KEY_RIGHT       137
+#define KEY_PAGEUP      143
+#define KEY_PAGEDOWN    142
+
+
+/*************************************************** Gerph *********
+ Function:      input_key_wait
+ Description:   Wait a period for a key to be pressed
+ Parameters:    wait = maximum number of cs to wait for
+ Returns:       ASCII code of character read, if <127.
+                >127 - special key codes from KEY_*.
+                KEY_NONE if no key pressed
+ ******************************************************************/
+unsigned int input_key_wait(int cs);
+
+
+/*************************************************** diodesign ****
+ Function:     input_key_block
+ Description:  Block waiting for a key to be pressed
+ Parameters:   none
+ Returns:      ASCII code of character read, if <127.
+               >127 - special key codes from KEY_*
+ ******************************************************************/
+unsigned int input_key_block(void);
+
+
+/*************************************************** Gerph *********
+ Function:      readmouse
+ Description:   Read the mouse position and clicks
+ Parameters:    state-> position to fill in, or NULL to just get buttons
+ Returns:       mouse buttons
+ ******************************************************************/
+unsigned long input_mouse(mousestate_t *state);
+
+
+#endif

@@ -46,6 +46,15 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber);
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_get_slide
+ Description:   Read the slide number that we are set for
+ Parameters:    render-> the render block
+ Returns:       slide number or -1 if invalid
+ ******************************************************************/
+int sliderender_get_slide(sliderender_t *render);
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_set_region
  Description:   Set the size of the region to use for rendering.
  Parameters:    render-> the renderer to work with

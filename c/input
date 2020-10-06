@@ -1,0 +1,70 @@
+/*******************************************************************
+ * File:        keys
+ * Purpose:     Keys handling
+ * Author:      Gerph
+ * Date:        28 Sep 2020
+ ******************************************************************/
+
+#include "swis.h"
+
+#include "input.h"
+
+
+/*************************************************** Gerph *********
+ Function:      input_key_wait
+ Description:   Wait a period for a key to be pressed
+ Parameters:    wait = maximum number of cs to wait for
+ Returns:       ASCII code of character read, if <127.
+                >127 - special key codes from KEY_*.
+                KEY_NONE if no key pressed
+ ******************************************************************/
+unsigned int input_key_wait(int cs)
+{
+    unsigned int ch, keypressed;
+    _swix(OS_Byte, _INR(0,2)|_OUTR(1,2),
+                   129, (cs / 256), (cs % 256),
+                   &ch, &keypressed);
+    if (keypressed != 0)
+        ch = KEY_NONE;
+
+    if (ch == 10 || ch == 13) ch = KEY_ENTER;
+    return ch;
+}
+
+
+/*************************************************** diodesign ****
+ Function:     input_key_block
+ Description:  Block waiting for a key to be pressed
+ Parameters:   none
+ Returns:      ASCII code of character read, if <127.
+               >127 - special key codes from KEY_*
+ ******************************************************************/
+unsigned int input_key_block(void)
+{
+    unsigned int ch;
+
+    do
+    {
+       /* scan for normal key press */
+       ch = input_key_wait(100);
+    }
+    while(ch == KEY_NONE);
+
+    return ch;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      readmouse
+ Description:   Read the mouse position and clicks
+ Parameters:    state-> position to fill in, or NULL to just get buttons
+ Returns:       mouse buttons
+ ******************************************************************/
+unsigned long input_mouse(mousestate_t *state)
+{
+    mousestate_t mouse;
+    _swix(OS_Mouse, _OUTR(0,2), &mouse.x, &mouse.y, &mouse.buttons);
+    if (state)
+        *state = mouse;
+    return mouse.buttons;
+}
