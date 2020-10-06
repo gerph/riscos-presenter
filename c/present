@@ -22,6 +22,7 @@
 #include "screen.h"
 #include "input.h"
 #include "cursors.h"
+#include "hourglass.h"
 
 
 /* Define this to debug this file */
@@ -161,8 +162,11 @@ int slides_select(slides_t *slides, int slide_number)
 int slides_show(slides_t *slides)
 {
     /* Currently nothing else to do in this step */
-    /* FIXME: Hourglass around the rendering */
-    return sliderender_show(slides->render);
+    int fail;
+    hourglass_on();
+    fail = sliderender_show(slides->render);
+    hourglass_off();
+    return fail;
 }
 
 
@@ -177,7 +181,6 @@ int slides_next(slides_t *slides)
     /* Currently nothing else to do in this step */
     int slide = sliderender_get_slide(slides->render);
     slide += 1;
-    printf("Selecting slide %i\n", slide);
     if (sliderender_set_slide(slides->render, slide))
         return 1;
 
@@ -200,6 +203,18 @@ int slides_previous(slides_t *slides)
         return 1;
 
     return slides_show(slides);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      beep
+ Description:   Issue a beep.
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void beep(void)
+{
+    _swix(0x107, 0);
 }
 
 
@@ -261,14 +276,28 @@ int main(int argc, char *argv[])
                     quit = 1;
                     break;
 
+                case 'C':
+                case 'c':
+                    _swix(0x100 + 30, 0);
+                    _swix(OS_CLI, _IN(0), "GOS");
+                    break;
+
                 case KEY_RIGHT:
                 case 'n':
-                    slides_next(slides);
+                    if (slides_next(slides))
+                    {
+                        // Next slide failed
+                        beep();
+                    }
                     break;
 
                 case KEY_LEFT:
                 case 'p':
-                    slides_previous(slides);
+                    if (slides_previous(slides))
+                    {
+                        // Previous slide failed
+                        beep();
+                    }
                     break;
             }
         }

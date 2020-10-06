@@ -1,0 +1,31 @@
+/*******************************************************************
+ * File:        hourglass
+ * Purpose:     Notices that we're performing a long operation
+ * Author:      Gerph
+ * Date:        06 Oct 2020
+ ******************************************************************/
+
+#include "swis.h"
+
+/*************************************************** Gerph *********
+ Function:      hourglass_on
+ Description:   Turn on the hourglass
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_on(void)
+{
+    _swix(Hourglass_On, 0);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      hourglass_off
+ Description:   Turn off the hourglass
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_off(void)
+{
+    _swix(Hourglass_Off, 0);
+}

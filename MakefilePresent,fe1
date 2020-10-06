@@ -28,6 +28,7 @@ OBJS       = \
 			 o.mdnames \
 			 o.cursors \
 			 o.input \
+			 o.hourglass \
 			 o.present
 
 FORTIFY = no

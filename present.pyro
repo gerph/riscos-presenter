@@ -10,6 +10,8 @@ config:
   modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536"
   kernel.reset_modechange: true
   graphicscairo.fonts_fontconfig_allow: "Optima*,Candara*,Homerton*,Trinity*,Corpus*"
+  hourglass.implementation: pointer
+  input.readline_native: false
 
 modules:
   - ${ROMODULES}/FontMap,ffa

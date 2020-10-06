@@ -1,0 +1,28 @@
+/*******************************************************************
+ * File:        hourglass
+ * Purpose:     Notices that we're performing a long operation
+ * Author:      Gerph
+ * Date:        06 Oct 2020
+ ******************************************************************/
+
+#ifndef HOURGLASS_H
+#define HOURGLASS_H
+
+/*************************************************** Gerph *********
+ Function:      hourglass_on
+ Description:   Turn on the hourglass
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_on(void);
+
+
+/*************************************************** Gerph *********
+ Function:      hourglass_off
+ Description:   Turn off the hourglass
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void hourglass_off(void);
+
+#endif
