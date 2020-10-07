@@ -3,6 +3,8 @@
 
 config:
   graphics.implementation: wx
+  graphics.pointer_off_shape: none
+  graphicscairo.antialias: true
   graphicscairo.fonts_fontconfig: true
   graphicsui.title: "Gerph's RISC OS presentation"
   vdu.alphabet: UTF8
@@ -12,7 +14,6 @@ config:
   graphicscairo.fonts_fontconfig_allow: "Optima*,Candara*,Homerton*,Trinity*,Corpus*"
   hourglass.implementation: pointer
   input.readline_native: false
-  graphics.pointer_off_shape: none
 
 modules:
   - ${ROMODULES}/FontMap,ffa

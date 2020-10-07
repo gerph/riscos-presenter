@@ -244,21 +244,81 @@ March
 template: body-text
 
 # How The Service Works
-## What is the service?
+## What is the service? (1)
 
 * Takes its inspiration from Matthew Godbolt's Compiler explorer.
 * \<website image / demo?>
-* \<architecture diagram>
+
+---
+# How The Service Works
+## What is the service? (2)
 
 ***`Tech`***:
   * Infrastructure - AWS SSL, routing and linux server.
   * Front End - Static site, using custom CodeMirror colouring, websockets to talk to back end
   * Back End - Python REST JSON API and WebSockets service
   * Tools - JFPatch tool, compiler, assembler, linker, amu, etc.
+  * RISC OS Zip file decoding in Python.
 
 ---
 # How The Service Works
-## What runs those services?
+## What is the service? (3)
+
+![](howitworks (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (1)
+
+![](interfaces-1 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (2)
+
+![](interfaces-2 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (3)
+
+![](interfaces-3 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (4)
+
+![](interfaces-4 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (5)
+
+![](builder-1 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (6)
+
+![](builder-2 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (7)
+
+![](builder-3 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (8)
+
+![](builder-4 (width=100% height=100%))
+
+---
+# How The Service Works
+## What runs those services? (9)
+
+![](builder-5 (width=100% height=100%))
 
 ---
 # How The Service Works
@@ -298,13 +358,19 @@ template: body-text
 
 ---
 # RISC OS Pyromaniac
-## Surely that's easy?
+## Surely that's easy? (1)
 
 * Surely that's easy? You just run an emulation system until it hits a SWI and then you make the SWI do the I/O thing. Then you run some more?
 
 * Yes. That's exactly what you do.
 
 * The `IfThere` tool ran on June 10th - not well, but it ran.
+
+---
+# RISC OS Pyromaniac
+## Surely that's easy? (2)
+
+![](pyromaniac-basicexec (width=100% height=100%))
 
 ---
 # RISC OS Pyromaniac
@@ -316,17 +382,18 @@ template: body-text
 
 ---
 # RISC OS Pyromaniac
-## What makes up Pyromaniac? \(1\)
+## What makes up Pyromaniac? (1)
 
 * Written in Python.
 * Uses Unicorn \(a QEmu derived package\) for emulating ARM code.
 * All other packages are optional.
 
-\<System structure diagram>
-
 ---
 # RISC OS Pyromaniac
-## What makes up Pyromaniac? \(2\)
+## What makes up Pyromaniac? (2)
+
+![](pyromaniac-structure (width=100% height=100%))
+
 ---
 # RISC OS Pyromaniac
 ## What does it mean?
@@ -336,7 +403,7 @@ template: body-text
 * A reimplementation, which uses none of the code that went before.
 * Focused on being able to test software and diagnose issues more easily.
 
-***`Tech`***: RISC OS Pyromaniac, able to run programs on other systems\!
+***`Tech`***: RISC OS Pyromaniac, able to run RISC OS programs on other systems\!
 
 ---
 # RISC OS Pyromaniac
@@ -388,8 +455,9 @@ template: body-text
 ## Features - What doesn't work?
 
 * Desktop - Not supported
+* Filesystems - No registration of filesystems
 * Sound - No wave output
-* Graphics: Sprites, Non-paletted modes
+* Graphics - No frame buffer, No Sprites, No true colour modes
 * Many other things
 
 ---
@@ -448,7 +516,7 @@ modules:
 # RISC OS Pyromaniac
 ## Networking
 
-* Internet module supplied.
+* Internet module supplied, using host interfaces.
   * Supports `AF_INET`, `AF_INET6`, `AF_UNIX`.
   * Many ioctls are supported, mapped to the host system.
 * Resolver module provides IPv4 host name resolution \(FIXME: Should be IPv6?\)
@@ -457,17 +525,32 @@ modules:
 
 ---
 # RISC OS Pyromaniac
-## FontManager
+## Draw module (1)
 
-FIXME: Work out what to say ... UTF-8, host fonts.
+* Draw module supplied.
+* Can render through the Cairo path system.
+* Native DrawFile works - the 'Gerph' logo is a Drawfile.
 
 ---
 # RISC OS Pyromaniac
-## Draw module
+## Draw module (2)
 
-FIXME: Work out what to say - Example Drawfile? \(or have we already done that\).
+![](draw-demo (width=100% height=100%))
 
-MORE
+
+---
+# RISC OS Pyromaniac
+## FontManager
+
+* FontManager module supplied.
+* Can uses Cairo 'toy' fonts.
+    * Can be configured to use any 'fontconfig' discovered fonts.
+* Supports different alphabets, including UTF-8.
+
+But also
+
+* Native FontManager works...
+* ... if you disable bitmap generation - it just uses Draw.
 
 ---
 # RISC OS Pyromaniac
@@ -562,13 +645,14 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 
 ***`Tech`***:
 
-* RISC OS Alphabets in Python Codecs
-* RISC OS Zip file decoding in Python
-* SublimeText syntax for RISC OS command files
-* NanoRC syntaxes for some RISC OS file types
-* Tool for building hourglass modules
-* Tool testing tool
-* Miscellaneous toolchain updates
+* RISC OS Alphabets in Python Codecs.
+* Non-RISC OS editor syntax modes:
+    * SublimeText syntax for RISC OS command files.
+    * NanoRC syntaxes for some RISC OS file types.
+* Tool for building hourglass modules.
+* Tool for testing tools.
+* Miscellaneous toolchain updates.
+* Changelog management system.
 
 ---
 # RISC OS Pyromaniac
