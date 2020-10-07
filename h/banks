@@ -1,0 +1,39 @@
+/*******************************************************************
+ * File:        bank
+ * Purpose:     Screen bank manipulation
+ * Author:      Gerph
+ * Date:        07 Oct 2020
+ ******************************************************************/
+
+#ifndef banks_H
+#define banks_H
+
+
+/*************************************************** Gerph *********
+ Function:      banks_init
+ Description:   Initialise the screen bank information
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_init(void);
+
+
+/*************************************************** Gerph *********
+ Function:      banks_show
+ Description:   Show the render bank
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_show(void);
+
+
+/*************************************************** Gerph *********
+ Function:      banks_offscreen
+ Description:   Select the offscreen bank
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_offscreen(void);
+
+
+#endif

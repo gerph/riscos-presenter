@@ -23,6 +23,7 @@
 #include "input.h"
 #include "cursors.h"
 #include "hourglass.h"
+#include "banks.h"
 
 
 /* Define this to debug this file */
@@ -164,7 +165,9 @@ int slides_show(slides_t *slides)
     /* Currently nothing else to do in this step */
     int fail;
     hourglass_on();
+    banks_offscreen();
     fail = sliderender_show(slides->render);
+    banks_show();
     hourglass_off();
     return fail;
 }
@@ -439,6 +442,7 @@ int main(int argc, char *argv[])
 #endif
 
     gcontext_initvdu(1);
+    banks_init();
 
     slides = slides_create(in_filename);
     if (slides == NULL)
@@ -478,7 +482,7 @@ int main(int argc, char *argv[])
         while (!quit)
         {
             unsigned int key = input_key_block();
-            printf("Key: %i\n", key);
+            dprintf("Key: %i\n", key);
 
             if (special_key(slides, key))
                 continue;

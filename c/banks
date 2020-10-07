@@ -1,0 +1,66 @@
+/*******************************************************************
+ * File:        bank
+ * Purpose:     Screen bank manipulation
+ * Author:      Gerph
+ * Date:        07 Oct 2020
+ ******************************************************************/
+
+#include "swis.h"
+
+typedef struct banks_s banks_t;
+
+struct banks_s {
+    int display;
+    int render;
+};
+
+#define OSByte_SelectScreenRender    (0x70)
+#define OSByte_SelectScreenDisplay   (0x71)
+#define OSByte_ReadScreenBankRender  (0xfa)
+#define OSByte_ReadScreenBankDisplay (0xfb)
+
+banks_t banks;
+
+
+/*************************************************** Gerph *********
+ Function:      banks_init
+ Description:   Initialise the screen bank information
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_init(void)
+{
+    banks.display = 1;
+    banks.render = 1;
+
+    // Read the current bank and display
+    _swix(OS_Byte, _INR(0, 2)|_OUTR(1,2),
+                   OSByte_ReadScreenBankDisplay, 0, 255,
+                   &banks.render, &banks.display);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      banks_show
+ Description:   Show the render bank
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_show(void)
+{
+    banks.display = banks.render;
+    _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenDisplay, banks.display);
+}
+
+
+/*************************************************** Gerph *********
+ Function:      banks_offscreen
+ Description:   Select the offscreen bank
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void banks_offscreen(void)
+{
+    banks.render = 3 - banks.display;
+    _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenRender, banks.render);
+}

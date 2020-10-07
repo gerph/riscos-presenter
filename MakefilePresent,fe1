@@ -29,6 +29,7 @@ OBJS       = \
 			 o.cursors \
 			 o.input \
 			 o.hourglass \
+			 o.banks \
 			 o.present
 
 FORTIFY = no
