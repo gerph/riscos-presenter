@@ -1,0 +1,22 @@
+/*******************************************************************
+ * File:        slidedeck_index
+ * Purpose:     Index information about the slidedeck
+ * Author:      Gerph
+ * Date:        07 Oct 2020
+ ******************************************************************/
+
+#ifndef SLIDEDECK_INDEX_H
+#define SLIDEDECK_INDEX_H
+
+#include "slidedeck.h"
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_index
+ Description:   Print an index of the slide deck
+ Parameters:    deck-> the slide deck to print from
+ Returns:       none
+ ******************************************************************/
+void slidedeck_index(slidedeck_t *deck);
+
+#endif

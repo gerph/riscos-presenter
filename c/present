@@ -18,6 +18,7 @@
 #include "gcontext.h"
 #include "slidemd.h"
 #include "file.h"
+#include "slidedeck_index.h"
 #include "sliderender.h"
 #include "screen.h"
 #include "input.h"
@@ -460,6 +461,9 @@ int main(int argc, char *argv[])
         printf("Could not select slide %i\n", start_slide);
         exit(1);
     }
+
+    /* Show the index of slides */
+    slidedeck_index(slides->deck);
 
 #if 0
     {

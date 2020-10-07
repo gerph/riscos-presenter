@@ -17,6 +17,7 @@ OBJS       = \
 		     o.str \
 		     o.optlist \
 			 o.slidedeck \
+			 o.slidedeck_index \
 			 o.slidedeck_debug \
 			 o.slidemd \
 			 o.file \

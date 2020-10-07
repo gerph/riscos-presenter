@@ -1,0 +1,48 @@
+/*******************************************************************
+ * File:        slidedeck_index
+ * Purpose:     Index information about the slidedeck
+ * Author:      Gerph
+ * Date:        07 Oct 2020
+ ******************************************************************/
+
+#include <stdio.h>
+#include "slidedeck_index.h"
+
+
+/*************************************************** Gerph *********
+ Function:      slidedeck_index
+ Description:   Print an index of the slide deck
+ Parameters:    deck-> the slide deck to print from
+ Returns:       none
+ ******************************************************************/
+void slidedeck_index(slidedeck_t *deck)
+{
+    int index = 0;
+    for (index=0 ; index<deck->nslides; index++)
+    {
+        slide_t *slide = deck->slides[index];
+        slideblock_t *block;
+        int had_heading = 0;
+
+        printf("%3i. ", index);
+        for (block = slide->blocks; block; block = block->next)
+        {
+            if (block->blocktype == sbt_heading)
+            {
+                slidespan_t *span;
+                if (had_heading)
+                    printf(" / ");
+
+                for (span = block->spans; span; span = span->next)
+                {
+                    if (span->type == sst_text)
+                    {
+                        printf("%s", span->data.text.text);
+                        had_heading = 1;
+                    }
+                }
+            }
+        }
+        printf("\n");
+    }
+}
