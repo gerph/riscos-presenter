@@ -428,6 +428,7 @@ int main(int argc, char *argv[])
     char *in_filename = "file/md";
     slides_t *slides;
     int start_slide = 0;
+    int is_list = 0;
 
     if (argc > 1)
     {
@@ -435,7 +436,10 @@ int main(int argc, char *argv[])
     }
     if (argc > 2)
     {
-        start_slide = atoi(argv[2]);
+        if (strcmp(argv[2], "-list") == 0)
+            is_list = 1;
+        else
+            start_slide = atoi(argv[2]);
     }
 
 #ifdef FORTIFY
@@ -463,7 +467,11 @@ int main(int argc, char *argv[])
     }
 
     /* Show the index of slides */
-    slidedeck_index(slides->deck);
+    if (is_list)
+    {
+        slidedeck_index(slides->deck);
+        return 0;
+    }
 
 #if 0
     {
