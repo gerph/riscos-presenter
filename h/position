@@ -1,0 +1,42 @@
+/*******************************************************************
+ * File:        position
+ * Purpose:     Dealing with the position of things - corners or centre
+ * Author:      Gerph
+ * Date:        09 Oct 2020
+ ******************************************************************/
+
+#ifndef POSITION_H
+#define POSITION_H
+
+#include "gcontext.h"
+
+
+typedef enum positionid_e {
+    pos_centre,
+    pos_topleft,    pos_topmid,    pos_topright,
+    pos_midleft,                   pos_midright,
+    pos_bottomleft, pos_bottommid, pos_bottomright,
+    pos_max // not a valid position
+} positionid_t;
+
+/* The names for each of those positions */
+extern char *position_name[pos_max];
+
+
+/*************************************************** Gerph *********
+ Function:      position_calculate
+ Description:   Work out the position to place a box, given parameters
+ Parameters:    region-> the region into which we place the box
+                size-> the box size; either dimension can be 0 for 'auto'
+                padding-> padding at the edges
+                position = the position to place the box
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int position_calculate(bbox_t *region,
+                       bounds_t *size,
+                       int padding,
+                       positionid_t positionid,
+                       bbox_t *output);
+
+
+#endif

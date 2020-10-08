@@ -1,0 +1,108 @@
+/*******************************************************************
+ * File:        position
+ * Purpose:     Dealing with the position of things - corners or centre
+ * Author:      Gerph
+ * Date:        09 Oct 2020
+ ******************************************************************/
+
+#include "gcontext.h"
+#include "position.h"
+
+
+#define POS_HLEFT   (0)
+#define POS_HMID    (1)
+#define POS_HRIGHT  (2)
+#define POS_HMASK   (3)
+#define POS_VTOP    (0<<2)
+#define POS_VMID    (1<<2)
+#define POS_VBOTTOM (2<<2)
+#define POS_VMASK   (3<<2)
+static char posmap[9] = {
+        /* Centre is first so that all the other backgrounds are on top */
+        (POS_HMID | POS_VMID),
+        (POS_HLEFT | POS_VTOP),    (POS_HMID | POS_VTOP),    (POS_HRIGHT | POS_VTOP),
+        (POS_HLEFT | POS_VMID),                              (POS_HRIGHT | POS_VMID),
+        (POS_HLEFT | POS_VBOTTOM), (POS_HMID | POS_VBOTTOM), (POS_HRIGHT | POS_VBOTTOM),
+    };
+
+char *position_name[9] = {
+        /* We store centre first, so that all other logos appear on top */
+        "centre",
+        "top-left",     "top",      "top-right",
+        "left",                     "right",
+        "bottom-left",  "bottom",   "bottom-right",
+    };
+
+
+/*************************************************** Gerph *********
+ Function:      position_calculate
+ Description:   Work out the position to place a box, given parameters
+ Parameters:    region-> the region into which we place the box
+                size-> the box size; either dimension can be 0 for 'auto'
+                padding-> padding at the edges
+                position = the position to place the box
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int position_calculate(bbox_t *region,
+                       bounds_t *size,
+                       int padding,
+                       positionid_t positionid,
+                       bbox_t *output)
+{
+    bbox_t bbox;
+    int pos;
+    int space;
+
+    if (positionid >= pos_max)
+        return 1;
+
+    /* We have the data; now to work out where to put it */
+    pos = posmap[positionid];
+    space = (region->x1 - region->x0) - padding * 2;
+    switch (pos & POS_HMASK)
+    {
+        case POS_HLEFT:
+            bbox.x0 = 0;
+            bbox.x1 = (size->width && size->width < space) ? size->width : space / 4;
+            break;
+
+        case POS_HMID:
+            bbox.x0 = (size->width && size->width < space) ? (space - size->width) / 2 : 0;
+            bbox.x1 = (size->width && size->width < space) ? (space + size->width) / 2 : space;
+            break;
+
+        case POS_HRIGHT:
+            bbox.x0 = (size->width && size->width < space) ? space - size->width : space / 4;
+            bbox.x1 = space;
+            break;
+    }
+
+    space = (region->y1 - region->y0) - padding * 2;
+    switch (pos & POS_VMASK)
+    {
+        case POS_VBOTTOM:
+            bbox.y0 = 0;
+            bbox.y1 = (size->height && size->height < space) ? size->height : space / 4;
+            break;
+
+        case POS_VMID:
+            bbox.y0 = (size->height && size->height < space) ? (space - size->height) / 2 : 0;
+            bbox.y1 = (size->height && size->height < space) ? (space + size->height) / 2 : space;
+            break;
+
+        case POS_VTOP:
+            bbox.y0 = (size->height && size->height < space) ? space - size->height : space / 4;
+            bbox.y1 = space;
+            break;
+    }
+
+    if (bbox.x0 < 0 || bbox.y0 < 0)
+        return 1; // won't fit
+
+    output->x0 = bbox.x0 + region->x0 + padding;
+    output->y0 = bbox.y0 + region->y0 + padding;
+    output->x1 = bbox.x1 + region->x0 + padding;
+    output->y1 = bbox.y1 + region->y0 + padding;
+
+    return 0;
+}

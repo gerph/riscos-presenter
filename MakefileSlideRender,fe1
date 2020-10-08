@@ -18,6 +18,7 @@ OBJS       = \
 		     o.optlist \
 			 o.slidedeck \
 			 o.slidedeck_debug \
+			 o.position \
 			 o.slidemd \
 			 o.file \
 			 o.sliderender \
