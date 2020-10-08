@@ -20,6 +20,7 @@ The following properties are defined:
     * `body`
     * `h1`, `h2`, `h3`
     * `code`
+* `h#.padding.top`/`h#.padding.bottom`/`h#.padding.inset`: Defines the padding at the top and the bottom of the headings, and the inset for the text in the heading.
 * `vertical-align`: Alignment of the slide content, which may take the value `top`, `middle`, or `bottom`.
 * `padding`/`padding-horizontal`/`padding-vertical`: Defines the size of the slide padding.
 * `list.padding.top`/`list.padding.bottom`: Defines the space around lists.

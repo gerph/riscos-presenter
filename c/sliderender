@@ -68,6 +68,42 @@ typedef struct staticimage_s {
 } staticimage_t;
 
 
+typedef struct borderparams_s {
+    int inset;
+    int border_type;
+    int border_size;
+    int padding;
+    rgb_t fill;
+    rgb_t border_fore;
+    rgb_t border_opp;
+} borderparams_t;
+
+
+typedef struct borderdefaults_s {
+    const char *inset;
+    const char *padding;
+    const char *border_type;
+    const char *border_width;
+    rgb_t fill;
+    rgb_t border_fore;
+    rgb_t border_opp;
+} borderdefaults_t;
+
+
+typedef struct paddingparams_s {
+    int inset;
+    int gap_top;
+    int gap_bottom;
+} paddingparams_t;
+
+
+typedef struct paddingdefaults_s {
+    const char *inset;
+    const char *gap_top;
+    const char *gap_bottom;
+} paddingdefaults_t;
+
+
 /* Rendering context for a slide */
 struct sliderender_s {
     slidedeck_t *deck;
@@ -91,9 +127,9 @@ struct sliderender_s {
     int inset_x, inset_y;
 
     /* Configurations for blocks */
-    int list_gap_top;
-    int list_gap_bottom;
-    int list_inset;
+    paddingparams_t heading_padding[MAXHEADING];
+    paddingparams_t list_padding;
+    paddingparams_t quote_padding;
     int item_inset;
     int item_text_offset;
     int pre_inset;
@@ -103,9 +139,6 @@ struct sliderender_s {
     rgb_t pre_fill;
     rgb_t pre_border_fore;
     rgb_t pre_border_opp;
-    int quote_gap_top;
-    int quote_gap_bottom;
-    int quote_inset;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -573,6 +606,13 @@ static void sliderender_block(sliderender_t *render,
         case sbt_heading:
             dprintf("  Heading %i\n", block->index);
             render->in_heading = block->index - 1;
+
+            /* Padding for the headings */
+            {
+                paddingparams_t *padding = &render->heading_padding[render->in_heading];
+                textblock_gap(render->textblock, padding->gap_top, NULL);
+                textblock_inset(render->textblock, padding->inset, padding->inset);
+            }
             break;
 
         case sbt_list:
@@ -586,11 +626,11 @@ static void sliderender_block(sliderender_t *render,
             }
 
             /* Entering and leaving a list should insert some extra space */
-            textblock_gap(render->textblock, render->list_gap_top, NULL);
+            textblock_gap(render->textblock, render->list_padding.gap_top, NULL);
 
             /* Set up the indentation for the block */
             {
-                int indent = render->list_inset;
+                int indent = render->list_padding.inset;
                 if (block->parent)
                     indent += render->item_text_offset;
                 textblock_inset(render->textblock, indent, indent);
@@ -639,9 +679,9 @@ static void sliderender_block(sliderender_t *render,
 
         case sbt_quote:
             /* Entering and leaving a quote should insert somee extra space */
-            textblock_gap(render->textblock, render->quote_gap_top, NULL);
+            textblock_gap(render->textblock, render->quote_padding.gap_top, NULL);
 
-            textblock_inset(render->textblock, render->quote_inset, render->quote_inset);
+            textblock_inset(render->textblock, render->quote_padding.inset, render->quote_padding.inset);
             render->in_quote = block->index + 1;
             break;
     }
@@ -733,17 +773,26 @@ static void sliderender_block(sliderender_t *render,
 
     switch (block->blocktype)
     {
+        case sbt_heading:
+            /* Padding for the headings */
+            {
+                paddingparams_t *padding = &render->heading_padding[render->in_heading];
+                textblock_gap(render->textblock, padding->gap_bottom, NULL);
+                textblock_inset(render->textblock, -padding->inset, -padding->inset);
+            }
+            break;
+
         case sbt_list:
             /* We're now leaving the list */
             {
-                int indent = render->list_inset;
+                int indent = render->list_padding.inset;
                 if (block->parent)
                     indent += render->item_text_offset;
                 textblock_inset(render->textblock, -indent, -indent);
             }
 
             /* Entering and leaving a list should insert some extra space */
-            textblock_gap(render->textblock, render->list_gap_bottom, NULL);
+            textblock_gap(render->textblock, render->list_padding.gap_bottom, NULL);
             break;
 
         case sbt_item:
@@ -759,9 +808,9 @@ static void sliderender_block(sliderender_t *render,
 
         case sbt_quote:
             /* Entering and leaving a list should insert some extra space */
-            textblock_gap(render->textblock, render->quote_gap_bottom, NULL);
+            textblock_gap(render->textblock, render->quote_padding.gap_bottom, NULL);
 
-            textblock_inset(render->textblock, -render->quote_inset, -render->quote_inset);
+            textblock_inset(render->textblock, -render->quote_padding.inset, -render->quote_padding.inset);
             render->in_quote = 0;
             break;
     }
@@ -1162,6 +1211,77 @@ static int sliderender_prepare_background(sliderender_t *render)
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_slide_property_borderparams
+ Description:   Set up properties for a set of border parameters
+ Parameters:    render-> the render configuration
+
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_slide_property_borderparams(sliderender_t *render,
+                                            const char *prefix,
+                                            borderdefaults_t *defaults,
+                                            borderparams_t *params)
+{
+    char buffer[64];
+
+    sprintf(buffer, "%s.padding.inset", prefix);
+    params->inset         = sliderender_slide_property_osunit(render, buffer, defaults->inset, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.border.type", prefix);
+    params->border_type   = sliderender_slide_property_border(render, buffer, defaults->border_type);
+
+    sprintf(buffer, "%s.border.width", prefix);
+    params->border_size   = sliderender_slide_property_osunit(render, buffer, defaults->border_width, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.padding", prefix);
+    params->padding       = sliderender_slide_property_osunit(render, buffer, defaults->padding, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.background-colour", prefix);
+    params->fill          = sliderender_slide_property_rgb(render, buffer, defaults->fill, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.border.colour", prefix);
+    params->border_fore   = sliderender_slide_property_rgb(render, buffer, defaults->border_fore, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.border.opposite-colour", prefix);
+    params->border_opp    = sliderender_slide_property_rgb(render, buffer, defaults->border_opp, 1);
+
+    sprintf(buffer, "%s.border.fore-colour", prefix);
+    params->border_fore   = sliderender_slide_property_rgb(render, buffer, defaults->border_fore, 1);
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
+ Function:      sliderender_slide_property_paddingparams
+ Description:   Set up properties for a set of padding parameters
+ Parameters:    render-> the render configuration
+                prefix-> the string to prefix the property with
+                defaults-> the defaults for the properties
+                params-> the parameters to fill in
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int sliderender_slide_property_paddingparams(sliderender_t *render,
+                                            const char *prefix,
+                                            paddingdefaults_t *defaults,
+                                            paddingparams_t *params)
+{
+    char buffer[64];
+
+    sprintf(buffer, "%s.padding.top", prefix);
+    params->gap_top     = sliderender_slide_property_osunit(render, buffer, defaults->gap_top, OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.padding.bottom", prefix);
+    params->gap_bottom  = sliderender_slide_property_osunit(render, buffer, defaults->gap_bottom, OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+
+    sprintf(buffer, "%s.padding.inset", prefix);
+    params->inset       = sliderender_slide_property_osunit(render, buffer, defaults->inset, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+    return 0;
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_set_slide
  Description:   Select the slide number that we are going to render
  Parameters:    render-> the render block
@@ -1200,12 +1320,25 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         for (n=0; n<MAXHEADING; n++)
         {
             sprintf(name, "h%i", n + 1);
+
+            /* Font configuration */
             render->family_heading[n] = sliderender_prepare_family(render, name, &fontdefault_headings[n]);
             if (!render->family_heading[n])
             {
                 dprintf("Cannot initialise the font family for heading %i\n", n+1);
                 goto failed;
             }
+
+            /* Heading padding configuration */
+            {
+                paddingdefaults_t heading_padding_defaults = {
+                    "0em",      // inset,
+                    "0em",      // top,
+                    "0em",      // bottom,
+                };
+                sliderender_slide_property_paddingparams(render, name, &heading_padding_defaults, &render->heading_padding[n]);
+            }
+
         }
     }
 
@@ -1258,9 +1391,14 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->inset_y = inset_y;
 
         /* Size of lists, items, pre code and quote sections */
-        render->list_gap_top      = sliderender_slide_property_osunit(render, "list.padding.top", "0.25em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
-        render->list_gap_bottom   = sliderender_slide_property_osunit(render, "list.padding.bottom", "0.25em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
-        render->list_inset        = sliderender_slide_property_osunit(render, "list.padding.inset", "0.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        {
+            paddingdefaults_t list_padding_defaults = {
+                "0.5em",    // inset,
+                "0.25em",   // top,
+                "0.25em",   // bottom,
+            };
+            sliderender_slide_property_paddingparams(render, "list", &list_padding_defaults, &render->list_padding);
+        }
         render->item_inset        = sliderender_slide_property_osunit(render, "item.padding.inset", "0.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->pre_inset         = sliderender_slide_property_osunit(render, "pre.padding.inset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
@@ -1271,9 +1409,15 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.colour", COLOUR_NONE, OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->pre_border_opp    = sliderender_slide_property_rgb(render, "pre.border.opposite-colour", render->pre_border_fore, 1);
         render->pre_border_fore   = sliderender_slide_property_rgb(render, "pre.border.fore-colour", render->pre_border_fore, 1);
-        render->quote_gap_top     = sliderender_slide_property_osunit(render, "quote.padding.top", "1em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
-        render->quote_gap_bottom  = sliderender_slide_property_osunit(render, "quote.padding.bottom", "1em", OSSIZE_IS_X | OSSIZE_IS_SLIDE);
-        render->quote_inset       = sliderender_slide_property_osunit(render, "quote.padding.inset", "1.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+
+        {
+            paddingdefaults_t quote_padding_defaults = {
+                "1.5em",    // inset,
+                "1em",      // top,
+                "1em",      // bottom,
+            };
+            sliderender_slide_property_paddingparams(render, "quote", &quote_padding_defaults, &render->quote_padding);
+        }
 
         /* Set up the background */
         sliderender_prepare_background(render);

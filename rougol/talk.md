@@ -50,6 +50,7 @@ h1.font: Optima.Bold
 h1.size: 42pt
 h2.font: Optima.Bold
 h2.size: 28pt
+h2.padding.bottom: 1.5em
 vertical-align: top
 
 # Introduction
