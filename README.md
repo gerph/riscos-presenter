@@ -20,6 +20,7 @@ The following properties are defined:
     * `body`
     * `h1`, `h2`, `h3`
     * `code`
+    * `marginal`
 * `h#.padding.top`/`h#.padding.bottom`/`h#.padding.inset`: Defines the padding at the top and the bottom of the headings, and the inset for the text in the heading.
 * `vertical-align`: Alignment of the slide content, which may take the value `top`, `middle`, or `bottom`.
 * `padding`/`padding-horizontal`/`padding-vertical`: Defines the size of the slide padding.
@@ -46,6 +47,8 @@ The following properties are defined:
 * `logo.PLACE`: Defines an image to place in a given location (`top-left`, `top`, `top-right`, `left`, `centre`, `right`, `bottom-left`, `bottom`, `bottom-right`)
 * `logo.PLACE.inset`: Defines the gap around the outside of the image to leave.
 * `logo.PLACE.width`/`logo.PLACE.height`: Defines the width/height of the image (which will be limited by the size of the slide)
+* `slidenumber.position`: defines a position for the slide number label on each slide, where the position value can be any of the `PLACE` strings from the above logo.
+* `slidenumber.padding`: defines the spacing from the edge of the screen for the slide number.
 
 ### Size specifications
 

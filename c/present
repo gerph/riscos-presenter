@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
     slides = slides_create(in_filename);
     if (slides == NULL)
     {
-        printf("Failed to create slides\n");
+        printf("Failed to create slides for file '%s'\n", in_filename);
         exit(1);
     }
     if (slides_setregion_screen(slides))

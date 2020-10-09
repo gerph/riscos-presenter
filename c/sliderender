@@ -58,6 +58,9 @@ fontconfig_t fontdefault_headings[MAXHEADING] = {
     {"Optima.Bold", (18*16), (18*16)},
     {"Optima.Regular", (16*16), (16*16)},
 };
+fontconfig_t fontdefault_marginal = {
+    "HirukoPro.Book", (8*16), (8*16)
+};
 
 
 typedef struct staticimage_s {
@@ -123,6 +126,7 @@ struct sliderender_s {
     fontfamily_t family_heading[MAXHEADING];
     fontfamily_t family_body;
     fontfamily_t family_code;
+    fontfamily_t family_marginal;
 
     /* Size configurations for the slide */
     int inset_x, inset_y;
@@ -1049,6 +1053,8 @@ static void sliderender_clear(sliderender_t *render)
         fontfamily_destroy(render->family_heading[n]);
         render->family_heading[n] = NULL;
     }
+    fontfamily_destroy(render->family_marginal);
+    render->family_marginal = NULL;
 
     /* Text regions */
     textblock_destroy(render->textblock);
@@ -1343,6 +1349,8 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
         }
     }
 
+    render->family_marginal = sliderender_prepare_family(render, "marginal", &fontdefault_marginal);
+
     render->font_body = fontfamily_get_font(render->family_body, FONTFAMILY_STYLE_BASE);
     if (!render->font_body)
     {
@@ -1546,13 +1554,13 @@ static int sliderender_render_number(sliderender_t *render)
     stringbounds_t bounds;
     bbox_t bbox;
     bounds_t size;
+    font_t font = fontfamily_get_font(render->family_marginal, FONTFAMILY_STYLE_BASE);
 
     if (render->slidenumber_position == pos_invalid)
         return 0;
 
     sprintf(buffer, "%i", render->slidenumber);
-
-    text_getstringsize(render->font_body, &bounds, -1, buffer, -1, 0);
+    text_getstringsize(font, &bounds, -1, buffer, -1, 0);
 
     size.width = bounds.lbearing + bounds.xoffset + bounds.rbearing;
     size.height = bounds.ascent + bounds.descent;
@@ -1564,11 +1572,11 @@ static int sliderender_render_number(sliderender_t *render)
                            render->slidenumber_position, // positionid
                            &bbox))
     {
-        dprintf("Render background failed to find a position\n");
+        dprintf("Slidenumber failed to find a position\n");
     }
     else
     {
-        text_paint(render->font_body,
+        text_paint(font,
                    bbox.x0 + bounds.lbearing, bbox.y0 + bounds.descent,
                    render->colour_bg, render->colour_fg,
                    buffer, -1);
