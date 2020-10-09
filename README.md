@@ -44,11 +44,26 @@ The following properties are defined:
 * `pre.border.opposite-colour`: Defines the colour of the 3D effect opposite colour, or `none` to not use any
 * `quote.padding.top`/`quote.padding.bottom`: Defines the space around a block quote
 * `quote.padding.inset`: Defines the inset horizontally of the block quote.
-* `logo.PLACE`: Defines an image to place in a given location (`top-left`, `top`, `top-right`, `left`, `centre`, `right`, `bottom-left`, `bottom`, `bottom-right`)
-* `logo.PLACE.inset`: Defines the gap around the outside of the image to leave.
-* `logo.PLACE.width`/`logo.PLACE.height`: Defines the width/height of the image (which will be limited by the size of the slide)
-* `slidenumber.position`: defines a position for the slide number label on each slide, where the position value can be any of the `PLACE` strings from the above logo.
+* `logo.POSITION`: Defines an image to place in a given position (see below)
+* `logo.POSITION.inset`: Defines the gap around the outside of the image to leave.
+* `logo.POSITION.width`/`logo.POSITION.height`: Defines the width/height of the image (which will be limited by the size of the slide)
+* `slidenumber.position`: defines a position for the slide number label on each slide, where the position value can be any of the position specifications (or `none` to remove the slide number).
 * `slidenumber.padding`: defines the spacing from the edge of the screen for the slide number.
+* `slidenumber.format`: defines how the slide number is printed as a string. `$s` is replaced by the slide number, and `$m` by the maximum slider number.
+
+### Position specifications
+
+Positions are used for a few of the properties. The following positions are defined:
+
+* `top-left`
+* `top`
+* `top-right`
+* `left`
+* `centre`
+* `right`
+* `bottom-left`
+* `bottom`
+* `bottom-right`
 
 ### Size specifications
 
@@ -65,7 +80,6 @@ Sizes can be in pixels (which corresponds to 2 OS units, even in EX0/EY0 modes) 
     * the remaining space in a block, for content which is inline with the body of the slide
 
 Sizes may be specified as floating point values.
-
 
 ### Supported markdown
 

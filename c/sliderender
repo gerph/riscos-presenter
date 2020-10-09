@@ -147,6 +147,7 @@ struct sliderender_s {
 
     positionid_t slidenumber_position;
     int slidenumber_padding;
+    const char *slidenumber_format;
 
     font_t font_body; /* A reference to the base font in family_body */
 
@@ -1385,6 +1386,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
             render->slidenumber_padding = sliderender_slide_property_osunit(render, "slidenumber.padding", "1em",
                                                                             OSSIZE_IS_X | OSSIZE_IS_SLIDE);
         }
+        render->slidenumber_format = slide_getproperty(render->slide, "slidenumber.format", "$s");
     }
 
     {
@@ -1542,6 +1544,61 @@ static int sliderender_render_background(sliderender_t *render)
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_format_number
+ Description:   Format a string to give us something to use as the slide number
+ Parameters:    render-> the render to work with
+                format-> the format string:
+                            $s = slide number
+                            $m = max slide number
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+static char *sliderender_format_number(sliderender_t *render, const char *format)
+{
+    static char buffer[256]; /* FIXME: Laziness here */
+    char *p = buffer;
+    while (*format)
+    {
+        char *esc = strchr(format, '$');
+        if (esc == NULL)
+        {
+            /* No more escape strings, so that's it */
+            strcpy(p, format);
+            break;
+        }
+
+        /* Copy everything up to the escape character */
+        memcpy(p, format, esc-format);
+        p += (esc-format);
+
+        esc++;
+        switch (*esc)
+        {
+            case 's':
+                p += sprintf(p, "%i", render->slidenumber);
+                format = esc + 1;
+                break;
+
+            case 'm':
+                p += sprintf(p, "%i", render->deck->nslides);
+                format = esc + 1;
+                break;
+
+            case '$':
+                *p++ = '$';
+                format = esc + 1;
+                break;
+
+            default:
+                *p++ = '$';
+                format = esc;
+                break;
+        }
+    }
+    return buffer;
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_render_number
  Description:   Render a slide number for this slide
  Parameters:    render-> the render to work with
@@ -1549,7 +1606,7 @@ static int sliderender_render_background(sliderender_t *render)
  ******************************************************************/
 static int sliderender_render_number(sliderender_t *render)
 {
-    char buffer[32];
+    char *buffer;
     int pass;
     stringbounds_t bounds;
     bbox_t bbox;
@@ -1559,7 +1616,7 @@ static int sliderender_render_number(sliderender_t *render)
     if (render->slidenumber_position == pos_invalid)
         return 0;
 
-    sprintf(buffer, "%i", render->slidenumber);
+    buffer = sliderender_format_number(render, render->slidenumber_format);
     text_getstringsize(font, &bounds, -1, buffer, -1, 0);
 
     size.width = bounds.lbearing + bounds.xoffset + bounds.rbearing;
@@ -1581,6 +1638,7 @@ static int sliderender_render_number(sliderender_t *render)
                    render->colour_bg, render->colour_fg,
                    buffer, -1);
     }
+    return 0;
 }
 
 
