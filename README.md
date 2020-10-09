@@ -25,6 +25,7 @@ The following properties are defined:
 * `vertical-align`: Alignment of the slide content, which may take the value `top`, `middle`, or `bottom`.
 * `padding`/`padding-horizontal`/`padding-vertical`: Defines the size of the slide padding.
 * `list.padding.top`/`list.padding.bottom`: Defines the space around lists.
+* `item.padding.top`/`item.padding.bottom`: Defines the space around each list item.
 * `item.padding.inset`: Defines the inset horizontally of each list item's text (or bullet).
 * `item.padding.offset`: Defines the offset horizontally from the inset point to the text of the item's body.
 * `pre.padding.inset`: Defines the inset horizontally that the preformatted text blocks use

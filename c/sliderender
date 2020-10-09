@@ -135,7 +135,7 @@ struct sliderender_s {
     paddingparams_t heading_padding[MAXHEADING];
     paddingparams_t list_padding;
     paddingparams_t quote_padding;
-    int item_inset;
+    paddingparams_t item_padding;
     int item_text_offset;
     int pre_inset;
     int pre_border_type;
@@ -647,6 +647,8 @@ static void sliderender_block(sliderender_t *render,
             break;
 
         case sbt_item:
+            textblock_gap(render->textblock, render->item_padding.gap_top, NULL);
+
             /* FIXME: This isn't right; it means that we'll add the text blocks using the size of the
              *        lines in the prior block, which won't come out right if the lines change in size.
              *        For my purposes I think this is not a problem, but it might need to be fixed in
@@ -655,7 +657,7 @@ static void sliderender_block(sliderender_t *render,
             if (block->index == -1)
             {
                 dprintf("  Item unordered\n");
-                textblock_inset(render->textblock, render->item_inset, render->item_inset);
+                textblock_inset(render->textblock, render->item_padding.inset, render->item_padding.inset);
                 textblock_add(render->textblock,
                               render->font_body,
                               // "\xb7",        // Latin-1 encoding of middot
@@ -675,8 +677,8 @@ static void sliderender_block(sliderender_t *render,
                               render->colour_bg, render->colour_fg,
                               flags);
                 // Indent for the spans
-                textblock_inset(render->textblock, render->item_inset + render->item_text_offset,
-                                                   render->item_inset + render->item_text_offset);
+                textblock_inset(render->textblock, render->item_padding.inset + render->item_text_offset,
+                                                   render->item_padding.inset + render->item_text_offset);
             }
 
             break;
@@ -806,8 +808,10 @@ static void sliderender_block(sliderender_t *render,
 
         case sbt_item:
             // Restore the indent as we leave the item
-            textblock_inset(render->textblock, -(render->item_inset + render->item_text_offset),
-                                               -(render->item_inset + render->item_text_offset));
+            textblock_inset(render->textblock, -(render->item_padding.inset + render->item_text_offset),
+                                               -(render->item_padding.inset + render->item_text_offset));
+
+            textblock_gap(render->textblock, render->item_padding.gap_bottom, NULL);
             break;
 
         case sbt_pre:
@@ -1424,8 +1428,15 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
             };
             sliderender_slide_property_paddingparams(render, "list", &list_padding_defaults, &render->list_padding);
         }
-        render->item_inset        = sliderender_slide_property_osunit(render, "item.padding.inset", "0.5em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
-        render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        {
+            paddingdefaults_t item_padding_defaults = {
+                "0.5em",    // inset,
+                "0em",      // top,
+                "0em",      // bottom,
+            };
+            sliderender_slide_property_paddingparams(render, "item", &item_padding_defaults, &render->item_padding);
+            render->item_text_offset  = sliderender_slide_property_osunit(render, "item.padding.offset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
+        }
         render->pre_inset         = sliderender_slide_property_osunit(render, "pre.padding.inset", "1em", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);
         render->pre_border_type   = sliderender_slide_property_border(render, "pre.border.type", "none");
         render->pre_border_size   = sliderender_slide_property_osunit(render, "pre.border.width", "2px", OSSIZE_IS_Y | OSSIZE_IS_SLIDE);

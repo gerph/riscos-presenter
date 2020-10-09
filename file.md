@@ -49,8 +49,8 @@ font: bar
 
 ---
 template: first
-background-colour: another
-background-colour: more
+background-colour: black
+foreground-colour: white
 
 Text
 
