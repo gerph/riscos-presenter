@@ -16,11 +16,21 @@ typedef enum positionid_e {
     pos_topleft,    pos_topmid,    pos_topright,
     pos_midleft,                   pos_midright,
     pos_bottomleft, pos_bottommid, pos_bottomright,
-    pos_max // not a valid position
+    pos_max, // not a valid position
+    pos_invalid = -1
 } positionid_t;
 
 /* The names for each of those positions */
 extern char *position_name[pos_max];
+
+
+/*************************************************** Gerph *********
+ Function:      position_parse
+ Description:   Parse a position string
+ Parameters:    position-> the string to parse
+ Returns:       positionid_t, or pos_invalid
+ ******************************************************************/
+int position_parse(const char *position);
 
 
 /*************************************************** Gerph *********

@@ -10,6 +10,9 @@ logo.centre.width: 10em
 logo.centre.height: 10em
 logo.bottom-left: rgbcircles
 logo.bottom-left.inset: 1em
+slidenumber.position: top-right
+slidenumber.padding: 1em
+
 
 # Stuff
 

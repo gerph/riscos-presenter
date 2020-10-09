@@ -35,6 +35,26 @@ char *position_name[9] = {
 
 
 /*************************************************** Gerph *********
+ Function:      position_parse
+ Description:   Parse a position string
+ Parameters:    position-> the string to parse
+ Returns:       positionid_t, or pos_invalid
+ ******************************************************************/
+int position_parse(const char *position)
+{
+    positionid_t pos;
+    for (pos = 0; pos < pos_max; pos++)
+    {
+        if (strcmp(position_name[pos], position) == 0)
+        {
+            return pos;
+        }
+    }
+    return pos_invalid;
+}
+
+
+/*************************************************** Gerph *********
  Function:      position_calculate
  Description:   Work out the position to place a box, given parameters
  Parameters:    region-> the region into which we place the box

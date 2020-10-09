@@ -141,6 +141,9 @@ struct sliderender_s {
     rgb_t pre_border_fore;
     rgb_t pre_border_opp;
 
+    positionid_t slidenumber_position;
+    int slidenumber_padding;
+
     font_t font_body; /* A reference to the base font in family_body */
 
     /* Image configuration - one for each position tl, tc, tr, cl, cc, cr, bl, bc, br */
@@ -1363,6 +1366,20 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     }
 
     {
+        const char *position;
+        render->slidenumber_position = pos_invalid;
+
+        position = slide_getproperty(render->slide, "slidenumber.position", NULL);
+        if (position && strcmp(position, "none") != 0)
+        {
+            positionid_t pos = position_parse(position);
+            render->slidenumber_position = pos;
+            render->slidenumber_padding = sliderender_slide_property_osunit(render, "slidenumber.padding", "1em",
+                                                                            OSSIZE_IS_X | OSSIZE_IS_SLIDE);
+        }
+    }
+
+    {
         int inset_x = 0;
         int inset_y = 0;
         const char *padding = slide_getproperty(render->slide, "padding", NULL);
@@ -1517,6 +1534,49 @@ static int sliderender_render_background(sliderender_t *render)
 
 
 /*************************************************** Gerph *********
+ Function:      sliderender_render_number
+ Description:   Render a slide number for this slide
+ Parameters:    render-> the render to work with
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+static int sliderender_render_number(sliderender_t *render)
+{
+    char buffer[32];
+    int pass;
+    stringbounds_t bounds;
+    bbox_t bbox;
+    bounds_t size;
+
+    if (render->slidenumber_position == pos_invalid)
+        return 0;
+
+    sprintf(buffer, "%i", render->slidenumber);
+
+    text_getstringsize(render->font_body, &bounds, -1, buffer, -1, 0);
+
+    size.width = bounds.lbearing + bounds.xoffset + bounds.rbearing;
+    size.height = bounds.ascent + bounds.descent;
+
+    /* We have the data; now to work out where to put it */
+    if (position_calculate(&render->region,
+                           &size,
+                           render->slidenumber_padding, // no padding
+                           render->slidenumber_position, // positionid
+                           &bbox))
+    {
+        dprintf("Render background failed to find a position\n");
+    }
+    else
+    {
+        text_paint(render->font_body,
+                   bbox.x0 + bounds.lbearing, bbox.y0 + bounds.descent,
+                   render->colour_bg, render->colour_fg,
+                   buffer, -1);
+    }
+}
+
+
+/*************************************************** Gerph *********
  Function:      sliderender_show
  Description:   Render the actual slide to the screen
  Parameters:    render-> the render we're going to use.
@@ -1559,6 +1619,9 @@ int sliderender_show(sliderender_t *render)
 
     /* Draw any background images */
     sliderender_render_background(render);
+
+    /* Draw the slide number */
+    sliderender_render_number(render);
 
     for (pass=0; pass<2; pass++)
     {
