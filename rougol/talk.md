@@ -1,10 +1,11 @@
 background-colour: white
 foreground-colour: black
-padding: 1em
 body.font: Optima.Regular
 body.size: 24pt
 code.size: 0.9em
 code.bold.italic.font: Candara.Bold
+marginal.font: Optima.Regular
+marginal.size: 16pt
 h1.font: Optima.Bold
 h1.size: 58pt
 h2.font: Optima.Bold
@@ -16,10 +17,14 @@ pre.border.type: solid
 pre.border.width: 2px
 pre.border.colour: slategray
 pre.background-colour: gainsboro
+item.padding.bottom: 0.5em
 logo.bottom-right: GerphG
 logo.bottom-right.inset: 1em
 logo.bottom-right.width: 4em
 logo.bottom-right.height: 4em
+slidenumber.position: bottom-left
+slidenumber.padding: 0.25em
+slidenumber.format: $s / $m
 
 
 # Building for RISC OS, Online
@@ -34,6 +39,8 @@ background-colour: #56C1FF
 foreground-colour: white
 h1.font: Optima.Regular
 h1.size: 58pt
+h1.padding.top: 3em
+h1.padding.bottom: 3em
 
 # 0. Introduction
 
@@ -48,6 +55,8 @@ background-colour: white
 foreground-colour: black
 h1.font: Optima.Bold
 h1.size: 42pt
+h1.padding.top: 0
+h1.padding.bottom: 0
 h2.font: Optima.Bold
 h2.size: 28pt
 h2.padding.bottom: 1.5em
@@ -64,10 +73,11 @@ vertical-align: top
 # Introduction
 ## What we'll talk about
 
-* Some background.
-* What JFPatch-as-a-service is
-* How it works
-* What powers it...
+1. Some background.
+2. What JFPatch-as-a-service is.
+3. How it works.
+4. What powers it.
+5. Conclusions.
 
 ---
 template: section-title
@@ -122,49 +132,163 @@ template: body-text
 # Background
 ## How can I do this? \(1\)
 
-* Source control:
-  * Move things to Git, because CVS is so very painful.
-  * \<picture / link>
+Source control:
+* Move things to Git, because CVS is so very painful.
 
-***`Tech`***: Gitlab, running on my linux server - it's publicly accessible, but most of the 1100-odd projects are private.
+---
+# Background
+## How can I do this? \(1\)
+
+Source control:
+* Move things to Git, because CVS is so very painful.
+
+***`Tech`***: GitLab, running on my linux server - it's publicly accessible, but most of the 1000-odd projects are private.
+
+![](gitlab (width=100% height=100%))
+
 
 ---
 # Background
 ## How can I do this? \(2\)
 
-* Cross compiling:
-  * Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
+Cross compiling:
+
+---
+# Background
+## How can I do this? \(2\)
+
+Cross compiling:
+* Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
+
+***`Tech`***: Port the toolchain to 64bit Linux and 64bit macOS.
+
+```
+charles@laputa ~/pro/RO/mod/ris/Sou/Des/TaskWindow (master)> rm o*/*; riscos-amu BUILD32=1 ram
+riscos-objasm   -Stamp -quit   -I@ -predefine "BUILD_RAM SETL {TRUE}" -apcs 3/32/fpe2/swst/fp -predefine "BUILD_ZM SETL {TRUE}" -predefine "No26bitCode SETL {TRUE}"  -predefine "No32bitCode SETL {FALSE}" -predefine "APCS SETS \"APCS-32\"" -o oz32/Taskman s/Taskman
+ARM AOF Macro Assembler 3.32 (JRF:3.32.38) [07 Mar 2006]
+Unrecognised APCS qualifier /fpe2
+Unrecognised APCS qualifier /fp
+MyDomain = 0000058C
+Deprecated form of PSR field specifier used (use _cxsf)
+Deprecated form of PSR field specifier used (use _cxsf)
+riscos-link -rmf -rescan -C++ -o rm32/TaskWindow,ffa oz32.Taskman 
+TaskWindow: Module built {RAM}
+```
+
+
+---
+# Background
+## How can I do this? \(2\)
+
+Cross compiling:
+* Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
 
 ***`Tech`***: Port the toolchain to 64bit Linux and to 64bit macOS.
+
+***`Tech`***: Tool to extract example code from 'Rosetta Code' for testing (https://github.com/gerph/rosettacode)
 
 ---
 # Background
 ## How can I do this? \(3\)
 
-* Managed environments:
+Managed environments:
   * How do I get my toolchain? find my libraries? store built components?
-  * ***`Tech`***: Artifactory for artifacts, and created some tools for pushing and pulling resources.
-* Automation:
-  * ***`Tech`***: GitLab CI triggers on every change - pulls resources from Artifactory, builds, pushes result to Artifactory.
-  * \<put a diagram here>
+
+---
+# Background
+## How can I do this? \(3\)
+
+Managed environments:
+
+* How do I get my toolchain? find my libraries? store built components?
+
+***`Tech`***: Artifactory for artifacts, and created some tools for pushing and pulling resources.
+
+![](artifactory (width=100% height=100%))
+
+---
+code.size: 0.8em
+
+# Background
+## How can I do this? \(4\)
+
+Managed environments: \(cont'd\)
+
+* What if I don't want to download my toolchain all the time?
 
 ---
 # Background
 ## How can I do this? \(4\)
 
-* Managed environments: \(cont'd\)
-  * What if I don't want to download my toolchain all the time?
-  * ***`Tech`***: Docker RISC OS development environment.
-  * \<picture / demo>
+Managed environments: \(cont'd\)
+
+* What if I don't want to download my toolchain all the time?
+
+***`Tech`***: Docker RISC OS development environment.
+
+```
+charles@laputa ~/pro/RO/mod/ris/Sou/Des/WindowScroll (master)> 
+docker run -it --rm -v $PWD:/riscos-source -v $PWD/build:/riscos-build --workdir /riscos-source gerph/riscos-build riscos-amu
+riscos-cmunge   -px -DCMHG   -IC:,RISC_OSLib: -26bit -o oz/modhead cmhg/modhead
+CMunge 0.77 (JRF:0.77.47) [13 Jun 2006]
+Copyright (c) 1999-2006 Robin Watts/Justin Fletcher
+Norcroft RISC OS ARM C vsn 5.18 (JRF:5.18.119)  [Jun  7 2020]
+ARM AOF Macro Assembler 3.32 (JRF:3.32.38) [07 Mar 2006]
+0 Errors, 2 Warnings suppressed by -NOWarn
+riscos-cc   -c  -Wc -fa   -IC:,RISC_OSLib: -za1 -apcs 3/26/fpe2/swst/fp -D__CONFIG=26 -zM -zps1 -o oz/main c/main
+Norcroft RISC OS ARM C vsn 5.18 (JRF:5.18.119)  [Jun  7 2020]
+"c/main", line 564: Warning: '=': cast of 'int' to differing enum
+c/main: 1 warning, 0 errors, 0 serious errors
+riscos-link -rmf -rescan -C++ -o rm/WindowScroll,ffa oz.main oz.modhead C:o.stubs 
+WindowScroll: Module built {RAM}
+```
+
+---
+template: body-text
+
+# Background
+## How can I do this? \(5\)
+
+Automated testing:
 
 ---
 # Background
-## How can I do this? \(4\)
+## How can I do this? \(5\)
 
-* Feature and regression testing:
-  * I need a way to test things…
+Automated testing:
+
+***`Tech`***: GitLab CI triggers on every change - pulls resources from Artifactory, builds, pushes result to Artifactory.
+
+![](gitlab-ci (width=100% height=100%))
+
+---
+# Background
+## How can I do this? \(6\)
+
+Feature and regression testing:
+
+* Build programs and test code on other platforms.
+
+---
+# Background
+## How can I do this? \(6\)
+
+Feature and regression testing:
+
+* Build programs and test code on other platforms.
+* I need a way to test things on RISC OS, too…
 
 ***`Tech`***: … we'll come to that later …
+
+---
+# Background
+## How can I do this? \(7\)
+
+Fleets of systems for people to use:
+
+* That seems a stretch, but maybe it's not so hard...
+
+***`Tech`***: JFPatch-as-a-service begins that process
 
 ---
 template: section-title
@@ -182,10 +306,13 @@ template: body-text
 # JFPatch-as-a-Service
 ## Why?
 
-* A friend said to me…
-  * “I can't wait until you csa.announce \<this> and confuse the bejesus out of the RISC OS civilians.”
-* To which my answer was…
-  * “JFPatch as a service would be a doddle to do right now. A service that nobody asked for, or needed.”
+A friend said to me…
+
+> “I can't wait until you csa.announce this and confuse the bejesus out of the RISC OS civilians.”
+
+To which my answer was…
+
+> “JFPatch as a service would be a doddle to do right now. A service that nobody asked for, or needed.”
 
 ---
 # JFPatch-as-a-Service
@@ -198,38 +325,200 @@ template: body-text
 * It was used to write many of my early assembler modules.
 
 ---
+
 # JFPatch-as-a-Service
-## What can you build with it?
+## What is the service?
+
+* Takes its inspiration from Matthew Godbolt's Compiler explorer - _https://godbolt.org/_
+
+![](jfpaas-home (width=100% height=100%))
+
+
+---
+# JFPatch-as-a-Service
+## What can you build with the service? (1)
 
 * Any JFPatch code \(now builds 32bit code\)
 * C code that compiles with the Norcroft compiler
 * Pascal code \(which will be converted to C and compiled with the Norcroft compiler\)
+* Perl code
 * BASIC assembler
 * Objasm assembler.
 
-***`Tech`***: They're all built for 32bit RISC OS, automatically taken from Artifactory.
+***`Tech`***: All the toolchain is built for 32bit RISC OS, automatically taken from Artifactory when the service is built.
+
+---
+# JFPatch-as-a-Service
+## What can you build with the service? (2)
+
+C code...
+
+![](jfpaas-c (width=100% height=100%))
+
+---
+# JFPatch-as-a-Service
+## What can you build with the service? (3)
+
+Perl code...
+
+![](jfpaas-perl (width=100% height=100%))
+
+---
+# JFPatch-as-a-Service
+## What can you build with the service? (4)
+
+Plain BASIC...
+
+![](jfpaas-basic (width=100% height=100%))
+
 
 ---
 # JFPatch-as-a-Service
 ## What might use the service?
 
-* Automated builds can use this:
-  * LineEditor \(BASIC assembler\) \(github link\)
-  * Nettle \(C application\) \(github link\)
-  * CObey \(C module\) \(github link\)
-  * ErrorCancel \(ObjAsm\) \(github link\)
-  * Pico \(C command line tool\) \(github link\)
-  * DDEUtils \(JFPatch module\) \(github link\)
+Automated builds can use this:
+
+* LineEditor \(BASIC assembler\) - _https://github.com/philpem/LineEditor_
+* Nettle \(C application\) - _https://github.com/gerph/Nettle/tree/ci_
+* CObey \(C module\) - _https://github.com/gerph/cobey_
+* ErrorCancel \(ObjAsm\) - _https://github.com/gerph/errorcancel_
+* Pico \(C command line tool\) - _https://github.com/gerph/pico_
+* DDEUtilsJF \(JFPatch module\) - _https://github.com/gerph/ddeutilsjf_
 
 ---
 # JFPatch-as-a-Service
-## How do you use the service? \(1\)
+## How do you use the service?
+
+Two interfaces, which are documented:
+
+* JSON API.
+* WebSockets API.
+
+Documented on the website: _https://jfpatch.riscos.online/api.html_
+
+Examples can be found at: _https://github.com/gerph/jfpatch-as-a-service-examples_
 
 ---
-# JFPatch-as-a-Service
-## How do you use the service? \(2\)
+code.size: 0.8em
 
-About robuild-client. FIXME
+# JFPatch-as-a-Service
+## How do you use the JSON API?
+
+Use your favourite HTTP request library. For example, `curl`:
+
+```
+curl -i -F 'source=@source-file'  http://jfpatch.riscos.online/build/json
+```
+
+Get a JSON response:
+
+```
+{
+  "data": "... data goes here ...",
+  "filetype": 4092,
+  "messages": [
+    "Build tool selected: JFPatch",
+    "Return code: 0"
+  ],
+  "output": [
+    "JFPatch ARM assembler v2.56\u00df (02 Mar 2020) [Justin Fletcher]\r\n",
+    "Pre-processing...\r\n",
+    "Assembling...\r\n"
+  ],
+  "rc": 0,
+  "throwback": []
+}
+```
+
+---
+
+# JFPatch-as-a-Service
+## How do you use the JSON API?
+
+Using the `wsclient.py` example gives a similar output.
+
+```
+welcome: u'Linking over Internet with RISCOS Pyromaniac Agent version 1.04'
+response: u'Source loaded'
+response: u'Started build'
+message: u'Build tool selected: JFPatch'
+output: u'JFPatch ARM assembler v2.56\xdf (02 Mar 2020) [Justin Fletcher]\r\n'
+output: u'Pre-processing...\r\n'
+output: u'Assembling...\r\n'
+clipboard: {u'filetype': 4092, u'data': u'... data goes here ...'}
+rc: 0
+message: u'Return code: 0'
+complete: True
+```
+
+Q: What about when you don't have, or can't use, Python?
+
+A: `robuild-client` handles that.
+
+---
+template: body-text
+
+# JFPatch-as-a-Service
+## What is the robuild-client?
+
+* Created a build client that can be used to do the heavy work.
+* Can be found at _https://github.com/gerph/robuild-client_
+* Builds for Linux...
+
+---
+
+# JFPatch-as-a-Service
+## What is the robuild-client?
+
+* Created a build client that can be used to do the heavy work.
+* Can be found at _https://github.com/gerph/robuild-client_
+* Builds for Linux...
+* ... then uses the tool it built to submit its code to the service, to build the RISC OS version.
+
+***`Tech`***:
+
+* robuild-client.
+* port of JSON parse/creation library.
+* WebSockets library.
+
+---
+code.size: 0.7em
+
+# JFPatch-as-a-Service
+## How does the service know what to do?
+
+* Simple files are recognised by their format.
+* Zip files are recognised by their content.
+    * The `.robuild.yaml` file can control what is actually run.
+
+---
+code.size: 0.7em
+
+# JFPatch-as-a-Service
+## How does the service know what to do?
+
+* Simple files are recognised by their format.
+* Zip files are recognised by their content.
+    * The `.robuild.yaml` file can control what is actually run.
+
+```
+%YAML 1.0
+---
+
+jobs:
+  build:
+    # Env defines system variables which will be used within the environment.
+    # Multiple variables may be assigned.
+    env:
+      "Sys$Environment": ROBuild
+
+    # Commands which should be executed to perform the build.
+    # The build will terminate if any command returns a non-0 return code or an error.
+    script:
+      - dir riscos
+      - !BuildAll
+      - Clipboard_FromFile client.aif32.riscos-build-online
+```
 
 ---
 
@@ -245,25 +534,19 @@ March
 template: body-text
 
 # How The Service Works
-## What is the service? (1)
-
-* Takes its inspiration from Matthew Godbolt's Compiler explorer.
-* \<website image / demo?>
-
----
-# How The Service Works
-## What is the service? (2)
+## What is the service made of? (1)
 
 ***`Tech`***:
   * Infrastructure - AWS SSL, routing and linux server.
-  * Front End - Static site, using custom CodeMirror colouring, websockets to talk to back end
+  * Front End - Static site, websockets to talk to back end
+      * Custom CodeMirror colouring - _https://github.com/gerph/CodeMirror/tree/riscos-modes_
   * Back End - Python REST JSON API and WebSockets service
+      * RISC OS Zip file decoding in Python - _https://github.com/gerph/python-zipinfo-riscos_
   * Tools - JFPatch tool, compiler, assembler, linker, amu, etc.
-  * RISC OS Zip file decoding in Python.
 
 ---
 # How The Service Works
-## What is the service? (3)
+## What is the service made of? (2)
 
 ![](howitworks (width=100% height=100%))
 
@@ -323,11 +606,20 @@ template: body-text
 
 ---
 # How The Service Works
+## What runs those services? (10)
+
+* `robuild` has worked out the RISC OS commands to use.
+* `pyro` is given those commands and constructs a command that can run RISC OS with those commands.
+* `docker` is given that command, and builds a command to run RISC OS within a docker container.
+* ... and the results of all of that gets fed back to the `results` object, which passes it back to the caller.
+
+---
+# How The Service Works
 ## Wait what?
 
 > “ Wait, RISC OS is running in Docker?\
-But Docker runs on Linux?\
-You're running RISC OS on Linux then? ”
+  But Docker runs on Linux?\
+  You're running RISC OS on Linux then? ”
 
 ---
 template: section-title
@@ -350,7 +642,15 @@ June
 template: body-text
 
 # RISC OS Pyromaniac
-## How do you test RISC OS software without RISC OS ?
+## How do you test RISC OS software without RISC OS?
+
+* My RiscPC is in storage.
+* It's not good for testing.
+
+---
+
+# RISC OS Pyromaniac
+## How do you test RISC OS software without RISC OS?
 
 * My RiscPC is in storage.
 * It's not good for testing.
@@ -361,9 +661,17 @@ template: body-text
 # RISC OS Pyromaniac
 ## Surely that's easy? (1)
 
-* Surely that's easy? You just run an emulation system until it hits a SWI and then you make the SWI do the I/O thing. Then you run some more?
+* Surely that's easy? You just run an emulation system until it hits a SWI...\
+  ... and then you make the SWI do the I/O thing. Then you run some more?
 
-* Yes. That's exactly what you do.
+---
+# RISC OS Pyromaniac
+## Surely that's easy? (1)
+
+* Surely that's easy? You just run an emulation system until it hits a SWI...\
+  ... and then you make the SWI do the I/O thing. Then you run some more?
+
+* Yes - that's exactly what you do.
 
 * The `IfThere` tool ran on June 10th - not well, but it ran.
 
@@ -424,6 +732,37 @@ template: body-text
 
 ---
 # RISC OS Pyromaniac
+## How do you use it? (1)
+
+* Command line:
+
+```
+charles@laputa ~/pyromaniac> ./pyro.py --load-internal-modules --command 'gos'
+Supervisor
+
+*fx0
+
+Error: RISC OS 7.14 (02 Aug 2020) [Pyromaniac 0.14 on Darwin/x86_64] (Error number &f7)
+*time
+Fri,09 Oct 2020 23:00:04
+*quit
+```
+
+---
+# RISC OS Pyromaniac
+## How do you use it? (2)
+
+* Running programs:
+
+```
+charles@laputa ~/pyromaniac> echo '10PRINT "Hello world"' > myprog,fd1
+charles@laputa ~/pyromaniac> python pyro.py --load-internal-modules --load-module modules/BASIC,ffa --command myprog
+Hello world
+charles@laputa ~/pyromaniac>
+```
+
+---
+# RISC OS Pyromaniac
 ## Graphics demo\!
 
 ---
@@ -460,57 +799,6 @@ template: body-text
 * Sound - No wave output
 * Graphics - No frame buffer, No Sprites, No true colour modes
 * Many other things
-
----
-# RISC OS Pyromaniac
-## How do you use it?
-
-* Command line:
-
-```
-charles@laputa ~/projects/RO/pyromaniac> ./pyro.py --load-internal-modules --command 'gos'
-Supervisor
-
-*fx0
-
-Error: RISC OS 7.14 (02 Aug 2020) [Pyromaniac 0.14 on Darwin/x86_64] (Error number &f7)
-*quit
-```
-
----
-# RISC OS Pyromaniac
-## Configuration
-
-* RISC OS Pyromaniac is highly configurable - over 240 directly configurable options, in 59 groups.
-* Configuration can be on the command line or in configuration files.
-* Example:
-  * `./pyro.py --config modules.rominit_noisy=true --load-internal-modules --command gos`
-  * `./pyro.py --config memorymap.rom_base=90000000 --load-internal-modules --command modules`
-
----
-# RISC OS Pyromaniac
-## Configuration files
-
-```
-%YAML 1.1
----
-# Configuration for loading the ROM for RISC OS 5
-
-debug:
-  - modules
-  - traceregionfunc
-  - podules
-  - swimisuse
-
-config:
-  podule.extensionrom1: ROMs/riscos5
-  modules.rominit_noisy: true
-  memorymap.rom_base: 0x8800000
-  modules.unplug: extrom1:Podule,ParallelDeviceDriver,TaskWindow,SpriteExtend,SystemDevices,...
-
-modules:
-  internal: true
-```
 
 ---
 
@@ -555,9 +843,62 @@ But also
 
 ---
 # RISC OS Pyromaniac
+## Configuration
+
+* RISC OS Pyromaniac is highly configurable - over 240 directly configurable options, in 59 groups.
+* Configuration can be on the command line or in configuration files.
+* Example:
+  * `./pyro.py --config modules.rominit_noisy=true --load-internal-modules --command gos`
+  * `./pyro.py --config memorymap.rom_base=90000000 --load-internal-modules --command modules`
+
+---
+# RISC OS Pyromaniac
+## Configuration files
+
+```
+%YAML 1.1
+---
+# Configuration for loading the ROM for RISC OS 5
+
+debug:
+  - modules
+  - traceregionfunc
+  - podules
+  - swimisuse
+
+config:
+  podule.extensionrom1: ROMs/riscos5
+  modules.rominit_noisy: true
+  memorymap.rom_base: 0x8800000
+  modules.unplug: extrom1:Podule,ParallelDeviceDriver,TaskWindow,SpriteExtend,SystemDevices,...
+
+modules:
+  internal: true
+```
+
+---
+# RISC OS Pyromaniac
 ## Tracing and debugging
 
-Tracing SWI arguments:
+* Trace features:
+  * Report all instructions
+  * Report basic block execution, function entries
+  * Report SWI entry and exit conditions
+  * Function, memory and SWI traps.
+  * Exception and API misuse reports.
+* Debug features:
+  * Most modules have debug available.
+  * Can be enabled at runtime.
+
+MORE
+
+MORE
+
+---
+# RISC OS Pyromaniac
+## Tracing code (1)
+
+Tracing SWI arguments (`--debug traceswiargs`):
 
 ```
 >GCOL 0, 255,192,0
@@ -575,7 +916,7 @@ Tracing SWI arguments:
 
 ---
 # RISC OS Pyromaniac
-## Tracing and debugging
+## Tracing code (2)
 
 ```
 $ pyro testcode/bin/word_time_string --debug trace
@@ -595,31 +936,84 @@ Time string: Sun,06 Sep 2020 08:22:38
 ```
 
 ---
+code.size: 0.7em
+
 # RISC OS Pyromaniac
-## Tracing and debugging
+## Debugging
 
-* Other trace features:
-  * Function, memory and SWI traps.
-  * Exception and API misuse reports.
-* Debug features:
-  * Most modules have debug available.
-  * Can be enabled at runtime.
+```
+charles@laputa ~/demo> pyro --load-internal-modules --command gos --debug cli,clialias,osfscontrol
+CLI: 'gos'
+CLI alias: Wildcard 'Alias$gos' start read from None
+Supervisor
 
-MORE
+*.
+CLI: '.'
+CLI alias: '.' expansion
+CLI alias: Expanded to 'Cat '
+CLI alias: Execute: Cat
+CLI: 'Cat '
+CLI alias: Wildcard 'Alias$Cat' start read from None
+Catalogue directory '@'
+Canonicalise filename '@' using pathvar 0L, path 0L
+Read boot option of '$'
+Dir. $ Option 02 (run)
+Read directory 0
+CSD  NoFileSystem:$too
+Read directory 3
+Lib. NoFileSystem:$
+Read directory 2
+URD  NoFileSystem:$
+example/py  WR/WR     example/pyc WR/WR     wimperror   WR/WR   
+*
+```
 
-MORE
+---
+template: body-text
+
+# RISC OS Pyromaniac
+## FIXME - What's it useful for?
+
+FIXME - examples of how you use it to find problems?
+* Kevin's Git to\ol?
+* ARMBE?
+* Julie's CObey?
+
+---
+template: body-text
+
+# RISC OS Pyromaniac
+## What is it like to work with? (1)
+
+* The Pyromaniac context is usually `ro`, containing...
+    * registers (`ro.regs[#]`)
+    * memory (`ro.memory[address]`)
+    * configuration (`ro.config['group.option']`)
+    * resource (`ro.resource['resource']`)
+    * methods for execution (`ro.execute`, `ro.execute_with_error`)
+    * trace functions (`ro.trace`)
+    * the kernel (`ro.kernel`)
+* The Pyromaniac layer is all about the lower level execution and setup of the system.
 
 ---
 # RISC OS Pyromaniac
-## What does it look like?
+## What is it like to work with? (2)
 
-```
-
-```
+* The RISC OS Kernel context is `ro.kernel`
+    * dynamic areas (`ro.kernel.da`, `ro.kernel.da_rma`. `ro.kernel.da_appspace`, ...)
+    * vectors (`ro.kernel.vectors[#]`)
+    * modules (`ro.kernel.modules`)
+    * vdu and graphics system (`ro.kernel.vdu`, `ro.kernel.graphics`)
+    * input and mouse (`ro.kernel.input`, `ro.kernel.mouse`)
+    * filesystem (`ro.kernel.filesystem`)
+    * system variables (`ro.kernel.sysvars[varname]`)
+    * program environment (`ro.kernel.progenv`)
+    * system APIs (`ro.kernel.api`)
+* The Kernel object is always referenced explicitly from `ro`.
 
 ---
 # RISC OS Pyromaniac
-## What does it look like?
+## What is it like to work with? (3)
 
 ```
 """
@@ -642,6 +1036,92 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 
 ---
 # RISC OS Pyromaniac
+## What is it like to work with? (4)
+
+Many commands are just a thin wrapper around an system call:
+
+```
+def cmd_rmload(self, args):
+    """
+    Syntax: *RMLoad <module-file> [<args>]
+    """
+    self.ro.kernel.api.os_module(modhand.ModHandReason_Load, args)
+```
+
+---
+# RISC OS Pyromaniac
+## What is it like to work with? (5)
+
+Context handlers can be used to make memory allocation easy:
+```
+def cmd_time(self, args):
+    """
+    Syntax: *Time
+    """
+    with self.ro.kernel.da_sysheap.allocate(128) as time_string:
+        time_string[0].word = 0
+        self.ro.kernel.call_swi(swis.OS_Word,
+                                rin={0: osword.OsWord_ReadRealTimeClock,
+                                     1: time_string.address})
+        self.ro.kernel.writeln(time_string.string)
+```
+
+
+---
+# RISC OS Pyromaniac
+## What is it like to work with? (6)
+
+Context handlers can also preserve the output state:
+```
+def cmd_show(self, args):
+    """
+    Syntax: *Show [<variable>]
+    """
+    # Preserve and enable VDU paging
+    with self.ro.kernel.api.vdupaging():
+        # Enumerate and print variables
+        for varname, vartype, value in self.ro.kernel.api.os_readvarval_enumerate(args):
+            if vartype in (sysvars.TYPE_STRING, sysvars.TYPE_MACRO):
+                # String returned parameters should have their value escaped GSTrans style
+                value = self.ro.kernel.gstrans.escape(value,
+                                                      escape_chars='|"<' if vartype != sysvars.TYPE_MACRO else '',
+                                                      escape_control=True,
+                                                      escape_topbit=True)
+
+            suffix = ''
+            if vartype == sysvars.TYPE_NUMBER:
+                suffix = '(number)'
+            elif vartype == sysvars.TYPE_MACRO:
+                suffix = '(macro)'
+            self.ro.kernel.writeln('%s%s : %s' % (varname, suffix, value))
+```
+
+---
+# RISC OS Pyromaniac
+## What is it like to work with? (7)
+
+Exceptions can be trapped in a pythonic way:
+```
+def cmd_unset(self, args):
+    """
+    Syntax: *Unset <variable>
+    """
+    try:
+        self.ro.kernel.api.os_setvarval_delete(args)
+    except RISCOSError as exc:
+        if exc.errnum != errors.ErrorNumber_VarCantFind:
+            raise
+        # Lack of a variable is not an error
+```
+
+---
+# RISC OS Pyromaniac
+## Problems...
+
+FIXME: Include some things about where there are problems or questions?
+
+---
+# RISC OS Pyromaniac
 ## Other technologies\!
 
 ***`Tech`***:
@@ -652,27 +1132,9 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
     * NanoRC syntaxes for some RISC OS file types.
 * Tool for building hourglass modules.
 * Tool for testing tools.
+* PRM-in-XML documentation system rework.
 * Miscellaneous toolchain updates.
 * Changelog management system.
-
----
-# RISC OS Pyromaniac
-## RISC OS Testing is awful
-
-* RISC OS Pyromaniac has tests - about a thousand at present.
-* Tests take about 18 minutes to run - and run on Linux and macOS in parallel.
-* Code coverage hovers at around 65%.
-
-***`Tech`***: Some of the tests exported out to GitHub
-
----
-# RISC OS Pyromaniac
-## RISC OS is awful for testing
-
-* Clarification: RISC OS Classic is awful for testing.
-* FIXME: Examples?
-* JFPatch itself is tested.
-* BASIC module has some tests that run programs.
 
 ---
 # RISC OS Pyromaniac
@@ -696,15 +1158,7 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 * Long lived development, for example...
   * Font Manager lived on a branch for about 6 months.
   * EasySockets is still on a branch.
-
----
-# RISC OS Pyromaniac
-## Future work
-
-* More APIs.
-* Better handling of corner cases.
-* Back Trace Structures
-* Using it for actual testing - that was what it was for!
+  * PyromaniacGit is still be worked on.
 
 ---
 template: section-title
@@ -714,6 +1168,128 @@ template: section-title
 ---
 template: body-text
 
+# Conclusion
+## Have I done what I set out to do?
+
+Let's review what I saw as problems...
+
+* Development on RISC OS is tedious
+* RISC OS testing is awful
+* RISC OS is awful for testing
+
+---
+# Conclusion
+## Development on RISC OS is tedious (1)
+
+* Source control
+* Cross compiling
+* Managed development environments
+* Automated testing
+* Feature and regression testing
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (2)
+
+* Source control - *yup, using GitLab, PyromaniacGit*
+* Cross compiling
+* Managed development environments
+* Automated testing
+* Feature and regression testing
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (3)
+
+* Source control - yup, using GitLab, PyromaniacGit
+* Cross compiling - *yup, Linux and macOS*
+* Managed development environments
+* Automated testing
+* Feature and regression testing
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (4)
+
+* Source control - yup, using GitLab, PyromaniacGit
+* Cross compiling - yup, Linux and macOS
+* Managed development environments - *yup, docker, artifactory, applications*
+* Automated testing
+* Feature and regression testing
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (5)
+
+* Source control - yup, using GitLab, PyromaniacGit
+* Cross compiling - yup, Linux and macOS
+* Managed development environments - yup, docker, artifactory, applications
+* Automated testing - *yup, build.riscos.online, and GitHub and GitLab builds*
+* Feature and regression testing
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (6)
+
+* Source control - yup, using GitLab, PyromaniacGit
+* Cross compiling - yup, Linux and macOS
+* Managed development environments - yup, docker, artifactory, applications
+* Automated testing - yup, build.riscos.online, and GitHub and GitLab builds
+* Feature and regression testing - *yup, thousands of tests, some public*
+* Fleets of systems available
+
+---
+# Conclusion
+## Development on RISC OS is tedious (7)
+
+* Source control - yup, using GitLab, PyromaniacGit
+* Cross compiling - yup, Linux and macOS
+* Managed development environments - yup, docker, artifactory, applications
+* Automated testing - yup, build.riscos.online, and GitHub and GitLab builds
+* Feature and regression testing - yup, tests for the OS, and code coverage
+* Fleets of systems available - *well, no, not yet*
+
+---
+# Conclusion
+## RISC OS Testing is awful
+
+* RISC OS Pyromaniac has tests - about a thousand at present.
+* Tests take about 18 minutes to run - and run on Linux and macOS in parallel.
+* Code coverage hovers at around 65%.
+
+***`Tech`***: Some of the tests exported out to GitHub
+
+---
+# Conclusion
+## RISC OS is awful for testing
+
+* Clarification: RISC OS Classic is awful for testing.
+* Heavily used as part of the development of the `present` tool.
+* JFPatch itself is tested.
+* BASIC module has some tests that run programs.
+
+---
+# Conclusion
+## Could it be better?
+
+* More APIs.
+* Better handling of corner cases.
+* Back Trace Structures.
+* Using it for actual testing - that was what it was for!
+* So many other opportunities.
+
+---
+# Conclusion
+## Am I happy?
+
+You can make whatever judgements you like!
+
+---
 # Conclusion
 ## References
 
