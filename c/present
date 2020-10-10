@@ -25,6 +25,10 @@
 #include "cursors.h"
 #include "hourglass.h"
 #include "banks.h"
+#include "str.h"
+
+// Define this to have the hourglass start as soon as we change page
+#define HOURGLASS_IMMEDIATE
 
 
 /* Define this to debug this file */
@@ -38,7 +42,13 @@
 #endif
 
 
+#ifdef HOURGLASS_IMMEDIATE
+#define hourglass_on() hourglass_start(1)
+#endif
+
+
 typedef struct slides_s {
+    const char *filename;
     slidedeck_t *deck;
     sliderender_t *render;
 } slides_t;
@@ -56,31 +66,35 @@ slides_t *slides_create(const char *filename)
     slidedeck_t *deck;
     const char *mddata;
 
-    mddata = file_read_string(filename);
+    slides->filename = strdup(filename);
+    if (slides->filename == NULL)
+        goto fail_filename;
+
+    mddata = file_read_string(slides->filename);
     if (mddata == NULL)
-    {
-        free(slides);
-        return NULL;
-    }
+        goto fail_mddata;
 
     deck = slidemd_parse(mddata, strlen(mddata));
     if (deck == NULL)
-    {
-        free((char*)mddata);
-        free(slides);
-        return NULL;
-    }
+        goto fail_parse;
     free((char*)mddata);
+    mddata = NULL;
 
     slides->deck = deck;
     slides->render = sliderender_create(deck, 0, NULL);
     if (slides->render == NULL)
-    {
-        slidedeck_destroy(slides->deck);
-        free(slides);
-        return NULL;
-    }
+        goto fail_createrender;
     return slides;
+
+fail_createrender:
+    slidedeck_destroy(slides->deck);
+fail_parse:
+    free((char*)mddata);
+fail_mddata:
+    free((char*)slides->filename);
+fail_filename:
+    free(slides);
+    return NULL;
 }
 
 /*************************************************** Gerph *********
@@ -95,11 +109,87 @@ void slides_destroy(slides_t *slides)
         return;
 
     sliderender_destroy(slides->render);
+    slides->render = NULL;
     slidedeck_destroy(slides->deck);
     slides->deck = NULL;
+    free((char*)slides->filename);
+    slides->filename = NULL;
     free(slides);
 }
 
+
+/*************************************************** Gerph *********
+ Function:      slides_reload
+ Description:   Reload the slides, returning to the same slide we were in
+ Parameters:    slides-> the slides to reload
+ Returns:       1 if failed, 0 if successful
+ ******************************************************************/
+int slides_reload(slides_t *slides)
+{
+    slidedeck_t *deck;
+    sliderender_t *render;
+    const char *mddata;
+    int slide_number;
+
+    /* This will take a moment, so make sure we use the hourglass */
+    hourglass_on();
+
+    mddata = file_read_string(slides->filename);
+    if (mddata == NULL)
+        goto fail_mddata;
+
+    deck = slidemd_parse(mddata, strlen(mddata));
+    if (deck == NULL)
+        goto fail_parse;
+    free((char*)mddata);
+    mddata = NULL;
+
+    render = sliderender_create(deck, 0, NULL);
+    if (slides->render == NULL)
+        goto fail_createrender;
+
+    /* We were successful in reloading and creating items */
+    slide_number = sliderender_get_slide(slides->render);
+    if (slide_number >= deck->nslides)
+        slide_number = deck->nslides - 1; /* Limit to the number of slides in the deck */
+
+    if (sliderender_set_slide(render, slide_number))
+    {
+        slide_number = 0;
+        sliderender_set_slide(render, 0);
+    }
+
+    {
+        bbox_t bbox;
+        sliderender_get_region(slides->render, &bbox);
+        sliderender_set_region(render, &bbox);
+    }
+
+    /* All done, now get rid of the old deck and its properties */
+    sliderender_destroy(slides->render);
+    slides->render = NULL;
+    slidedeck_destroy(slides->deck);
+    slides->deck = NULL;
+
+    /* And reassign our new ones */
+    slides->deck = deck;
+    slides->render = render;
+
+    hourglass_off();
+
+    /* Success */
+    return 0;
+
+fail_createrender:
+    slidedeck_destroy(deck);
+fail_parse:
+    free((char*)mddata);
+fail_mddata:
+
+    hourglass_off();
+
+    return 1;
+}
 
 /*************************************************** Gerph *********
  Function:      slides_setregion
@@ -504,6 +594,21 @@ int main(int argc, char *argv[])
                 case 'Q':
                 case 'q':
                     quit = 1;
+                    break;
+
+                case 'R':
+                case 'r':
+                    dprintf("Reload\n");
+                    if (slides_reload(slides))
+                    {
+                        // Reload failed?!
+                        dprintf("Reload failed\n");
+                        beep();
+                    }
+                    else
+                    {
+                        slides_show(slides);
+                    }
                     break;
 
                 case KEY_RIGHT:
