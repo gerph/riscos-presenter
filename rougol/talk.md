@@ -111,7 +111,7 @@ template: body-text
 ## So, you want to use RISC OS, but…
 
 * Development on RISC OS is tedious
-  * The tools aren't great but they only run on RISC OS… and I don't have a RISC OS system \(other than RPCEmu\)
+  * The tools aren't great but they only run on RISC OS… and I don't have a RISC OS system (other than RPCEmu)
 * RISC OS testing is awful
   * Most RISC OS projects do ad-hoc testing, rely on users; no automation
 * RISC OS is awful for testing
@@ -130,14 +130,14 @@ template: body-text
 
 ---
 # Background
-## How can I do this? \(1\)
+## How can I do this? (1)
 
 Source control:
 * Move things to Git, because CVS is so very painful.
 
 ---
 # Background
-## How can I do this? \(1\)
+## How can I do this? (1)
 
 Source control:
 * Move things to Git, because CVS is so very painful.
@@ -149,13 +149,13 @@ Source control:
 
 ---
 # Background
-## How can I do this? \(2\)
+## How can I do this? (2)
 
 Cross compiling:
 
 ---
 # Background
-## How can I do this? \(2\)
+## How can I do this? (2)
 
 Cross compiling:
 * Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
@@ -178,7 +178,7 @@ TaskWindow: Module built {RAM}
 
 ---
 # Background
-## How can I do this? \(2\)
+## How can I do this? (2)
 
 Cross compiling:
 * Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
@@ -189,14 +189,14 @@ Cross compiling:
 
 ---
 # Background
-## How can I do this? \(3\)
+## How can I do this? (3)
 
 Managed environments:
   * How do I get my toolchain? find my libraries? store built components?
 
 ---
 # Background
-## How can I do this? \(3\)
+## How can I do this? (3)
 
 Managed environments:
 
@@ -210,17 +210,17 @@ Managed environments:
 code.size: 0.8em
 
 # Background
-## How can I do this? \(4\)
+## How can I do this? (4)
 
-Managed environments: \(cont'd\)
+Managed environments: (cont'd)
 
 * What if I don't want to download my toolchain all the time?
 
 ---
 # Background
-## How can I do this? \(4\)
+## How can I do this? (4)
 
-Managed environments: \(cont'd\)
+Managed environments: (cont'd)
 
 * What if I don't want to download my toolchain all the time?
 
@@ -247,13 +247,13 @@ WindowScroll: Module built {RAM}
 template: body-text
 
 # Background
-## How can I do this? \(5\)
+## How can I do this? (5)
 
 Automated testing:
 
 ---
 # Background
-## How can I do this? \(5\)
+## How can I do this? (5)
 
 Automated testing:
 
@@ -263,7 +263,7 @@ Automated testing:
 
 ---
 # Background
-## How can I do this? \(6\)
+## How can I do this? (6)
 
 Feature and regression testing:
 
@@ -271,7 +271,7 @@ Feature and regression testing:
 
 ---
 # Background
-## How can I do this? \(6\)
+## How can I do this? (6)
 
 Feature and regression testing:
 
@@ -282,7 +282,7 @@ Feature and regression testing:
 
 ---
 # Background
-## How can I do this? \(7\)
+## How can I do this? (7)
 
 Fleets of systems for people to use:
 
@@ -338,9 +338,9 @@ To which my answer was…
 # JFPatch-as-a-Service
 ## What can you build with the service? (1)
 
-* Any JFPatch code \(now builds 32bit code\)
+* Any JFPatch code (now builds 32bit code)
 * C code that compiles with the Norcroft compiler
-* Pascal code \(which will be converted to C and compiled with the Norcroft compiler\)
+* Pascal code (which will be converted to C and compiled with the Norcroft compiler)
 * Perl code
 * BASIC assembler
 * Objasm assembler.
@@ -378,12 +378,12 @@ Plain BASIC...
 
 Automated builds can use this:
 
-* LineEditor \(BASIC assembler\) - _https://github.com/philpem/LineEditor_
-* Nettle \(C application\) - _https://github.com/gerph/Nettle/tree/ci_
-* CObey \(C module\) - _https://github.com/gerph/cobey_
-* ErrorCancel \(ObjAsm\) - _https://github.com/gerph/errorcancel_
-* Pico \(C command line tool\) - _https://github.com/gerph/pico_
-* DDEUtilsJF \(JFPatch module\) - _https://github.com/gerph/ddeutilsjf_
+* LineEditor (BASIC assembler) - _https://github.com/philpem/LineEditor_
+* Nettle (C application) - _https://github.com/gerph/Nettle/tree/ci_
+* CObey (C module) - _https://github.com/gerph/cobey_
+* ErrorCancel (ObjAsm) - _https://github.com/gerph/errorcancel_
+* Pico (C command line tool) - _https://github.com/gerph/pico_
+* DDEUtilsJF (JFPatch module) - _https://github.com/gerph/ddeutilsjf_
 
 ---
 # JFPatch-as-a-Service
@@ -433,7 +433,7 @@ Get a JSON response:
 ---
 
 # JFPatch-as-a-Service
-## How do you use the JSON API?
+## How do you use the WebSockets API?
 
 Using the `wsclient.py` example gives a similar output.
 
@@ -691,17 +691,53 @@ template: body-text
 
 ---
 # RISC OS Pyromaniac
+## What's in a name?
+
+* Pyromaniac is the system that runs ARM code.
+* RISC OS is what's implemented on top of that.
+
+So...
+
+* A name to distinguish it from the ARM implementation.
+    * RISC OS Pyromaniac
+* A name for the ARM implementations.
+    * RISC OS Classic
+
+---
+# RISC OS Pyromaniac
 ## What makes up Pyromaniac? (1)
 
 * Written in Python.
-* Uses Unicorn \(a QEmu derived package\) for emulating ARM code.
+* Uses Unicorn (a QEmu derived package) for emulating ARM code.
 * All other packages are optional.
+    * Disassembly - needs `capstone`.
+    * Graphics - needs `python-cairo`.
+    * UI - needs `wxpython` or `gtk+3`.
+    * Networking - more featured with `netifaces`.
+    * Clipboard - interaction with system with `pyperclip`.
+    * Sound - needs `python-rtmidi`.
 
 ---
 # RISC OS Pyromaniac
 ## What makes up Pyromaniac? (2)
 
 ![](pyromaniac-structure (width=100% height=100%))
+
+---
+# RISC OS Pyromaniac
+## How is it different from other systems?
+
+RISC OS emulation:
+
+* RPCEmu, ArcEm - Hardware emulators.
+* Riscose - OS interface replacement.
+* Linux Port - Hardware / interface replacement.
+
+Other systems:
+
+* Wine - OS interface replacement.
+* Docker - System isolation.
+* Rosetta - Dynamic recompilation.
 
 ---
 # RISC OS Pyromaniac
@@ -712,19 +748,92 @@ template: body-text
 * A reimplementation, which uses none of the code that went before.
 * Focused on being able to test software and diagnose issues more easily.
 
-***`Tech`***: RISC OS Pyromaniac, able to run RISC OS programs on other systems\!
+---
+# RISC OS Pyromaniac
+## What does it mean?
+
+* A command line only version of RISC OS.
+* A RISC OS which runs 32bit ARM binaries, on Windows, macOS, or Linux.
+* A reimplementation, which uses none of the code that went before.
+* Focused on being able to test software and diagnose issues more easily.
+
+***`Tech`***: RISC OS Pyromaniac, able to run RISC OS programs on other systems!
 
 ---
 # RISC OS Pyromaniac
 ## Command line only?
 
 * Command line is the primary interface.
-* Graphics implementations exist - either 'headless' or using a window on to them - but command line is where it excels.
+* Graphics implementations exist - either 'headless' or using a window showing the screen - but command line is where it excels.
 * For testing, you largely want to be able to exercise things without UI interactions, at least for the lower level tests.
 
 ---
 # RISC OS Pyromaniac
 ## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output.
+* Graphics - VDU5, OS_Plot, Draw, Font.
+* Frame buffer - Bitmap of the screen.
+* UI - How you see the VDU and Graphics systems.
+
+---
+# RISC OS Pyromaniac
+## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output: **Well supported**
+* Graphics - VDU5, OS_Plot, Draw, Font.
+* Frame buffer - Bitmap of the screen.
+* UI - How you see the VDU and Graphics systems.
+
+---
+# RISC OS Pyromaniac
+## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output: **Well supported**
+* Graphics - VDU5, OS_Plot, Draw, Font: **Well supported, but no sprites**
+* Frame buffer - Bitmap of the screen.
+* UI - How you see the VDU and Graphics systems.
+
+---
+# RISC OS Pyromaniac
+## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output: **Well supported**
+* Graphics - VDU5, OS_Plot, Draw, Font: **Well supported, but no sprites**
+* Frame buffer - Bitmap of the screen: **Nope**
+* UI - How you see the VDU and Graphics systems.
+
+---
+# RISC OS Pyromaniac
+## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output: **Well supported**
+* Graphics - VDU5, OS_Plot, Draw, Font: **Well supported, but no sprites**
+* Frame buffer - Bitmap of the screen: **Nope**
+* UI - How you see the VDU and Graphics systems: **wxWidgets and GTK**
+
+---
+# RISC OS Pyromaniac
+## No graphics, then?
+
+Different parts of the system:
+
+* VDU - VDU4, text output: **Well supported**
+* Graphics - VDU5, OS_Plot, Draw, Font: **Well supported, but no sprites**
+* Frame buffer - Bitmap of the screen: **Nope**
+* UI - How you see the VDU and Graphics systems: **wxWidgets and GTK**
+
+What works...
 
 * The VDU system, and the graphics system work, mostly.
 * VDU and graphics are complex so not everything works as it does in RISC OS Classic.
@@ -734,7 +843,7 @@ template: body-text
 # RISC OS Pyromaniac
 ## How do you use it? (1)
 
-* Command line:
+Command line invocation:
 
 ```
 charles@laputa ~/pyromaniac> ./pyro.py --load-internal-modules --command 'gos'
@@ -742,40 +851,57 @@ Supervisor
 
 *fx0
 
-Error: RISC OS 7.14 (02 Aug 2020) [Pyromaniac 0.14 on Darwin/x86_64] (Error number &f7)
+Error: RISC OS 7.16 (03 Oct 2020) [Pyromaniac 0.16 on Darwin/x86_64] (Error number &f7)
 *time
 Fri,09 Oct 2020 23:00:04
 *quit
+charles@laputa ~/pyromaniac>
 ```
 
 ---
 # RISC OS Pyromaniac
 ## How do you use it? (2)
 
-* Running programs:
+Running RISC OS programs:
 
 ```
 charles@laputa ~/pyromaniac> echo '10PRINT "Hello world"' > myprog,fd1
-charles@laputa ~/pyromaniac> python pyro.py --load-internal-modules --load-module modules/BASIC,ffa --command myprog
+charles@laputa ~/pyromaniac> ./pyro.py --load-internal-modules --load-module modules/BASIC,ffa --command myprog
 Hello world
 charles@laputa ~/pyromaniac>
 ```
 
 ---
 # RISC OS Pyromaniac
-## Graphics demo\!
+## Graphics demo!
 
 ---
 # RISC OS Pyromaniac
-## Graphics demo\! (presentation)
+## Graphics demo!
+
+Graphics features:
+
+* Fonts.
+* DrawFiles.
+* Images.
+* Screen bank flipping.
+* Mouse pointer.
+
+Others:
+
+* Key input
+
+---
+# RISC OS Pyromaniac
+## Graphics demo! (presentation)
 
 ***`Tech`***:
 
-* Slide presentation system
-* Markdown parser
+* Slide presentation system.
+* Markdown parser.
 * FontMap for font remappings.
 * WebColours module for colour parsing.
-* ImageFileRender for general image rendering, DrawFile for vectors
+* ImageFileRender for general image rendering, using DrawFile for vectors.
 
 ---
 # RISC OS Pyromaniac
@@ -784,7 +910,6 @@ charles@laputa ~/pyromaniac>
 * System - Runs 32bit modules, utilities and applications.
 * Interaction - Interacts with the host as its primary interface
 * Video - Pretty good VDU and graphics support GTK/WxWidgets, or snapshots of state.
-* Desktop - Not supported
 * Sound - SoundChannels mapped through MIDI
 * Filesystem - Host filesystem by default, using `,xxx` filename convention.
 * Network - Internet module provides limited support for IPv4 and IPv6 networking.
@@ -801,14 +926,13 @@ charles@laputa ~/pyromaniac>
 * Many other things
 
 ---
-
 # RISC OS Pyromaniac
 ## Networking
 
 * Internet module supplied, using host interfaces.
   * Supports `AF_INET`, `AF_INET6`, `AF_UNIX`.
   * Many ioctls are supported, mapped to the host system.
-* Resolver module provides IPv4 host name resolution \(FIXME: Should be IPv6?\)
+* Resolver module provides IPv4 host name resolution (FIXME: Should be IPv6?)
 * EtherPyromaniac provides a DCI4 driver.
   * Provides a virtual network.
 
@@ -818,7 +942,8 @@ charles@laputa ~/pyromaniac>
 
 * Draw module supplied.
 * Can render through the Cairo path system.
-* Native DrawFile works - the 'Gerph' logo is a Drawfile.
+* Classic DrawFile works - the 'Gerph' logo is a Drawfile.
+* Classic Draw module can be used too.
 
 ---
 # RISC OS Pyromaniac
@@ -838,7 +963,7 @@ charles@laputa ~/pyromaniac>
 
 But also
 
-* Native FontManager works...
+* Classic FontManager works...
 * ... if you disable bitmap generation - it just uses Draw.
 
 ---
@@ -881,18 +1006,14 @@ modules:
 ## Tracing and debugging
 
 * Trace features:
-  * Report all instructions
-  * Report basic block execution, function entries
-  * Report SWI entry and exit conditions
+  * Report all instructions.
+  * Report basic block execution, function entries.
+  * Report SWI entry and exit conditions.
   * Function, memory and SWI traps.
   * Exception and API misuse reports.
 * Debug features:
   * Most modules have debug available.
-  * Can be enabled at runtime.
-
-MORE
-
-MORE
+  * Can be enabled at runtime (`*PyromaniacDebug +<option>`).
 
 ---
 # RISC OS Pyromaniac
@@ -975,7 +1096,7 @@ template: body-text
 ## FIXME - What's it useful for?
 
 FIXME - examples of how you use it to find problems?
-* Kevin's Git to\ol?
+* Kevin's Git tool?
 * ARMBE?
 * Julie's CObey?
 
@@ -999,7 +1120,7 @@ template: body-text
 # RISC OS Pyromaniac
 ## What is it like to work with? (2)
 
-* The RISC OS Kernel context is `ro.kernel`
+* The RISC OS Kernel context is `ro.kernel`...
     * dynamic areas (`ro.kernel.da`, `ro.kernel.da_rma`. `ro.kernel.da_appspace`, ...)
     * vectors (`ro.kernel.vectors[#]`)
     * modules (`ro.kernel.modules`)
@@ -1038,7 +1159,7 @@ def swi_OS_ReadEscapeState(ro, swin, regs):
 # RISC OS Pyromaniac
 ## What is it like to work with? (4)
 
-Many commands are just a thin wrapper around an system call:
+Many commands are just a thin wrapper around a system call:
 
 ```
 def cmd_rmload(self, args):
@@ -1068,6 +1189,8 @@ def cmd_time(self, args):
 
 
 ---
+code.size: 0.7em
+
 # RISC OS Pyromaniac
 ## What is it like to work with? (6)
 
@@ -1097,6 +1220,8 @@ def cmd_show(self, args):
 ```
 
 ---
+template: body-text
+
 # RISC OS Pyromaniac
 ## What is it like to work with? (7)
 
@@ -1126,25 +1251,25 @@ FIXME: Include some things about where there are problems or questions?
 
 ***`Tech`***:
 
-* RISC OS Alphabets in Python Codecs.
+* RISC OS Alphabets in Python Codecs - _https://github.com/gerph/python-codecs-riscos_
 * Non-RISC OS editor syntax modes:
-    * SublimeText syntax for RISC OS command files.
-    * NanoRC syntaxes for some RISC OS file types.
-* Tool for building hourglass modules.
-* Tool for testing tools.
+    * SublimeText syntax for RISC OS command files - _https://github.com/gerph/sublimetext-riscoscommand-syntax_
+    * NanoRC syntaxes for some RISC OS file types - _https://github.com/gerph/nanorc-riscos_
+* Tool for building hourglass modules - _https://github.com/gerph/riscos-hourglass-maker_
+* Tests for RISC OS APIs, and a tool for testing tools - _https://github.com/gerph/riscos-tests_
 * PRM-in-XML documentation system rework.
 * Miscellaneous toolchain updates.
-* Changelog management system.
+* Changelog management system - _https://gitlab.gerph.org/gerph/changelog-management_
 
 ---
 # RISC OS Pyromaniac
 ## What does it run on?
 
-* macOS \(console, GTK, wxWidgets\)
+* macOS (console, GTK, wxWidgets)
   * Also a dedicated application.
-* Linux \(console, GTK, wxWidgets\)
+* Linux (console, GTK, wxWidgets)
   * Also within a docker container.
-* Windows \(console, wxWidgets\) \[native and under Wine, also docker wine-py\]
+* Windows (console, wxWidgets) \[native and under Wine, also docker wine-py\]
   * Also a dedicated application.
 
 ---
@@ -1159,6 +1284,12 @@ FIXME: Include some things about where there are problems or questions?
   * Font Manager lived on a branch for about 6 months.
   * EasySockets is still on a branch.
   * PyromaniacGit is still be worked on.
+
+---
+# RISC OS Pyromaniac
+## “Releases”?
+
+![](gittree (width=100% height=100%))
 
 ---
 template: section-title
@@ -1179,7 +1310,7 @@ Let's review what I saw as problems...
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (1)
+## Development on RISC OS is tedious
 
 * Source control
 * Cross compiling
@@ -1190,9 +1321,9 @@ Let's review what I saw as problems...
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (2)
+## Development on RISC OS is tedious
 
-* Source control - *yup, using GitLab, PyromaniacGit*
+* Source control - ***yup, using GitLab, PyromaniacGit***
 * Cross compiling
 * Managed development environments
 * Automated testing
@@ -1201,10 +1332,10 @@ Let's review what I saw as problems...
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (3)
+## Development on RISC OS is tedious
 
 * Source control - yup, using GitLab, PyromaniacGit
-* Cross compiling - *yup, Linux and macOS*
+* Cross compiling - ***yup, Linux and macOS***
 * Managed development environments
 * Automated testing
 * Feature and regression testing
@@ -1212,47 +1343,47 @@ Let's review what I saw as problems...
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (4)
+## Development on RISC OS is tedious
 
 * Source control - yup, using GitLab, PyromaniacGit
 * Cross compiling - yup, Linux and macOS
-* Managed development environments - *yup, docker, artifactory, applications*
+* Managed development environments - ***yup, docker, artifactory, applications***
 * Automated testing
 * Feature and regression testing
 * Fleets of systems available
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (5)
+## Development on RISC OS is tedious
 
 * Source control - yup, using GitLab, PyromaniacGit
 * Cross compiling - yup, Linux and macOS
 * Managed development environments - yup, docker, artifactory, applications
-* Automated testing - *yup, build.riscos.online, and GitHub and GitLab builds*
+* Automated testing - ***yup, build.riscos.online, and GitHub and GitLab builds***
 * Feature and regression testing
 * Fleets of systems available
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (6)
+## Development on RISC OS is tedious
 
 * Source control - yup, using GitLab, PyromaniacGit
 * Cross compiling - yup, Linux and macOS
 * Managed development environments - yup, docker, artifactory, applications
 * Automated testing - yup, build.riscos.online, and GitHub and GitLab builds
-* Feature and regression testing - *yup, thousands of tests, some public*
+* Feature and regression testing - ***yup, thousands of tests, some public***
 * Fleets of systems available
 
 ---
 # Conclusion
-## Development on RISC OS is tedious (7)
+## Development on RISC OS is tedious
 
 * Source control - yup, using GitLab, PyromaniacGit
 * Cross compiling - yup, Linux and macOS
 * Managed development environments - yup, docker, artifactory, applications
 * Automated testing - yup, build.riscos.online, and GitHub and GitLab builds
 * Feature and regression testing - yup, tests for the OS, and code coverage
-* Fleets of systems available - *well, no, not yet*
+* Fleets of systems available - ***well, no, not yet***
 
 ---
 # Conclusion
@@ -1261,8 +1392,6 @@ Let's review what I saw as problems...
 * RISC OS Pyromaniac has tests - about a thousand at present.
 * Tests take about 18 minutes to run - and run on Linux and macOS in parallel.
 * Code coverage hovers at around 65%.
-
-***`Tech`***: Some of the tests exported out to GitHub
 
 ---
 # Conclusion
@@ -1279,15 +1408,11 @@ Let's review what I saw as problems...
 
 * More APIs.
 * Better handling of corner cases.
+* Sprites (sigh).
 * Back Trace Structures.
+* Finish the pending branches - Windows, Zipper, EasySockets, Git, DCI4, ...
 * Using it for actual testing - that was what it was for!
 * So many other opportunities.
-
----
-# Conclusion
-## Am I happy?
-
-You can make whatever judgements you like!
 
 ---
 # Conclusion
@@ -1296,6 +1421,12 @@ You can make whatever judgements you like!
 FIXME: Include a link to where you can find more information.
 
 Create _pyromaniac.riscos.online_ as a resource for this?
+
+---
+# Conclusion
+## Am I happy?
+
+You can make whatever judgements you like!
 
 ---
 template: section-title
