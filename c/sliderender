@@ -1590,7 +1590,7 @@ static char *sliderender_format_number(sliderender_t *render, const char *format
                 break;
 
             case 'm':
-                p += sprintf(p, "%i", render->deck->nslides);
+                p += sprintf(p, "%i", render->deck->nslides - 1);
                 format = esc + 1;
                 break;
 
