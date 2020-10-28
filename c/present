@@ -444,7 +444,8 @@ int prompt(slides_t *slides,
 /*************************************************** Gerph *********
  Function:      special_key
  Description:   Special handling, just for this talk - NOT part of
-                the general presentation system.
+                the general presentation system. Should be moved
+                out of this file.
  Parameters:    slides-> the slides objects we're working with
                 key = the key press we're dealing with
  Returns:       1 if handled, 0 if not handled
@@ -456,9 +457,9 @@ int special_key(slides_t *slides, int key)
     static int pointer = 0;
 
     /*
-        xC => Drop to CLI.
+        x* => Drop to CLI.
         xH => Hourglass on/off.
-        xP => Pointer on/off.
+        xC => Pointer on/off.
      */
     switch (key)
     {
@@ -472,8 +473,8 @@ int special_key(slides_t *slides, int key)
     {
         switch (key)
         {
-            case 'C':
-            case 'c':
+            case '*':
+            case '8':
                 _swix(0x100 + 30, 0);
                 _swix(OS_CLI, _IN(0), "GOS");
                 break;
@@ -492,8 +493,8 @@ int special_key(slides_t *slides, int key)
                 }
                 break;
 
-            case 'P':
-            case 'p':
+            case 'C':
+            case 'c': /* C for cursor - since 'p' is used for the previous slide */
                 if (special_escape)
                 {
                     pointer = !pointer;
