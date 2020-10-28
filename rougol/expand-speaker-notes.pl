@@ -21,8 +21,8 @@
 use warnings;
 use strict;
 
-my $infile = 'speaker-notes.md';
-my $outfile = 'speaker-notes-expanded.md';
+my $infile = shift || 'speaker-notes.md';
+my $outfile = shift || 'speaker-notes-expanded.md';
 
 open(my $ifh, '<', $infile) or die "Cannot read: $!";
 open(my $ofh, '>', $outfile) or die "Cannot write: $!";

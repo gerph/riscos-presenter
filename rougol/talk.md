@@ -183,7 +183,7 @@ TaskWindow: Module built {RAM}
 Cross compiling:
 * Already had the toolchain ported to 32bit Linux and Windows, back in 2005.
 
-***`Tech`***: Port the toolchain to 64bit Linux and to 64bit macOS.
+***`Tech`***: Port the toolchain to 64bit Linux and 64bit macOS.
 
 ***`Tech`***: Tool to extract example code from 'Rosetta Code' for testing (https://github.com/gerph/rosettacode)
 
@@ -329,7 +329,7 @@ To which my answer was…
 # JFPatch-as-a-Service
 ## What is the service?
 
-* Takes its inspiration from Matthew Godbolt's Compiler explorer - _https://godbolt.org/_
+* Takes its inspiration from Matt Godbolt's Compiler explorer - _https://godbolt.org/_
 
 ![](jfpaas-home (width=100% height=100%))
 
@@ -932,9 +932,12 @@ Others:
 * Internet module supplied, using host interfaces.
   * Supports `AF_INET`, `AF_INET6`, `AF_UNIX`.
   * Many ioctls are supported, mapped to the host system.
-* Resolver module provides IPv4 host name resolution (FIXME: Should be IPv6?)
+* Resolver module provides IPv4 host name resolution
 * EtherPyromaniac provides a DCI4 driver.
   * Provides a virtual network.
+* EasySockets, which bypasses Internet.
+
+***`Tech`***: Tap-Tun JSON server for Ethernet frames.
 
 ---
 # RISC OS Pyromaniac
@@ -1418,9 +1421,13 @@ Let's review what I saw as problems...
 # Conclusion
 ## References
 
-FIXME: Include a link to where you can find more information.
+If you're wanting to know more, or review this talk, a site, _https://pyromaniac.riscos.online/_ has been created which contains support materials:
 
-Create _pyromaniac.riscos.online_ as a resource for this?
+* Copies of these slides.
+* Links to the technologies in these slides.
+* Explanations of the CI examples.
+* Development images and screenshots.
+* Documentation from Pyromaniac (features, changelogs, configuration info)
 
 ---
 # Conclusion

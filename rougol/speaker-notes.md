@@ -52,20 +52,18 @@ At the end of the talk, these slides and a bunch of links to resources will be m
 
 There are 5 sections to the talk -
 
-- a little bit of background to set the scene
+- a little bit of background
 - a discussion of what JFPatch-as-a-service is and what you can do with it
 - a very light dive into how that service works,
 - a look at the system that powers everything.
 - and finally some conclusions.
-
-FIXME: Decide if I’m doing demos as I go, or just at the end.
 
 At the end of the talk I’ll take questions on the subjects that have been covered here, for as long as people want to stick around.
 
 
 ---
 
-# Background
+# 1. Background
 
 We jump back about a year and a half, which will set the scene...
 
@@ -85,15 +83,15 @@ If you want to know more about my past, the RISC OS Rambles on my website talk a
 # Background
 ## Dear gosh why?
 
-I was found myself being very unhappy. I didn’t have anything that focused me. I didn’t work on RISC OS things because I get angry and upset. And if I’m angry and upset I’m useless for days.
+About a year and a half ago, I began to understand that I was very unhappy. I didn’t have anything that focused me. I didn’t work on RISC OS things because when I do, I get angry and upset. And then I’m useless for days. So I stay away.
 
 I’ve tried to deal with that, but things still set me off. Any association can be a problem for me - I wrote the Rambles to try to be a cathartic release, but it wasn’t completely successful. So I stay away from the RISC OS world.
 
 I have regular counselling, and I believe that it’s been working - because I realised, about a year and a half ago, that there was something I could do.
 
-I realised that I enjoy RISC OS, but I don’t enjoy the RISC OS community. I’m not intending to offend anyone here by that, but that’s what’s debilitating for me. Stopping myself from doing things with RISC OS, because I understand how badly it affects me, has been a way of coping. But I realised that I can do RISC OS things for myself, and not care about whether anyone else sees them. Just doing it because I enjoy it.
+I realised that I enjoy working with RISC OS, but I don’t enjoy the RISC OS community. I’m not intending to offend anyone here by that, but that’s what’s debilitating for me. Stopping myself from doing things with RISC OS, because I understand how badly it affects me, has been a way of coping. But I realised that I can do RISC OS things for myself, and not care about whether anyone else sees them. Just doing it because I enjoy it.
 
-Well, wow. This was lightbulb moment.
+Well, wow. This was lightbulb moment for me.
 
 That’s why I’m doing this talk - because I’m really proud of that realisation. I can do things because I enjoy them, not because I feel I have to prove things to people.
 Or to quell any criticism.
@@ -235,7 +233,7 @@ If you're just managing data structures, you don't need a real RISC OS system to
 
 <step>
 
-But you really want to run things on RISC OS, because that scary SVC environment is a bit different, and you'll want to communicate with other parts of the system in situ.
+But you really want to run things on RISC OS, because that environment that modules run in is a bit different, and you'll want to communicate with other parts of the system in situ. In particular, modules run in SVC mode - the mode with the highest priviledge and therefore the greatest power to make it a Bad Day for you.
 
 We'll come to how you do that later.
 
@@ -287,7 +285,7 @@ It's actually not that clever, but it can construct a lot of the boilerplate tha
 
 The service is a front end that lets you give it JFPatch code, builds it on a cloud serverm, and then returns the result to you.
 
-I wanted it to be a tool that could be used like Matthew Godbolt's compiler explorer. It does a different thing, and JFPatch-as-a-service isn't anywhere near as polished and professional as that, but... that's where the idea and structure came from. Matthew's an ex-RISC OS user.
+I wanted it to be a tool that could be used like Matt Godbolt's compiler explorer. If you've not seen it, it's a website that lets you enter some code and examine what the compiler makes of it, what instructions it compiles to and how they're ordered. It does a different thing to JFPatch-as-a-service, and my work isn't anywhere near as polished and professional as that, but... that's where the idea and structure came from. Matt's an ex-RISC OS user.
 
 ---
 # JFPatch-as-a-Service
@@ -295,7 +293,7 @@ I wanted it to be a tool that could be used like Matthew Godbolt's compiler expl
 
 But what can the service do? Well, it can build any JFPatch code you throw at it, and now the module header is 32bit safe as well. I was too lazy to look at the 32bit header on the modules until recently. Not because I didn't care, but because during the time I might have done so, I was focused on the rest of RISC OS. A niche tool that only I used wasn't really a priority.
 
-But, the service can also build C, and Pascal and run BASIC programs, and build ObjAsm.
+But, the service can also build C, and Pascal and run BASIC programs, and build ObjAsm code.
 If you give it a zip archive containing an AMU Makefile, it would invoke it and return the binary it thought was produced by it.
 
 You can try this out on the real site if you'd like. Here's what you see...
@@ -540,7 +538,7 @@ But...
 
 <step>
 
-The original versions of RISC OS - well, Arthur I guess - was semi-hosted from a BBC. BBC does all the keyboard and disc and video, but the ARM system does the actual running of programs.
+The early versions of RISC OS, when it was originally written, was semi-hosted from a BBC. The BBC does all the keyboard and disc and video, but the ARM system does the actual running of programs.
 
 That's what I want to be able to do - I want to be able to drive RISC OS from the CLI of a sane machine.
 
@@ -548,7 +546,7 @@ That's what I want to be able to do - I want to be able to drive RISC OS from th
 # RISC OS Pyromaniac
 ## Surely that's easy? (1)
 
-Surely that's easy? You just run an emulation system until it hits a SWI and then you make the SWI do the I/O thing. Then you run some more?
+Surely that's easy? You just run an emulation system until it hits a SWI and then you make the SWI do whatever I/O it needs. Then you emulate some more?
 
 <step>
 
@@ -556,13 +554,19 @@ Yup. That's the core of the Pyromaniac system.
 
 So on June 10th last year I could run 'IfThere' from MacOS.
 
-"Do the I/O thing" is actually a pretty involved process, so whilst I managed to get a tool running, what it ran wasn't actually that impressive. The 2 SWIs that worked were OS_File 17 to read whether the file was there, and OS_CLI which just reported an error saying it wasn't supported. But it ran.
+"Do the I/O thing" is actually a pretty involved process, so whilst I managed to get a tool running, what it ran wasn't actually that impressive.
+
+The 2 SWIs that worked were OS_File 17 to read whether the file was there, and OS_CLI which just reported an error saying it wasn't supported. But it ran.
+
+Lots has been developed since then.
 
 ---
 # RISC OS Pyromaniac
 ## Surely that's easy? (2)
 
-This is the basic execution sequence that was in place in the early system code for Pyromaniac.
+This is the basic execution sequence in Pyromaniac.
+
+<Turn the pointer on with 'xp' to indicate things>
 
 - You load some code.
 - You emulate it until something causes you to stop.
@@ -580,13 +584,13 @@ But let's not dive heavily into how it works; let's start from what RISC OS Pyro
 # RISC OS Pyromaniac
 ## What is RISC OS Pyromaniac?
 
-It's an alternative implementation of RISC OS. It doesn't use what went before in the core system. It can still run the ARM binaries, through emulation, but the system at its core is written in a high level language.
+It's an alternative implementation of RISC OS. It doesn't use what went before in the core system. It can still run the ARM binaries, through emulation, but the OS is written in a high level language.
 
-And that's so that it can be used to try things out, and experiment. It's a lot easier in a high level language to replace an interface or change the way that something works, than in ARM.
+And that's so that it can be used to try things out, and experiment. It's a lot easier in a high level language to replace an interface, or change the way that something works.
 
 Similarly, it's a lot easier to reason about what the system is doing in a high level language. You're not bogged down in worrying about which flags are set, and what your registers hold.
 
-And having been written from scratch, it's easier to make shortcuts for things you don't care about.
+And having been written from scratch, it's easier to make shortcuts for things you don't care about. There's a lot of that BBC OS heritage in there that you can just drop.
 
 Did you know that the VDU system can change the orientation so that characters proceed down the screen rather than across the screen? Did you know that the system scrolls text sideways if you do that? Do you care? That's something that you can drop when it's not part of the environment that you are trying to exercise.
 
@@ -620,20 +624,22 @@ Without these interfaces the principle that I follow in Pyromaniac is to work, b
 
 This is the general architecture of RISC OS Pyromaniac itself at a high level.
 
+<Turn the pointer on with 'xp'>
+
 The bit you run is the harness, which just uses the Pyromaniac and RISC OS interfaces to start the system.
 
-Pyromaniac itself provides the setup of the execution environment, the configuration system, tracing and a number of other support functions like threading. This is the only part of the system that communicates with Unicorn. So, were a different emulation system to be required, this could be substituted here.
+Pyromaniac itself provides the setup of the execution environment, and support functions. This is the only part of the system that communicates with Unicorn. So, were a different emulation system to be required, this could be substituted here.
 
 The Kernel, and many python modules, sit above this and provide interfaces to RISC OS and its subsystems.
-There's a separate python file for most of the subsystems, to make it easier to navigate, although some larger systems are split into multiple files.
+There's a separate python file for most of the subsystems.
 
-By default RISC OS Pyromaniac initialises only 1 module - the UtilityModule. In this form, it's very limited, but that's what you want if you're providing a test and debug system. The internal pyromaniac modules can be initialised by a single option, which brings in many of the common functions that you expect from the OS.
+By default Pyromaniac initialises only 1 RISC OS module - the UtilityModule. In this form, it's very limited, but that's what you want if you're providing a test and debug system. The other internal modules can be initialised by a single option, which brings in many of the common functions that you expect from the OS.
 
-These modules, which I've termed PyModules to distinguish them from the ARM implemented modules that we just call Modules, have almost all the functionality that their counterparts do. They can provide SWIs and commands; they can claim vectors and provide services; they can even be multiply instantiated.
+These Python RISC OS modules, which I've termed PyModules to distinguish them from the ARM implemented RISC OS modules, have almost all the functionality that their ARM counterparts have.
 
-The ARM modules have exactly the same interface - internally they're both represented by descendants of the same class, which means that to all intents and purposes they work the same way at the interface level. However, instead of dispatching the RISC OS calls to Python as the PyModules do, they execute code through the Pyromaniac ARM emulation.
+PyModules and ARM modules have exactly the same interface - internally they're both descendants of the same class, which means that to all intents and purposes they work the same way. However, instead of dispatching the RISC OS calls to Python as the PyModules do, they execute code through the ARM emulation.
 
-And above that there's the application that you're running, which is always in ARM.
+And finally there's the application that you're running, which is always in ARM.
 
 ---
 # RISC OS Pyromaniac
@@ -728,9 +734,9 @@ And what you have to remember is that the VDU and graphics systems are pretty co
 
 Ok, an example of how you actually use it.
 
-This example runs the harness with the internal modules, and runs the supervisor.
+This example runs the harness with the internal modules, and runs the command line.
 
-The `*FX 0` shows the OS version, which describes itself together with the architecture. There's no way to report the host system, because RISC OS wasn't really meant for that, so I tacked it on to the OS version.
+The `*FX 0` command shows the OS version. There's no way to report the host system, because RISC OS wasn't really meant for that, so I tacked it on to the OS version.
 
 And then, as you can see, I can run other commands, and exit the system - which takes us back to the calling shell.
 
@@ -740,11 +746,11 @@ And then, as you can see, I can run other commands, and exit the system - which 
 
 You can load modules at the command line, and run programs.
 
-In this case, I'm creating a `Hello world` program in the file myprog, and running it.
+In this case, I'm creating a `Hello world` program in the file `myprog`, and running it.
 
 The 'myprog' file has filetype `fd1`, which is represented in the standard format for non-RISC OS systems by using comma followed by the filetype. Type `fd1` is BASIC Text, which by default will run in BASIC.
 
-On the command line I need to load BASIC before I can use it - it's not a part of RISC OS Pyromaniac.
+On the command line I need to load BASIC before I can use it - it's not a part of RISC OS Pyromaniac. And you can see that it does print `Hello world`.
 
 ---
 # RISC OS Pyromaniac
@@ -830,7 +836,7 @@ The Resolver module can do lookups for names and addresses although currently it
 
 If, on the other hand, you load the Classic MBufManager and Internet modules, the 'EtherPyromaniac' module becomes useful - this provides a DCI4 driver which can be configured into a virtual network.
 
-This virtual network is actually just a set of frames transmitted as JSON over a TCP connection. On the other end of the connection could be another Pyromaniac, or a ‘virtual switch’ which connects many Pyromaniac instances, or connects to a tap which talks to a real interface.
+This virtual network is actually just a set of frames transmitted as JSON over a TCP connection. On the other end of the connection could be another Pyromaniac, or a ‘virtual hub` which connects many Pyromaniac instances, or connects to a tap which talks to a real interface.
 
 EasySockets is also supported, although it actually bypasses the Internet module entirely, and just uses the host network system. As a result, I connected to IRC servers quite early on in the development using the test programs, and without realising it, I had connected through IPv6. That would almost certainly have been the first use of RISC OS with IPv6.
 
@@ -857,7 +863,7 @@ Obviously it's not just the simple 'G' that can be rendered...
 
 I've mentioned the FontManager, but specifically it only uses the 'toy' interface that Cairo provides. At some point I'll look at using Pango to make it a lot more flexible, but it works pretty well for the simple things.
 
-There's a few limitations, like it doesn't really support font control strings, and transforms aren't supported. But I'll probably get to them eventually. It does support encodings, though. If you request UTF-8 encoding for your font, it'll use that. In fact the presentation uses UTF-8.
+There's a few limitations, like it doesn't really support font control strings. And transforms aren't supported. But I'll probably get to them eventually. It does support encodings, though. If you request UTF-8 encoding for your font, it'll use that. This presentation uses UTF-8 for all its content.
 
 The Classic FontManager works as well, but you have to turn off the bitmap caching by configuring the the FontMax values to 0. If you do that, it just uses Draw directly for all the operations.
 
@@ -875,18 +881,18 @@ The first example turns on the noisy ROM initialisation - this is akin to the op
 
 The second module changes the location the ROM lives at in memory, and runs the *Modules command.
 
-I can demo those if I have time.
-
 
 ---
 # RISC OS Pyromaniac
 ## Configuration files
 
-But you can also give it configuration files, which collect together the options so that you have to manually give long command lines.
+But you can also give it configuration files.
+These make it easier to specify groups of options without long command lines.
 
-This is a part of the configuration file that I used for testing the booting of a RISC OS 5 ROM. In the interests of brevity I’ve elided almost all the unplugged modules, otherwise this wouldn’t fit on a slide.
+This is a part of the configuration file that I used for testing the booting of a RISC OS 5 ROM.
 
-The format is YAML, which makes it relatively easy to read and write. This makes it a lot easier to run things, and means that you don’t lose the configuration that made a particular test useful.
+The format is YAML, which makes it relatively easy to read and write.
+The configuration files make it a lot easier to use a group of settings reproducibly.
 
 ---
 # RISC OS Pyromaniac
@@ -934,13 +940,17 @@ I think the code is pretty well structured. Pretty much every function or method
 
 The Pyromaniac object also handles the configuration options, so that all components are configured through the same interfaces.
 
+The whole system is able to be multiply instantiated - you can run different Operating System instances just by creating a new Pyromaniac object. They won't communicate with one another unless you implement some interactions between the modules.
+
 ---
 # RISC OS Pyromaniac
 ## What is it like to work with? (2)
 
-The Kernel object holds all the subsystem objects. Some of those objects are simple - the vectors object is really just an registration and deregistration interface with a dispatcher, for example. Others, like the Dynamic Areas objects are much more complex, as they allow many different operations to be performed on them through the RISC OS APIs.
+The Kernel object holds all the subsystems. Some of those objects are simple - for example, the vectors object is really just an registration interface with a dispatcher.
 
-RISC OS components implemented in Python can call any SWI, or special call through the System APIs object, which ensures that the calls get processed as if they had been issued by the classic system.
+Others, like the Dynamic Areas, are much more complex, as they allow many different operations to be performed on them through the RISC OS APIs.
+
+RISC OS components implemented in Python can call any SWI through the System APIs object. This ensures that the calls get processed as if they had been issued by the classic system.
 
 Let's have some quick examples...
 
@@ -950,9 +960,9 @@ Let's have some quick examples...
 
 This is the implementation of the OS_ReadEscapeState SWI. It's a very simple system call which just returns whether the Escape key has been pressed in a flag.
 
-As you can see from the implementation, that's what it does - it updates the registers with the C flag in the CPSR to be the same as the state of the current escape condition in the program environment.
+As you can see from the implementation, that's what it does - it updates the C flag in the processor state to be reflect the escape condition from the program environment.
 
-The registers object handles the numbered registers, but here the processor flags are being used. There's a property setter which allows the flags to be manipulated as booleans without having to extract them from the flags word.
+The regs object handles the numbered registers, but here the processor flags are being updated. In ARM these processor flags live in a virtual register. In the registers object, there's a property setter which allows the flags to be manipulated as booleans without having to extract them from the flags word like a crazy ARM author would.
 
 The SWI is registered with the system through the decorator on the function. Decorators are a feature of Python which is generally used to modify the behaviour of functions. In this case, though, the function remains the same, but it is remembered as the handler for a given SWI.
 
@@ -961,20 +971,25 @@ The SWI is registered with the system through the decorator on the function. Dec
 # RISC OS Pyromaniac
 ## What is it like to work with? (4)
 
-This is a method within a the OSCommands PyModule, which implements the RMLoad command. Like the prior example it is very simple. In RISC OS Classic that was intentional - many commands were just thin wrapper around the system call.
+This is a method within one of the PyModules, which implements the command to load a new RISC OS module.
 
-Notice that there's no error handling present. There doesn't need to be - if an exception is raised by the code, it will be caught by the caller. The function would only need to do more work if it had resources it needed to clean up.
+Like the prior example it is very simple. It literally just calls the underlying system call.
+
+Notice that there's no error handling present. There doesn't need to be - if an exception is raised by the code, it will be caught by the caller, and turned into a RISC OS error.
+
+The function would only need to do more work if it had resources it needed to clean up.
 
 
 ---
 # RISC OS Pyromaniac
 ## What is it like to work with? (5)
 
-In ARM, you might allocate memory on the stack to store some temporary strings. That's not as easy in Pyromaniac - although it is possible - so it's simpler just to allocate some memory.
+In ARM, you might allocate memory on the stack to store some temporary strings. That's not as easy in Pyromaniac - although it is possible - so it's simpler just to allocate some memory from a heap.
 
-In this example, the `*Time` command needs somewhere to store the string it gets back before it can print it. A context handler allows a memory to be allocated, and when the code block is left, the memory will automatically be freed.
+In this example, the `*Time` command needs somewhere to store the string it gets back before it can print it. A context handler allows a memory to be allocated, and when the code block is exited, the memory will automatically be freed.
 
-Writing to the VDU stream is just Kernel call to `writeln`. There Kernel object can actually be used as an io output, which means that you can pass it to any function that needs to write to the VDU output.
+The result is written to the screen through the Kernel method `writeln`.
+There Kernel object can actually be used as an i/o output, which means that you can pass it to any function that needs to write to the VDU output.
 
 ---
 # RISC OS Pyromaniac
@@ -1000,7 +1015,15 @@ In Python, it's pretty much the same pattern, except that Python exceptions are 
 # RISC OS Pyromaniac
 ## Problems...
 
-FIXME
+Lots of stuff works, but there's stuff that doesn't, and stuff I still have to fix.
+
+- As I mentioned previously, I don't have any interrupts, but timed events are still important. Parts of the network system will not work if they can't time out operations. The spinning hourglass you see now and then wouldn't work without timers. They're actually implemented with a check at the end of execution to see if anything is outstanding. It's tacky, but it's good enough.
+
+- Whereas on Classic RISC OS the execution state would be entirely in the memory of the machine, in Pyromaniac it's split between Python and the emulated system. This is a problem that most emulation systems have, but it's worse because the OS state is also split between the two.
+
+- My error handling is still not quite right. There's a design decision that I made early on that needs fixing. Because errors are handled as Python exceptions, I haven't differentiated between a signalling and a non-signalling error. It hasn't hurt yet, but it will.
+
+- And whilst I'm not writing C or ARM code to poke hardware registers, I'm instead writing interfaces to Cairo, or SoundDevice, or GTK. It's replaced one problem area with another.
 
 ---
 # RISC OS Pyromaniac
@@ -1123,7 +1146,7 @@ JFPatch wasn't that bad to put through its tests. There are still some things to
 # Conclusion
 ## Could it be better?
 
-Could it be better? Of course!
+Could it be better? Well, of course!
 
 There are huge swathes of things that I’ve not talked about here - subtleties, things that work, things that don’t, ideas that might never pan out but would be cool.
 
@@ -1135,9 +1158,8 @@ But I try not to feel too guilty about that, because the whole point of this was
 # Conclusion
 ## References
 
-You'll find some reference material, including these slides, on SITE GOES HERE.
-
-FIXME: Make the site.
+You'll find some reference material, including these slides, on pyromaniac.riscos.online.
+Feel free to try out the shell server too.
 
 But there's one more thing that I set out to do when I started all this work...
 
@@ -1145,9 +1167,10 @@ But there's one more thing that I set out to do when I started all this work...
 # Conclusion
 ## Am I happy?
 
-The great and liberating thing about that is that none of it matters one jot whether it happens or not.
+The great and liberating thing about all this is that none of it matters one jot whether it happens or not.
 
-The only thing that matters is whether I feel it would be fun and it would make me happy to do it. That’s the thing that I learnt a year and a half ago, and that is what powers the service that you see - my happiness.
+The only thing that matters is whether I feel it would be fun and it would make me happy to do it.
+That’s the thing that I learnt a year and a half ago, and that is what powers the service that you see - my happiness.
 
 <pause>
 
