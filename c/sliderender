@@ -48,18 +48,18 @@ typedef struct fontconfig_s {
 } fontconfig_t;
 
 fontconfig_t fontdefault_body = {
-    "HirukoPro.Book", (12*16), (12*16)
+    "Trinity.Medium", (12*16), (12*16)
 };
 fontconfig_t fontdefault_code = {
-    "FairfaxSMHD.Medium", (12*16), (12*16)
+    "Corpus.Medium", (12*16), (12*16)
 };
 fontconfig_t fontdefault_headings[MAXHEADING] = {
-    {"Optima.Bold", (22*16), (22*16)},
-    {"Optima.Bold", (18*16), (18*16)},
-    {"Optima.Regular", (16*16), (16*16)},
+    {"Homerton.Bold", (22*16), (22*16)},
+    {"Homerton.Bold", (18*16), (18*16)},
+    {"Homerton.Medium", (16*16), (16*16)},
 };
 fontconfig_t fontdefault_marginal = {
-    "HirukoPro.Book", (8*16), (8*16)
+    "Homerton.Medium", (8*16), (8*16)
 };
 
 
