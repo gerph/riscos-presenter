@@ -545,6 +545,9 @@ template: body-text
   * Tools - JFPatch tool, compiler, assembler, linker, amu, etc.
 
 ---
+h2.padding.bottom: 0
+name: big-diagram
+
 # How The Service Works
 ## What is the service made of? (2)
 
@@ -605,6 +608,8 @@ template: body-text
 ![](builder-5 (width=100% height=100%))
 
 ---
+name: body-text
+
 # How The Service Works
 ## What runs those services? (10)
 
@@ -676,12 +681,13 @@ template: body-text
 * The `IfThere` tool ran on June 10th - not well, but it ran.
 
 ---
-# RISC OS Pyromaniac
-## Surely that's easy? (2)
+template: big-diagram
 
 ![](pyromaniac-basicexec (width=100% height=100%))
 
 ---
+template: body-text
+
 # RISC OS Pyromaniac
 ## What is RISC OS Pyromaniac?
 
@@ -708,7 +714,7 @@ So...
 ## What makes up Pyromaniac? (1)
 
 * Written in Python.
-* Uses Unicorn (a QEmu derived package) for emulating ARM code.
+* Uses Unicorn (a QEmu derived package) for emulating 32bit ARM code.
 * All other packages are optional.
     * Disassembly - needs `capstone`.
     * Graphics - needs `python-cairo`.
@@ -718,12 +724,16 @@ So...
     * Sound - needs `python-rtmidi`.
 
 ---
+template: big-diagram
+
 # RISC OS Pyromaniac
 ## What makes up Pyromaniac? (2)
 
 ![](pyromaniac-structure (width=100% height=100%))
 
 ---
+template: body-text
+
 # RISC OS Pyromaniac
 ## How is it different from other systems?
 
@@ -731,6 +741,7 @@ RISC OS emulation:
 
 * RPCEmu, ArcEm - Hardware emulators.
 * Riscose - OS interface replacement.
+* Amethyst - ARM unit testing tool.
 * Linux Port - Hardware / interface replacement.
 
 Other systems:
@@ -738,6 +749,24 @@ Other systems:
 * Wine - OS interface replacement.
 * Docker - System isolation.
 * Rosetta - Dynamic recompilation.
+
+---
+# RISC OS Pyromaniac
+## How does it compare to a bare Operating System?
+
+Has many of the same things:
+
+* Address space management; memory allocation.
+* System calls from applications.
+* Heap management.
+* I/O management.
+* Device drivers.
+
+But some are missing:
+
+* Page table management.
+* Hardware interrupts.
+* Memory mapped devices.
 
 ---
 # RISC OS Pyromaniac
@@ -1033,7 +1062,6 @@ Tracing SWI arguments (`--debug traceswiargs`):
           <= r0  = &00000000          0  gcol
              r2  = &00000002          2  log2_bpp
              r3  = &00000000          0  corrupted
-
 ```
 
 ***`Tech`***: OSLib parser and templating system
@@ -1091,17 +1119,6 @@ URD  NoFileSystem:$
 example/py  WR/WR     example/pyc WR/WR     wimperror   WR/WR   
 *
 ```
-
----
-template: body-text
-
-# RISC OS Pyromaniac
-## FIXME - What's it useful for?
-
-FIXME - examples of how you use it to find problems?
-* Kevin's Git tool?
-* ARMBE?
-* Julie's CObey?
 
 ---
 template: body-text
@@ -1244,9 +1261,73 @@ def cmd_unset(self, args):
 
 ---
 # RISC OS Pyromaniac
+## What good is it? (1)
+
+* Writing my own software.
+* Trying things out.
+* Debugging other people's software!
+    * https://asciinema.org/a/345766 shows an interactive session demonstrating that freeing the stack you're currently using may have bad effects.
+
+---
+template: big-diagram
+code.size: 0.45em
+
+# RISC OS Pyromaniac
+## What good is it? (2)
+
+```
+Supervisor
+
+*cobey:obey echosed
+...
+==== Begin exception report ====
+Exception triggered: Exception 'Prefetch Abort'
+  r0  = &a9a9a9a9, r1  = &a9a9a9a9, r2  = &00000000, r3  = &a9a9a9a9
+  r4  = &00000191, r5  = &07001f28, r6  = &07008ac0, r7  = &00000001
+  r8  = &07008aa8, r9  = &07007720, r10 = &07008d18, r11 = &a9a9a9a9
+  r12 = &a9a9a9a9, sp  = &a9a9a9a9, lr  = &a9a9a9a9, pc  = &a9a9a9ac
+  CPSR= &60000010 : USR-32 ARM fi ae qvCZn
+Recently executed code:
+    ---- Block &07006f4c, 1 instructions ----
+     7006f4c: LDR     pc, &07007230             ; = &0382095c
+    ---- Block &0382095c, 5 instructions ----
+     382095c: {DA 'ROM', module 'SharedCLibrary'}
+    Function: memset
+     382095c: MOV     r12, sp                   ; Function: memset
+     3820960: PUSH    {r0, r11, r12, lr, pc}
+     3820964: SUB     r11, r12, #4
+     3820968: SUBS    r2, r2, #4
+     382096c: BMI     &038209E4
+    ...
+    ---- Block &038209a0, 4 instructions repeated 229 times ----
+     38209a0: STMIA   r0!, {r1, r3, r12, lr}
+     38209a4: STMIA   r0!, {r1, r3, r12, lr}
+     38209a8: SUBS    r2, r2, #&20
+     38209ac: BGE     &038209A0
+    ...
+    ---- Block &038209d4, 6 instructions ----
+     38209d4: SUBS    r2, r2, #4
+     38209d8: STRLT   r1, [r0], #4
+     38209dc: STMGEIA r0!, {r1, r3}
+     38209e0: SUBGE   r2, r2, #4
+     38209e4: ADDS    r2, r2, #4
+     38209e8: LDMDBEQ r11, {r0, r11, sp, pc}
+==== End exception report ====
+
+Error: Internal error: Abort on instruction fetch at &a9a9a9a8 (Error number &80000001)
+*quit
+```
+
+---
+template: body-text
+
+# RISC OS Pyromaniac
 ## Problems...
 
-FIXME: Include some things about where there are problems or questions?
+* IRQs and timed events aren't handled well.
+* Execution context is split between emulated system and Python code.
+* Error handling is still a bit troublesome.
+* Replaced writing device driver, with writing interface modules.
 
 ---
 # RISC OS Pyromaniac
@@ -1284,9 +1365,9 @@ FIXME: Include some things about where there are problems or questions?
     * Releases are a way to stop it being unusably 'half finished'.
     * Releases are a great incentive - I really have achieved a lot this month!
 * Long lived development, for example...
-  * Font Manager lived on a branch for about 6 months.
-  * EasySockets is still on a branch.
-  * PyromaniacGit is still be worked on.
+    * Font Manager lived on a branch for about 6 months.
+    * EasySockets is still on a branch.
+    * PyromaniacGit is still be worked on.
 
 ---
 # RISC OS Pyromaniac
@@ -1427,7 +1508,9 @@ If you're wanting to know more, or review this talk, a site, _https://pyromaniac
 * Links to the technologies in these slides.
 * Explanations of the CI examples.
 * Development images and screenshots.
-* Documentation from Pyromaniac (features, changelogs, configuration info)
+* Documentation from Pyromaniac (features, changelogs, configuration info).
+
+There's also a demonstration site: _http://shell.riscos.online/_.
 
 ---
 # Conclusion
@@ -1440,3 +1523,6 @@ template: section-title
 
 # 6. Questions
 
+Info site: _https://pyromaniac.riscos.online/_
+
+Shell: _http://shell.riscos.online/_
