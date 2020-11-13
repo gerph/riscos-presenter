@@ -14,7 +14,7 @@
 
 /* Define this to debug printed output */
 //#undef DEBUG
-#define DEBUG
+//#define DEBUG
 
 /* Define this to add the routines for 'fill' parameters so that the
    region is outlined */

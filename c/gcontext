@@ -17,7 +17,7 @@
 
 /* Define this to debug printed output */
 //#undef DEBUG
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define dprintf if (1) _swix(0x104,0), printf

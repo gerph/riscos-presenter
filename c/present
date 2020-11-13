@@ -552,6 +552,14 @@ int main(int argc, char *argv[])
     Fortify_EnterScope();
 #endif
 
+    /* On RISC OS Classic, if you run from within the Desktop, the Command Window will be marked as pending.
+     * Once the first characters are output, the Command Window will be opened proper, BUT if there was colour
+     * selection or other non-trapped operations, it will be lost as the command window is opened.
+     * So, if we're going to be able to work sensibly from the Desktop, we need to terminate the Command
+     * Window.
+     */
+    _swix(Wimp_CommandWindow, _IN(0), -1); /* Close command window */
+
     gcontext_initvdu(1);
     banks_init();
 
@@ -675,7 +683,7 @@ int main(int argc, char *argv[])
                         if (!failed && buffer[0] != '\0')
                         {
                             int slide_number = atoi(buffer);
-                            printf("Selected slide: %i\n", slide_number);
+                            dprintf("Selected slide: %i\n", slide_number);
                             if (slides_select(slides, slide_number))
                             {
                                 beep();
