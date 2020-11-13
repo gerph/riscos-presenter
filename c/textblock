@@ -223,6 +223,7 @@ int textblock_add(textblock_t textblock, void *font,
         if (bounds.charoffset == 0)
         {
             /* We couldn't fit the string in - that's weird. Just give up */
+            dprintf("FAILED: Cound not fit the string in the line\n");
             return text - start_text;
         }
 

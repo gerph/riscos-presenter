@@ -273,7 +273,7 @@ static int sliderender_ossize(sliderender_t *render,
     if (*end != '\0')
     {
         /* Didn't end after the size specification */
-        printf("Didn't parse at end: %s\n", end);
+        printf("FAILED: Didn't parse at end: %s\n", end);
         return -1;
     }
     //dprintf("(fontsize: num=%f, multiplier=%i)\n", num, multiplier);
@@ -536,7 +536,7 @@ static void sliderender_span_image(sliderender_t *render,
     height = sliderender_span_property_osunit(render, span, "height", "0", OSSIZE_IS_Y | OSSIZE_IS_SPACE);
     if (width == -1 || height == -1)
     {
-        dprintf("Could not parse the span image properties for height/width\n");
+        dprintf("WARNING: Could not parse the span image properties for height/width\n");
         return;
     }
 
@@ -610,6 +610,7 @@ static void sliderender_block(sliderender_t *render,
                               slideblock_t *block)
 {
     unsigned long flags = (render->pass==0) ? 0 : TBADD_PAINT;
+    dprintf("Render block (render->pass=%i):\n", render->pass);
     switch (block->blocktype)
     {
         case sbt_heading:
@@ -715,6 +716,14 @@ static void sliderender_block(sliderender_t *render,
         slidespan_t *span;
         int span_pass;
         bbox_t extent;
+
+#ifdef DEBUG
+        {
+            coords_t pos = textblock_position(render->textblock);
+            dprintf("Rendering spans at %i, %i:\n", pos.x, pos.y);
+        }
+#endif
+
         textblock_mark(render->textblock);
         for (span_pass = 0; span_pass < 2; span_pass++)
         {
@@ -986,7 +995,7 @@ static fontfamily_t sliderender_prepare_family(sliderender_t *render,
     family = fontfamily_create(baseconfig.name, baseconfig.xsize, baseconfig.ysize);
     if (family == NULL)
     {
-        dprintf("Cannot create font family for %s\n", keyname);
+        dprintf("FAILED: Cannot create font family for %s\n", keyname);
         return NULL;
     }
 
@@ -998,7 +1007,7 @@ static fontfamily_t sliderender_prepare_family(sliderender_t *render,
         dprintf("Override family '%s' italic style: %s\n", keyname, config.name);
         if (fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, config.name))
         {
-            dprintf("Cannot set %s italic style\n", keyname);
+            dprintf("FAILED: Cannot set %s italic style\n", keyname);
             return NULL;
         }
     }
@@ -1010,7 +1019,7 @@ static fontfamily_t sliderender_prepare_family(sliderender_t *render,
         dprintf("Override family '%s' bold style: %s\n", keyname, config.name);
         if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, config.name))
         {
-            dprintf("Cannot set %s bold style\n", keyname);
+            dprintf("FAILED: Cannot set %s bold style\n", keyname);
             return NULL;
         }
     }
@@ -1022,14 +1031,14 @@ static fontfamily_t sliderender_prepare_family(sliderender_t *render,
         dprintf("Override family '%s' bold italic style: %s\n", keyname, config.name);
         if (fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, config.name))
         {
-            dprintf("Cannot set %s bold italic style\n", keyname);
+            dprintf("FAILED: Cannot set %s bold italic style\n", keyname);
             return NULL;
         }
     }
 
     if (fontfamily_populate(family))
     {
-        dprintf("Cannot populate font family for %s\n", keyname);
+        dprintf("FAILED: Cannot populate font family for %s\n", keyname);
         return NULL;
     }
 
@@ -1316,14 +1325,14 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     render->family_body = sliderender_prepare_family(render, "body", &fontdefault_body);
     if (!render->family_body)
     {
-        dprintf("Cannot initialise the font family for body\n");
+        dprintf("FAILED: Cannot initialise the font family for body\n");
         goto failed;
     }
 
     render->family_code = sliderender_prepare_family(render, "code", &fontdefault_code);
     if (!render->family_code)
     {
-        dprintf("Cannot initialise the font family for code\n");
+        dprintf("FAILED: Cannot initialise the font family for code\n");
         goto failed;
     }
     {
@@ -1337,7 +1346,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
             render->family_heading[n] = sliderender_prepare_family(render, name, &fontdefault_headings[n]);
             if (!render->family_heading[n])
             {
-                dprintf("Cannot initialise the font family for heading %i\n", n+1);
+                dprintf("FAILED: Cannot initialise the font family for heading %i\n", n+1);
                 goto failed;
             }
 
@@ -1359,7 +1368,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     render->font_body = fontfamily_get_font(render->family_body, FONTFAMILY_STYLE_BASE);
     if (!render->font_body)
     {
-        dprintf("Cannot initialise the font family for body\n");
+        dprintf("FAILED: Cannot initialise the font family for body\n");
         goto failed;
     }
 
@@ -1518,12 +1527,14 @@ static int sliderender_render_background(sliderender_t *render)
             simage->data = image_create(simage->name);
             if (simage->data == NULL)
             {
+                dprintf("FAILED: Failed to create image block\n");
                 return 1;
             }
             if (image_loadfile(simage->data, simage->name))
             {
                 image_destroy(simage->data);
                 simage->data = NULL;
+                dprintf("FAILED: Failed to load image file\n");
                 return 1;
             }
         }
@@ -1546,6 +1557,7 @@ static int sliderender_render_background(sliderender_t *render)
 
             if (image_render_tofit(simage->data, &bbox, simage->inset))
             {
+                dprintf("FAILED: Failed to render image\n");
                 return 1;
             }
         }
@@ -1669,7 +1681,7 @@ int sliderender_show(sliderender_t *render)
 
     if (render->slide == NULL)
     {
-        dprintf("No slide currently selected for render\n");
+        dprintf("FAILED: No slide currently selected for render\n");
         return 1;
     }
 

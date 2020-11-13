@@ -11,6 +11,9 @@
 #include "fortify.h"
 #endif
 
+/* Seems like VDU 23,0,10 works, but the VDU 23,1 cursor controls do not */
+#define USE_VDU_23_0_10
+
 static int old_cursor_state = -1;
 static int cursor_is_on = 1;
 
@@ -27,7 +30,11 @@ void cursors_off(void)
   {
     /* Don't use OS_RestoreCursors/OS_RemoveCursors as those are
        intended for internal graphics operations. */
+#ifdef USE_VDU_23_0_10
+    char off[] = { 23, 0, 10, (1<<5), 0,0,0,0,0,0,0 };
+#else
     char off[] = { 23, 1, 0, 0,0,0,0,0,0,0,0 };
+#endif
     _swix(OS_WriteN, _INR(0,1), off, 10);
 
     /* We also need to disable the cursor editing, otherwise we get
@@ -52,7 +59,11 @@ void cursors_on(void)
   if (!cursor_is_on)
   {
     /* See comments in cursors_off */
+#ifdef USE_VDU_23_0_10
+    char on[] = { 23, 0, 10, 0,0,0,0,0,0,0,0 };
+#else
     char on[] = { 23, 1, 1, 0,0,0,0,0,0,0,0 };
+#endif
     _swix(OS_WriteN, _INR(0,1), on, 10);
 
     if (old_cursor_state != -1)

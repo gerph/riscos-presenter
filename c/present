@@ -257,6 +257,7 @@ int slides_show(slides_t *slides)
     int fail;
     hourglass_on();
     banks_offscreen();
+    dprintf("--------\nShowing slide %i\n", sliderender_get_slide(slides->render));
     fail = sliderender_show(slides->render);
     banks_show();
     hourglass_off();
@@ -558,7 +559,7 @@ int main(int argc, char *argv[])
      * So, if we're going to be able to work sensibly from the Desktop, we need to terminate the Command
      * Window.
      */
-    _swix(Wimp_CommandWindow, _IN(0), -1); /* Close command window */
+    _swix(Wimp_CommandWindow, _IN(0), 0); /* Close command window */
 
     gcontext_initvdu(1);
     banks_init();
