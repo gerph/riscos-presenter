@@ -10,6 +10,7 @@
 typedef struct banks_s banks_t;
 
 struct banks_s {
+    int enabled;
     int display;
     int render;
 };
@@ -30,13 +31,17 @@ banks_t banks;
  ******************************************************************/
 void banks_init(void)
 {
+    banks.enabled = 1;
     banks.display = 1;
     banks.render = 1;
 
     // Read the current bank and display
-    _swix(OS_Byte, _INR(0, 2)|_OUTR(1,2),
-                   OSByte_ReadScreenBankDisplay, 0, 255,
-                   &banks.render, &banks.display);
+    if (banks.enabled)
+    {
+        _swix(OS_Byte, _INR(0, 2)|_OUTR(1,2),
+                       OSByte_ReadScreenBankRender, 0, 255,
+                       &banks.render, &banks.display);
+    }
 }
 
 
@@ -48,8 +53,11 @@ void banks_init(void)
  ******************************************************************/
 void banks_show(void)
 {
-    banks.display = banks.render;
-    _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenDisplay, banks.display);
+    if (banks.enabled)
+    {
+        banks.display = banks.render;
+        _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenDisplay, banks.display);
+    }
 }
 
 
@@ -61,6 +69,9 @@ void banks_show(void)
  ******************************************************************/
 void banks_offscreen(void)
 {
-    banks.render = 3 - banks.display;
-    _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenRender, banks.render);
+    if (banks.enabled)
+    {
+        banks.render = 3 - banks.display;
+        _swix(OS_Byte, _INR(0, 1), OSByte_SelectScreenRender, banks.render);
+    }
 }

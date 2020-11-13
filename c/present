@@ -30,6 +30,9 @@
 // Define this to have the hourglass start as soon as we change page
 #define HOURGLASS_IMMEDIATE
 
+// Define this to use the screen banking
+#define USE_BANKS
+
 
 /* Define this to debug this file */
 //#undef DEBUG
@@ -256,10 +259,14 @@ int slides_show(slides_t *slides)
     /* Currently nothing else to do in this step */
     int fail;
     hourglass_on();
+#ifdef USE_BANKS
     banks_offscreen();
+#endif
     dprintf("--------\nShowing slide %i\n", sliderender_get_slide(slides->render));
     fail = sliderender_show(slides->render);
+#ifdef USE_BANKS
     banks_show();
+#endif
     hourglass_off();
     return fail;
 }
@@ -515,6 +522,22 @@ int special_key(slides_t *slides, int key)
 }
 
 
+/*************************************************** Gerph *********
+ Function:      cleanup
+ Description:   Clean up when we exit, just to be sure that everything is nice again.
+ Parameters:    none
+ Returns:       none
+ ******************************************************************/
+void cleanup(void)
+{
+#ifdef USE_BANKS
+    banks_show();
+#endif
+    cursors_on();
+    hourglass_smash();
+}
+
+
 int main(int argc, char *argv[])
 {
     char *in_filename = "file/md";
@@ -559,22 +582,31 @@ int main(int argc, char *argv[])
      * So, if we're going to be able to work sensibly from the Desktop, we need to terminate the Command
      * Window.
      */
-    _swix(Wimp_CommandWindow, _IN(0), 0); /* Close command window */
+    _swix(Wimp_CommandWindow, _IN(0), -1); /* Close command window */
+    _swix(OS_WriteI + 26, 0);
 
     gcontext_initvdu(1);
+#ifdef USE_BANKS
     banks_init();
+#endif
 
+    /* Make sure that if something goes wrong, we have a working system */
+    atexit(cleanup);
+
+    dprintf("Creating slides\n");
     slides = slides_create(in_filename);
     if (slides == NULL)
     {
         printf("Failed to create slides for file '%s'\n", in_filename);
         exit(1);
     }
+    dprintf("Set up screen region to draw\n");
     if (slides_setregion_screen(slides))
     {
         printf("Could not select screen region\n");
     }
 
+    dprintf("Select slide %i\n", start_slide);
     if (slides_select(slides, start_slide))
     {
         printf("Could not select slide %i\n", start_slide);
@@ -608,15 +640,6 @@ int main(int argc, char *argv[])
         }
         return 0;
     }
-
-#if 0
-    {
-        char buffer[6];
-        printf("Prompting ...\n");
-        prompt(slides, "Testing", buffer, sizeof(buffer), 0, NULL);
-        exit(1);
-    }
-#endif
 
     if (slides_show(slides))
     {

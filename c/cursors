@@ -11,7 +11,9 @@
 #include "fortify.h"
 #endif
 
-/* Seems like VDU 23,0,10 works, but the VDU 23,1 cursor controls do not */
+/* Seems like VDU 23,0,10 works, but the VDU 23,1 cursor controls do not.
+ * It's possible I broke it on Select.
+ */
 #define USE_VDU_23_0_10
 
 static int old_cursor_state = -1;
