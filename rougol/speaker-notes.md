@@ -36,16 +36,18 @@ vertical-align: top
 
 Good evening!
 
-I don’t know how this talk will go over. But I hope that what you take away from it is something very different to what you were expecting when you joined. So, let’s go...
+I don't know how this talk will go over. But I hope that it will be interesting, and maybe a little surprising. So, let’s go...
+
 
 ---
 
 # Introduction
 ## How I'll do this talk
 
-There are a lot of technology and features that I'll talk about. I'll call them out as I come to them. Some of what I’m talking about may not be familiar to RISC OS users, but may be much more common to users outside of RISC OS. If there's something you don't understand, and you feel you needs clarification, ask a question in the chat if you can. Someone else might be able to answer, or I may be able to address it immediately.
+There are a lot of technologies and features that I'll talk about. I'll call them out as I come to them. Some of what I’m talking about may not be familiar to RISC OS users.
+They may be much more common to users outside of RISC OS. If there's something you don't understand, and you feel you needs clarification, ask a question in the chat if you can. Someone else might be able to answer, or I may be able to address it immediately.
 
-At the end of each section I'm going to have a short break to answer questions on the section. This should give us a chance to talk about that section’s topics without getting too far ahead and people being completely lost.
+At the end of each section I'm going to have a short break to answer questions on that section. This should give us a chance to talk about that section’s topics without getting too far ahead and people being completely lost.
 
 At the end of the talk, these slides and a bunch of links to resources will be made available.
 
@@ -59,7 +61,7 @@ There are 5 sections to the talk -
 - a little bit of background
 - a discussion of what JFPatch-as-a-service is and what you can do with it
 - a very light dive into how that service works,
-- a look at the system that powers everything.
+- a look at the system that powers everything,
 - and finally some conclusions.
 
 At the end of the talk I’ll take questions on the subjects that have been covered here, for as long as people want to stick around.
@@ -151,7 +153,7 @@ My own source had been in CVS for many years, and in about 2016 I moved everythi
 
 Git is a source control system that is intended for large scale distributed use, but which works even for a single user working with a single file.
 
-It doesn't need a server, but if you want to share code that's one way you can do it. GitHub is one of the best known systems for storing and accessing things, which people will almost certainly have heard of. However, at the time GitHub wasn't so friendly to private projects, and even still, I didn't want my projects going off site. So I chose to use GitLab - it's installed on my server, and... it's pretty great. Oh, and it's free.
+It doesn't need a server, but if you want to share code that's one way you can do it. GitHub is one of the best known systems for storing repositories, which people will almost certainly have heard of. However, at the time GitHub wasn't so friendly to private projects, and even still, I didn't want my projects going off site. So I chose to use GitLab - it's installed on my server, and... it's pretty great. Oh, and it's free.
 
 <step>
 
@@ -198,7 +200,7 @@ Traditionally you downloaded and installed a package that gave you the build too
 
 And even if they don't, you want more control over what exactly goes into building your latest product.
 
-This is usually managed through a software repository that holds all those components that you might want - your toolchain, libraries, documentation, even full releases. These can be stored in the repository and retrieved in managed ways. In this way what you're using is reproducible, because everything that went into making it is known, and can be used again.
+This is usually managed through a software repository that holds all those components that you might want - your toolchain, libraries, documentation, even full releases. These can be stored in the repository and retrieved in managed ways. This ensure that what you're doing is reproducible, because everything that went into making it is known, and can be used again.
 
 <step>
 
@@ -228,7 +230,7 @@ In this example, I'm building one of my old modules using the new toolchain.
 # Background
 ## How can I do this? (5)
 
-The next feature of modern development on my list was automated testing. This is very closely associated with the process of 'Continuous Integration' and the terms are often used interchangeably. The distinction to draw here is between ad-hoc testing, where you test what you think is going to be a problem by hand, and automated testing, where you define tests which are run automatically.
+The next feature of modern development on my list was automated testing. This is very closely associated with the process of 'Continuous Integration' and the terms are often used interchangeably. The distinction to draw here is between ad-hoc testing, where you test what you think is going to be a problem by hand. And automated testing, where you define tests which are run automatically.
 
 - In ad-hoc testing, you essentially sign off that you think it's good enough.
 - In automated testing, your tests tell you whether it's good enough.
@@ -247,6 +249,8 @@ In my case, these tests will:
 
 If it wasn't successful, I'll get an email, and the website reports the build log.
 
+This example is showing a build of the JFPatch tool, which tokenises the BASIC code and collects the results into an artifact that can be used in the service.
+
 ---
 # Background
 ## How can I do this? (6)
@@ -259,7 +263,7 @@ In fact, just last month Jason Tribbeck was explaining exactly that process for 
 
 <step>
 
-But I really want to run things on RISC OS, because that environment that modules run in is a bit different, and you'll want to communicate with other parts of the system in situ. In particular, modules run in SVC mode - the mode with the highest priviledge and therefore the greatest power to make it a Bad Day for you.
+But I really want to run things on RISC OS, because the environment that modules run in is a bit different, and you'll want to communicate with other parts of the system in situ. In particular, modules run in SVC mode - the mode with the highest priviledge and therefore the greatest power to make it a Bad Day for you.
 
 We'll come to how you do that later.
 
@@ -287,7 +291,7 @@ We spin forward a year - we'll cover the missing time later.
 # JFPatch-as-a-Service
 ## Why?
 
-In early March, David Thomas semi-challenged me to make some of the things I'd been doing public. I was still nervous about that, and wasn't really comfortable making that kind of announcement.
+In early March, David Thomas challenged me to make some of the things I'd been doing public. I was still nervous about that, and wasn't really comfortable making that kind of announcement.
 
 But the idea of doing something for April 1st, which wasn't actually an April fool, was appealing. I genuinely expected the response to be a 'meh', but that wasn't the point.
 
@@ -325,9 +329,9 @@ It does a different thing to JFPatch-as-a-service, and my work isn't anywhere ne
 # JFPatch-as-a-Service
 ## What can you build with the service? (1)
 
-But what can the service do? Well, it can build any JFPatch code you throw at it, and now the module header is 32bit safe as well. I was too lazy to look at the 32bit header on the modules until recently.
+But what can the service do? Well, it can build any JFPatch code you throw at it, and now the module header is 32bit safe as well it can work on modern systems.
 
-But, the service can also build C, and Pascal and run BASIC programs, and build ObjAsm code.
+But, the service can also build C, and Pascal. It run BASIC programs, and build ObjAsm code.
 If you give it a zip archive containing an AMU Makefile, it would invoke it and return the binary it thought was produced by it.
 
 You can try this out on the real site if you'd like. Here's what you see...
@@ -348,7 +352,7 @@ This is a small C file that I wrote, and then sent to the service. You can see i
 # JFPatch-as-a-Service
 ## What can you build with the service? (3)
 
-A very simple Perl program. There's no returned binary from this, because we just printed a message.
+This is a very simple Perl program. There's no returned binary from this, because we just printed a message.
 
 You can see the 'Hello world' message in the build output.
 
@@ -358,7 +362,7 @@ You can see the 'Hello world' message in the build output.
 
 And finally a BBC BASIC program that also does very little.
 
-As I mentioned, it did all this from April 1st. I had kinda hoped that someone would play with it and find that it did more things. I know I would have. It's not hidden, the source on the website says explicitly that it supports these things, and describes which languages are recognised.
+And the service could actually do all this from April 1st. I had kinda hoped that someone would play with it and find that it did more things than just building JFPatch. I know I would have. It's not hidden, the HTML source on the website says explicitly that it supports these things, and describes which languages are recognised.
 
 Nobody came to talk to me about it, so that 'easter egg' remained hidden.
 
@@ -368,7 +372,7 @@ Nobody came to talk to me about it, so that 'easter egg' remained hidden.
 
 In the time since then, I’ve converted a few other RISC OS tools to be able to be automatically built. They’re on github with the label `riscos-ci`.
 
-Some of the tools were very simple to make work - Rick Murray's ErrorCancel for example was just a simple matter of adding the right build commands to the repository. Others were a little more involved, like Julie Stamp's CObey module, which I had to tweak the code of, because I'm using an older compiler.
+Some of the tools were very simple to make work - Rick Murray's ErrorCancel for example was just a simple matter of adding the right build commands to the repository. Others were a little more involved, like Julie Stamp's CObey module, which I had to tweak the code, because I'm using an older compiler.
 
 Running a build automatically on submitting the code is a great way of checking that it still works. Presumably you've built it yourself, but it never hurts to have an automated system check that.
 
@@ -412,7 +416,7 @@ This is the sort of request and response you would have for building with the AP
 
 The WebSockets system is a little harder to work with, though. You definitely need a client to talk to it.
 
-Fortunately, in the JFPatch examples repository I supplied python a client that uses a package which does the work for you. This is an example of using 'wsclient.py' to build the same code.
+Fortunately, in the JFPatch examples repository I supplied a python client that uses a package which does the work for you. This is an example of using 'wsclient.py' to build the same code.
 
 But that's not always a suitable solution - it means you have to install other Python packages,
 and you have to have Python in the first place.
@@ -428,7 +432,7 @@ The `robuild-client` tool is a little tool that's able to take a file, and give 
 
 This makes it easy to work into a build pipeline.
 
-The Github project builds a Linux version of the tool...
+The Github project for `robuild-client` itself builds a Linux version of the tool...
 
 <step>
 
@@ -440,7 +444,7 @@ I used two libraries to do this - a JSON parser, and a WebSockets library. The J
 
 The repository is also an example of producing releases from an automated build, as well as building RISC OS code from a non-RISC OS code base using `sed` to fix incompatible things.
 
-I didn't say it was a *good* solution!
+I didn't say it was a *good* example!
 
 ---
 
@@ -451,7 +455,7 @@ How does it know what to do?
 
 For simple files, it spots the language from its format. For example, if it's got BASIC tokens in then it's a BASIC file. If it has C comments in, it's a C file. The heuristic is pretty poor, but it works on pretty much anything but simple cases.
 
-Zip archives can contain multiple files, and the services picks out ones that it can understand. If there's a Makefile in the file that it recognises, it'll invoke AMU on the file. If there's a JFPatch file, it'll run that file - which allows you to patch other files.
+Zip archives can contain multiple files, and the services picks out ones that it can understand. If there's a Makefile in the archive that it recognises, it'll invoke AMU on the file. If there's a JFPatch file, it'll run that file - which allows you to patch other files.
 
 Hoping the service guesses right isn't ideal, so there's more control available.
 
@@ -463,7 +467,7 @@ YAML stands for 'Yet Another Markup Language'. It's nicer to work with than JSON
 
 Although I say the file is called `.robuild.yaml` on RISC OS that would be `/robuild/yaml`, and it might have a filetype of hex F74.
 
-In this example, from robuild-client itself, we set a single environment variable, and then give it 3 commands to run. Those are just CLI commands, so you could can do a lot more if you wanted - the `!BuildAll` is an Obey file, which builds the libraries and then uses them to build the tool. The final copy to the clipboard is how we communicate the output to the service.
+In this example, from `robuild-client` itself, we set a single environment variable, and then give it 3 commands to run. Those are just RISC OS CLI commands, so you can do a lot more if you wanted - `!BuildAll` is an Obey file, which builds the libraries and then uses them to build the tool. The final copy to the clipboard is how we communicate the output to the service.
 
 There's fuller documentation of the file format on the JFPatch-as-a-service website.
 
@@ -483,7 +487,7 @@ So now I'm going to talk about how it achieves that in the back end.
 
 What is the service made of?
 
-* Infrastructure - The infrastructure runs on AWS - Amazon Web Services - on their virtual machines, with a load blancer and a small server which is running constantly. It could scale, but it's set up to not do so - the infrastructure costs about $35/month, which is about $30 too much, but I've not got around to streamlining it. It's a 'meh' at the moment.
+* Infrastructure - The infrastructure runs on AWS - Amazon Web Services - on their virtual machines. It has a load blancer and a small server which is running constantly. It could scale, but it's set up to not do so - the infrastructure costs about $35/month, which is about $30 too much, but I've not got around to streamlining it. It's a 'meh' at the moment.
 
 * FrontEnd - Static site is built with HSC, and uses a custom colouring mode for ARM, BASIC and JFPatch. The new colouring modes were open sourced a while back, and you'll find them on GitHub.
 
@@ -491,9 +495,9 @@ What is the service made of?
 
 * The back end service uses a python module which handles RISC OS extension data in Zip files. I open sourced that a while back.
 
-* Tools - The tool is JFPatch itself. JFPatch was one of the easiest things to change for this environment. It needed a way to pass the built binary out to the caller - previously it just wrote to whatever file you supplied. Within the service it uses a new option to copy the output to the clipboard using the ClipboardHolder module. The back end code can then return the built binary to the user.
+* Tools - The tool that runs is JFPatch itself. JFPatch was one of the easiest things to change for this environment. It needed a way to pass the built binary out to the caller - previously it just wrote to whatever file you supplied. Within the service it uses a new option to copy the output to the clipboard using the ClipboardHolder module. The back end code can then return the built binary to the user.
 
-* JFPatch itself is written in BASIC which is tedious to work with on non-RISC OS systems, so all the source files are stored in text form and tokenised with a new tool I created.
+* JFPatch itself is written in BASIC which is tedious to work with on non-RISC OS systems, so all the source files are stored in text form and tokenised with a new tool I created. You saw an example of the tool being built in an earlier slide.
 
 ---
 
@@ -551,23 +555,34 @@ Whether it's a single file, or many from a Zip, the result gets put in a tempora
 
 <step>
 
-The `robuild` module looks at the files that were extracted and decides what type of build it is. It constructs a RISC OS command line that can be used to perform the build. If we extracted a `robuild.yaml` file, we parse the YAML file to give the commands and parameters for the build. I avoid some of the problems with YAML files being overly complex by not supporting them - the `simpleyaml` module is a package a wrote for just that purpose (that's open source too).
+The `robuild` module looks at the files that were extracted and decides what type of build it is. It constructs a RISC OS command line that can be used to perform the build.
+
+If we saw a `Makefile`, we use a small module which determines what the linkable targets are
+within it. These linkable targets will be returned to the user implicitly as artifacts.
+
+If we extracted a `robuild.yaml` file, we parse the YAML file to give the commands and parameters for the build. I avoid some of the problems with YAML files being overly complex by not supporting them - the `simpleyaml` module is a package a wrote for just that purpose (that's open source too).
 
 <step>
 
-At this point we know what the build is going to look like, so we need to create a HTTP server to receive throwback and clipboard data from JFPatch (or whatever we end up running). The `pyroserver` module does this. Hopefully you remember that I'm using the clipboard to communicate the produced binary, but I've also got a version of DDEUtils that sends throwback data to a HTTP server as well. This way, we get structured information that can be fed back to the caller.
+At this point we know what the build is going to look like, so we need to create a HTTP server to receive throwback and clipboard data from JFPatch (or whatever we end up running). The `pyroserver` module does this. Hopefully you remember that I'm using the clipboard to communicate the produced binary. But I've also got a version of DDEUtils that sends throwback data to a HTTP server as well. This way, we get structured information that can be fed back to the caller.
 
 If those HTTP servers are called, they'll feed the data to the `results` object, which we created earlier on.
 
 <step>
 
-Finally we're ready to run the build. The `docker` module constructs docker command lines, which includes routing the HTTP ports properly, and setting up the commands to run RISC OS. The `streamedinput` module, which is open source, handles receiving lines from the Docker process and feeding them to the results object.
+Finally we're ready to run the build. The `docker` module constructs docker command lines, which includes routing the HTTP ports properly, and setting up the commands to run RISC OS. The `streamedinput` module, which is also open source, handles receiving lines from the Docker process and feeding them to the results object.
 
 Finally, there's the `pyro` module that builds the actual command to run RISC OS.
 
-<step>
+---
+# How The Service Works
+## What runs those services? (10)
 
-And there we have the 3 different command line sequences getting built up to run the RISC OS command in a safe an isolated way on the Linux server, and get the results back to the user.
+There are 3 different command line sequences getting built up to run the RISC OS command in a safe an isolated way on the Linux server, and get the results back to the user.
+
+- There's the commands we should run in RISC OS to the build
+- There's the commands to run RISC OS itself.
+- And the commands to run docker.
 
 ---
 # How The Service Works
@@ -583,7 +598,7 @@ Before I move on to talk about how that works, let's see if there any on questio
 
 We're jumping back in time now - into that gap that I said we’d come back to.
 
-I 'dspent some time porting tools and making things build on macOS and Linux so that I could build a reasonable portion of the software that I had put into source control.
+I'd spent some time porting tools and making things build on macOS and Linux so that I could build a reasonable portion of the software that I had put into source control.
 
 If you remember back in the 'Background' section, I talked about how important testing was. JFPatch-as-a-service is an amusing offshoot from the main goal of testing RISC OS things. It took about a month to create the service and site - just doing things in the evening after my day job.
 
@@ -661,7 +676,7 @@ But let's not dive heavily into how it works; let's start from what RISC OS Pyro
 
 It's an alternative implementation of RISC OS. It doesn't use what went before in the core system. It can still run the ARM binaries, through emulation, but the OS is written in a high level language.
 
-And that's so that it can be used to try things out, and experiment. It's a lot easier in a high level language to replace an interface, or change the way that something works.
+And that's so that it can be used to try things out, experiment and test. It's a lot easier in a high level language to replace an interface, or change the way that something works.
 
 Similarly, it's a lot easier to reason about what the system is doing in a high level language. You're not bogged down in worrying about which flags are set, and what your registers hold.
 
@@ -669,7 +684,7 @@ And having been written from scratch, it's easier to make shortcuts for things y
 
 Did you know that the VDU system can change the orientation so that characters proceed down the screen rather than across the screen? Did you know that the system scrolls text sideways if you do that? Do you care? That's something that you can drop when it's not part of the environment that you are trying to exercise.
 
-If you want to try it, that `VDU 23, 16`. And, actually, it's implemented in Pyromaniac as well. I just wanted an example of something obscure that most people would never have encountered.
+If you want to try it, that's `VDU 23, 16`. And, actually, it's implemented in Pyromaniac as well. I just wanted an example of something obscure that most people would never have encountered.
 
 
 ---
@@ -798,7 +813,7 @@ Yes, I should acknowledge that this is technology that I've created. A pretty ni
 # RISC OS Pyromaniac
 ## Command line only?
 
-I asked a friend about my insecurities is doing this talk. I was worried about people saying "why are you telling us about this?", or not caring about an online service.
+I asked a friend about my insecurities in doing this talk. I was worried about people saying "why are you telling us about this?", or not caring about an online service.
 
 They replied "Nope, they'll be thinking 'Does it run Impression?'"
 
@@ -823,7 +838,7 @@ There is a distinction between parts of the system.
 
 <step>
 
-The VDU system is pretty well supported. It can output as a regular console application in the host OS for plain text. Or you can use the 'ANSIText' implementation, which translates the RISC OS VDU codes into ANSI terminal codes. This means that if you have yellow text in RISC OS, it comes out yellow in the terminal.
+The VDU system is pretty well supported. It can output as a regular console application in the host OS with plain text. Or you can use the 'ANSIText' implementation, which translates the RISC OS VDU codes into ANSI terminal codes. This means that if you have yellow text in RISC OS, it comes out yellow in the terminal.
 
 <step>
 
@@ -879,9 +894,13 @@ That's what you have been watching for the past hour or so. This presentation ha
 
 So that's demonstrating...
 
+- Firstly, that RISC OS Pyromaniac is a real thing.
+
+It demonstrates...
+
 - The Font system. This isn't the Classic FontManager; it's using fonts from the Cairo graphics system, which uses the host system's fonts. All the Font calls are implemented in the standard way using the Font SWIs. So it works just as it would on RISC OS Classic, albeit with different fonts.
 
-- The vector system - In the corner, you'll see my 'G' logo. That's a DrawFile, being rendered through ImageFileRender. The DrawFile module just calls the Draw module to plot the content, and the Draw module has been implemented in RISC OS Pyromaniac to talk to Cairo's path primitives.
+- In the corner, you'll see my 'G' logo. That's a DrawFile, being rendered through ImageFileRender. The DrawFile module just calls the Draw module to plot the content, and the Draw module has been implemented in RISC OS Pyromaniac to talk to Cairo's path primitives.
 
 - The pictures you've seen to now are all PNGs. Like Drawfiles, those are rendered through ImageFileRender, with a custom ImageFileRender module which talks to Pillow, a Python image library.
 
@@ -926,7 +945,7 @@ Back to Pyromaniac and what it can do...
 * Filesystem - You can access the local filesystem, so you can get the files you are testing into the system.
 Or you can load FileSwitch and access regular RISC OS filesystems.
 
-* Network - The host network stack can be accessed from RISC OS, and we try to map Socket calls through through - if the host has IPv6, `*IfConfig` will show you, and you can connect using those addresses.
+* Network - The host network stack can be accessed from RISC OS, and we try to map Socket calls through - if the host has IPv6, `*IfConfig` will show you, and you can connect using those addresses.
 
 * Compatibility - It's RISC OS, and whilst not all the interfaces have been implemented, many things do work. It depends on how complete those interfaces are. Sometimes you don’t care. Generally support for given interfaces varies between the level of Arthur and that of RISC OS Select.
 The actual ‘features’ document is about 70K, and I'll make that available in the resources at the end.
@@ -942,9 +961,9 @@ What doesn't work?
 
 * Sound - there’s no support for 8bit or 16bit sound. Although after Jason's talk last week, I was inspired to implement SoundDMA on an experimental branch. I can now play sounds with WaveSynth through Pyromaniac.
 
-* Graphics - Sprites are harder because they’re direct access, and I’ve not got around to implementing them yet. Paletted modes are also hard, but they’re the more likely case for getting things wrong, so I implemented them first. I don’t have 24bit modes yet. That said, the paletted modes are actually implemented in the 24bit system, so you don’t get colour cycling with the current implementation either. Or flashing colours. The text cursor doesn’t flash, either. 
+* Graphics - Sprites are harder because they’re direct access, and I’ve not got around to implementing them yet. Paletted modes are also hard, but they’re the more likely case for getting things wrong, so I implemented them first. I don’t have 24bit modes yet. That said, the paletted modes are actually implemented in the 24bit system, so you don’t get colour cycling with the current implementation either. Or flashing colours. The text cursor doesn’t flash, either.
 
-So many other bits are missing as well, as either less used cases, or things that I’ve just not got around to doing yet.
+So many other bits are missing as well. Etierh because they are less used cases, or I’ve just not got around to doing them yet.
 
 
 ---
@@ -968,7 +987,7 @@ EasySockets is also supported, although it actually bypasses the Internet module
 
 I've mentioned that I can render DrawFiles, and that it goes through the Cairo path rendering system. But it's also possible to use the Classic Draw module with DrawFile. In case you don't know, the Draw module puts lines on the screen by calling the `hline` interface - you can find that through `OS_ReadVduVariables`. On Select, it also uses the `polyhline` interface to work faster on accelerated systems.
 
-In Pyromaniac though, `hline` is implemented as a call to the Cairo line drawing, so the Classic Draw module can still render to the screen. This demo doesn't use the Classic Draw module.
+In Pyromaniac though, `hline` is implemented as a call to the Cairo line drawing. This allows the Classic Draw module to render to the screen. This demo doesn't use the Classic Draw module.
 
 Obviously it's not just the simple 'G' that can be rendered...
 
@@ -1035,7 +1054,7 @@ This debug option uses a built in table of names and types for the SWI parameter
 
 Here we see that the BASIC command to select the graphics colour has triggered a call to the ColourTrans module's SetGCOL system call. It shows what the parameters were on entry and exit.
 
-The information on what those SWIs are was extracted from the OSLib def files - I wrote an OSLib `def` file parser which could extract the information into a form that we can use. The parser also generates templates for PyModules and other things. The parser is open source.
+The information on what those SWIs are was extracted from the OSLib def files - I wrote an OSLib `def` file parser which could extract the information into a form that we can use. The parser also generates templates for PyModules and other things. The parser is being made open source.
 
 ---
 # RISC OS Pyromaniac
@@ -1094,7 +1113,7 @@ As you can see from the implementation, that's what it does - it updates the C f
 
 The registers object handles the numbered registers, but here the processor flags are being updated. In ARM these processor flags live in a virtual register.
 
-Within registers object, there's a property setter which allows the flags to be manipulated as booleans without having to extract them from the flags word like a crazy ARM author would.
+Within registers object, there's a property setter which allows the flags to be manipulated as booleans without having to extract them from the flags word.
 
 The function implementation is registered through a decorator on the function. This remembers the function as the handler for a given system call.
 
@@ -1129,9 +1148,9 @@ The Kernel object can actually be used as an i/o output, which means it is very 
 
 This is the implementation of the *Show command. We use a context handler to ensure that whilst it’s running we’re in paged mode. That means that when the screen gets filled, you have to do something to let the output continue.
 
-We enumerate through the variables that match the argument. Regular variables are printed with GSTrans escaping - the GSTrans module supports both decoding and encoding - and then we construct a suffix for the type of variable that’s present. Finally, we send the line all to the VDU system for printing.
+We enumerate through the variables that match the argument. Regular variables are printed with GSTrans escaping - the GSTrans python module supports both decoding and encoding - and then we construct a suffix for the type of variable that’s present. Finally, we send the line to the VDU system for printing.
 
-Not everything is simple - some things that are made easy in RISC OS don’t have easy translations into the Python code - but mostly it’s just a matter of implementing what you need, as you need it. Fortunately, I know RISC OS pretty well.
+Not everything is simple - some things that are made easy in RISC OS don’t have easy translations into the Python code. But mostly it’s just a matter of implementing what you need, as you need it. Fortunately, I know RISC OS pretty well.
 
 A couple of months ago, I found myself saying “Dear gosh, MessageTrans_EnumerateTokens is tedious” as I found I needed to implement it. And then 10 minutes later, I had an implementation working. It’s a nice to find that something that’s a bit tedious on RISC OS actually only takes 10 minutes to implement. That’s not quite how I remember it being on RISC OS Classic.
 
@@ -1148,11 +1167,30 @@ In Python, it's pretty much the same pattern, except that Python exceptions are 
 # RISC OS Pyromaniac
 ## What good is it? (1)
 
-So it's an Operating System, but can you actually do anything with it? I wrote this presentation software with it, without touching any part of the Classic system. So in that regard it's been really successful.
+So it's an Operating System, but can you actually do anything with it? I wrote this presentation software with it, without touching any part of the Classic system.
 
-I get a chance to try things out that I wouldn't otherwise be able to.
+Does this presentation tool work on RISC OS Classic? Yes. But it didn't work first go. The FontMap module that I use was built wrongly. I had misconverted one of the build tools to 64bit.
+The result was that loading the module on RISC OS Classic broke ResourceFS and MessageTrans - and because the system is dependant on them, that meant you had to reboot.
 
-I mentioned Jason Tribbeck's Sound System earlie. During his talk last month, I knocked up a prototype using his documentation to see how well it fits together - I only spent about 3 hours on it, but the result is some hopefully useful feedback. The source to that 3 hours work is linked at the end of the talk.
+The presentation tool itself didn't quite work when run from the desktop. I'd forgotten that there's the Wimp Command Window pending that you have to clear, otherwise you get odd effects.
+
+Then I came to run it on RISC OS 5 and ... it locks up the machine. I'd already fixed the FontMap module so the lock up was surprising. Clearly I was doing something wrong, but what? It turned out that if you select an out-of-bounds screen bank, RISC OS 5 gets upset. There was a bug in my code that meant I was selecting the wrong bank, which should have been a benign operation, but was actually hanging the machine.
+
+So those are two major problems resulting in reboots during development. That backs up my original assertion that RISC OS is bad for testing. But could these have been found within Pyromaniac?
+
+Firstly, if it did get into a bad state, it probably would mean killing the Pyromaniac process, but that's pretty much expected. However, the FontMap problem didn't trigger because I haven't got around to implementing ResourceFS yet. It would have been found then.
+
+The bank selection problem probably wouldn't have been found unless I went looking for it - you see, I've implemented the screen bank selection as a hash of bank numbers.
+You use one and it comes into existance. There is bounds checking, but it didn't report a misuse.
+There is now a warning for that case.
+
+What other things does Pyromaniac help with?
+There's the build service, which was just a fun side project. It's pretty functional, and it
+can build things pretty well.
+
+And I get a chance to try things out that I wouldn't otherwise be able to.
+
+I mentioned Jason Tribbeck's Sound System earlier. During his talk last month, I knocked up a prototype using his documentation to see how well it fits together - I only spent about 3 hours on it, but the result was some hopefully useful feedback. The source to that 3 hours work is linked at the end of the talk.
 
 And then there's the chance to debug other people's software.
 
@@ -1166,7 +1204,7 @@ Not just a plain 'this is what happened', but an actual recording in Asciinema o
 
 This is the trace when it went wrong. Unfortunately they freed the stack that they were executing from. Then they returned, and had a bad day because they returned to invalid memory.
 
-It's not a reversible debugger, so I have to deal with the aftermath.
+Pyromaniac is not a reversible debugger - that's my day job - so I have to deal with the aftermath of the crash.
 
 But that's fine, because I run the command again with block tracing enabled - and because the system is deterministic I get exactly the same result. I can see that it hits the memset function to clear the stack, and then dies. Where the call comes from is easy to trace from its address.
 
@@ -1196,11 +1234,11 @@ In doing this, I’ve created a few technologies, some of which I called out as 
 
 - I built some hourglass modules. Largely that was so that I understood how those hourglasses worked on RISC OS Classic before I implemented the one in Pyromaniac.
 
-- To make it possible to test the compiler, I wrote a tool that allowed me to test that the tools work properly - it runs the tool, captures the output, compares to what’s expected. It’s an integration testing tool, but it works on RISC OS and on Linux/MacOS. For the toolchain it has support for parsing bits of the AOF/ALF/ELF files. For Pyromaniac testingit was used just in the text form. It’s Perl 5.0.0 compatible, intentionally so that you can run it with last Perl that I’ve got for RISC OS.
+- To make it possible to test the compiler, I wrote a tool that allowed me to test that the tools work properly - it runs the tool, captures the output, compares to what’s expected. It’s an integration testing tool, but it works on RISC OS and on Linux/MacOS. For the toolchain it has support for parsing bits of the AOF/ALF/ELF files. It’s Perl 5.0.0 compatible, intentionally so that you can run it with last Perl that I’ve got for RISC OS.
 
 - I created a public repository of RISC OS tests, which uses this tool. The repository has a selection of the tests from Pyromaniac in it. However anyone could use them with RISC OS Classic, if they wanted, or people could contribute new test code that exercises other parts of the system.
 
-- To document some of the things that I've been working on, I revisited the PRM-in-XML documentation, and updated my systems to built documets like that.
+- To document some of the things that I've been working on, I revisited the PRM-in-XML documentation, and updated my systems to built documents like that.
 
 - And I created a changelog management system because I was fed up with dealing with conflicts when I tried to merge different branches.
 
@@ -1214,18 +1252,17 @@ I've done this presentation on macOS using the wxWidgets UI. But it runs just as
 I've built applications that you can run on macOS and Windows, and I've built docker containers with the OS inside.
 
 JFPatch-as-a-service is a customised docker container. It has JFPatch and other tools in it.
-I have a private registry with my docker containers in, and the CI system updates and pushes to the registry so that they’re usable by other tests processes.
+I have a private registry with my docker containers in, and the CI system updates and pushes to the registry so that they’re usable by in other tests.
 
-The Windows version was only made work properly in June, although it was largely just the console input that was a problem.
 Automatic testing doesn’t happen on Windows yet.
 
 ---
 # RISC OS Pyromaniac
 ## “Releases”?
 
-Once a month I go through a release process - updating the features documentation, the main product documents, do manual tests on the different platforms, update the version number, and the like.
+Once a month I go through a release process - updating the features documentation, the main product documents, do manual tests on the different platforms, update the version number, and so on.
 
-If I’m only doing it for myself, why go through that process? It’s another thing that helps me feel good about things - I can see what I’ve achieved.
+If I’m only doing it for myself, why bother? It’s another thing that helps me feel good about what I've done - I can see what I’ve achieved.
 
 There are some branches that have hung around for a while, because they're ok, but they don't make the cut for release. I have tasks on my board to review them, and raise issues when I find something is wrong.
 

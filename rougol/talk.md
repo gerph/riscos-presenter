@@ -66,8 +66,9 @@ vertical-align: top
 ## How I'll do this talk
 
 * Lots of technology, some of which may be alien to you.
-* Questions at the end.
-* But, split into sections, with a chance for some questions between them.
+* The talk is split into 5 sections, with a chance for some questions between them.
+* Slides will be available at the end, together with some other resources.
+* I'll take questions at the end for as long as people want.
 
 ---
 # Introduction
@@ -1264,7 +1265,10 @@ def cmd_unset(self, args):
 ## What good is it? (1)
 
 * Writing my own software.
+    * This presentation tool.
+    * Other older components.
 * Trying things out.
+    * Sound system.
 * Debugging other people's software!
     * https://asciinema.org/a/345766 shows an interactive session demonstrating that freeing the stack you're currently using may have bad effects.
 

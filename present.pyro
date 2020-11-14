@@ -2,19 +2,44 @@
 ---
 
 config:
+  # WxWidgets UI
   graphics.implementation: wx
-  graphics.pointer_off_shape: none
-  graphicscairo.antialias: true
-  graphicscairo.fonts_fontconfig: true
-  graphicsui.title: "Gerph's RISC OS presentation"
-  vdu.alphabet: UTF8
-  vdu.mode: 51
-  modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536"
-  kernel.reset_modechange: true
-  graphicscairo.fonts_fontconfig_allow: "Optima*,Candara*,Dyuthi*,Sawasdee*,Rachana*,Noto*,URWClassico*,Homerton*,Trinity*,Corpus*"
+
+  # We want to be able to see the RISC OS pointer
   hourglass.implementation: pointer
+  graphics.pointer_off_shape: none
+
+  # For the presentation, let's have the antialiasing on to make it look better
+  graphicscairo.antialias: true
+
+  # We want to use the fonts from the host system
+  graphicscairo.fonts_fontconfig: true
+
+  # Hide any fonts that we don't care about (speeds up the startup)
+  graphicscairo.fonts_fontconfig_allow: "Optima*,Candara*,Dyuthi*,Sawasdee*,Rachana*,Noto*,URWClassico*,Homerton*,Trinity*,Corpus*"
+
+  # Give the presentation a title
+  graphicsui.title: "Gerph's RISC OS presentation"
+
+  # The presentation writes out UTF-8 strings
+  vdu.alphabet: UTF8
+
+  # Larger modes which give higher resolution; 50=> 4:3, 51=> 16:9
+  modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536"
+  vdu.mode: 51
+  kernel.reset_modechange: true
+
+  # Show the banner on boot which looks nicer.
+  kernel.reset_banner: true
+
+  # In the presentation, we don't want the host readline confusing things
   input.readline_native: false
+
+  # CLibrary/FPEmulator needs zero page enabled.
   memorymap.zeropage_enable: true
+  
+  # Give us more memory, just in case that's a problem
+  memorymap.appspace_size: 10M
 
 modules:
   internal: yes
@@ -26,3 +51,5 @@ modules:
     - ${ROMODULES}/WebColours,ffa
     - ${ROMODULES}/ImageFileRender,ffa
     - ${ROMODULES}/DrawFile,ffa
+    - ${ROMODULES}/BASIC,ffa
+    - ${ROMODULES}/Banner,ffa
