@@ -25,7 +25,7 @@ config:
   vdu.alphabet: UTF8
 
   # Larger modes which give higher resolution; 50=> 4:3, 51=> 16:9
-  modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536"
+  modes.numbered_modes: "50:base=32,width=1152,height=864;51:base=50,width=1536;52:base=50,log2bpp=4;53:base=51,log2bpp=4;54:base=50,log2bpp=5;55:base=51,log2bpp=5"
   vdu.mode: 51
   kernel.reset_modechange: true
 
