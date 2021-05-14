@@ -9,6 +9,7 @@ all:
 	riscos-amu -f MakefileBorder,fe1 BUILD32=1
 	riscos-amu -f MakefileMD,fe1 BUILD32=1
 	riscos-amu -f MakefileTextBlock,fe1 BUILD32=1
+	riscos-amu -f MakefileFont,fe1 BUILD32=1
 	riscos-amu -f MakefileFontFamily,fe1 BUILD32=1
 	riscos-amu -f MakefileSlidedeck,fe1 BUILD32=1
 	riscos-amu -f MakefileSlideMD,fe1 BUILD32=1

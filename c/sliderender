@@ -58,6 +58,9 @@ fontconfig_t fontdefault_headings[MAXHEADING] = {
     {"Homerton.Bold", (18*16), (18*16)},
     {"Homerton.Medium", (16*16), (16*16)},
 };
+fontconfig_t fontdefault_quote = {
+    "Trinity.Medium.Italic", (12*16), (12*16),
+};
 fontconfig_t fontdefault_marginal = {
     "Homerton.Medium", (8*16), (8*16)
 };
@@ -126,6 +129,7 @@ struct sliderender_s {
     fontfamily_t family_heading[MAXHEADING];
     fontfamily_t family_body;
     fontfamily_t family_code;
+    fontfamily_t family_quote;
     fontfamily_t family_marginal;
 
     /* Size configurations for the slide */
@@ -445,6 +449,8 @@ static void sliderender_span_text(sliderender_t *render,
 
     if (span->data.text.render.code || render->in_pre)
         family = render->family_code;
+    else if (render->in_quote)
+        family = render->family_quote;
     else if (render->in_heading != -1)
         family = render->family_heading[render->in_heading];
     else
@@ -1067,6 +1073,8 @@ static void sliderender_clear(sliderender_t *render)
         fontfamily_destroy(render->family_heading[n]);
         render->family_heading[n] = NULL;
     }
+    fontfamily_destroy(render->family_quote);
+    render->family_quote = NULL;
     fontfamily_destroy(render->family_marginal);
     render->family_marginal = NULL;
 
@@ -1361,6 +1369,13 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
             }
 
         }
+    }
+
+    render->family_quote = sliderender_prepare_family(render, "quote", &fontdefault_quote);
+    if (!render->family_quote)
+    {
+        dprintf("FAILED: Cannot initialise the font family for quote\n");
+        goto failed;
     }
 
     render->family_marginal = sliderender_prepare_family(render, "marginal", &fontdefault_marginal);
@@ -1701,6 +1716,7 @@ int sliderender_show(sliderender_t *render)
 
     render->in_heading = -1; /* Not in a heading right now */
     render->in_pre = 0; /* Not in a pre */
+    render->in_quote = 0; /* Not in a quote */
 
     /* The redraw pass - fill the background */
     rect_fill(render->colour_bg, render->region.x0, render->region.y0,

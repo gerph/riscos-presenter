@@ -12,7 +12,7 @@ logo.bottom-left: rgbcircles
 logo.bottom-left.inset: 1em
 slidenumber.position: top-right
 slidenumber.padding: 1em
-
+quote.font: Zapfino
 
 # Stuff
 

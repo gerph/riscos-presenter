@@ -1,0 +1,16 @@
+#!/usr/bin/env riscos-amu -f 
+# Build the test font code
+
+COMPONENT  = font
+TYPE       = aif
+CDEFINES   =
+INCLUDES   =
+LIBS       = ${CLIB}
+OBJS       = \
+             o.gcontext \
+             o.vdushape \
+             o.vdu5 \
+             o.font \
+             o.test_font
+
+include LibraryCommand

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -11,6 +12,20 @@
 //#define FONT_NAME "Optima.Regular"
 #define FONT_ALTNAME "Homerton.Medium"
 
+void test_create(void)
+{
+    fontfamily_t family;
+
+    /* We should be able to find the font */
+    family = fontfamily_create("Homerton.Medium", 16*16, 16*16);
+    assert(family != NULL && "Should be able to create Homerton.Medium family");
+    fontfamily_destroy(family);
+
+    /* We should be able to report a non-existant font */
+    family = fontfamily_create("NonExistant.Font.Name", 16*16, 16*16);
+    assert(family == NULL && "Should not be able to find non-existant font family");
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -22,10 +37,14 @@ int main(int argc, char *argv[])
     int i;
 
     gcontext_initvdu(1);
+
+    test_create();
+
     rect_fill(0x4444FF00, 64, 64-16,  640, ytop);
     rect_outline(0x44440000, 64+16, ylimit,  640-16, ytexttop);
 
-    family = fontfamily_create("HirukoPro.Book", FONT_SIZE, FONT_SIZE);
+    family = fontfamily_create("Homerton.Medium", FONT_SIZE, FONT_SIZE);
+    assert(family != NULL && "Should be able to create Homerton.Medium family");
 #if 1
     if (fontfamily_populate(family))
     {
@@ -33,9 +52,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 #else
-    fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, "HirukoPro.Book.Oblique");
-    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, "HirukoPro.Bold");
-    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, "HirukoPro.Bold.Oblique");
+    fontfamily_set_style(family, FONTFAMILY_STYLE_SLANT, "Homerton.Medium.Oblique");
+    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLD, "Homerton.Bold");
+    fontfamily_set_style(family, FONTFAMILY_STYLE_BOLDSLANT, "Homerton.Bold.Oblique");
 #endif
 
     textblock = textblock_create(64+16, ylimit,  640-16, ytexttop,

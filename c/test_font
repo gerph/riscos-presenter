@@ -1,0 +1,26 @@
+#include <assert.h>
+#include <stdlib.h>
+
+#include "font.h"
+
+void test_find(void)
+{
+    font_t font;
+
+    /* We should be able to find the font */
+    font = font_findfont("Homerton.Medium", 16*16, 16*16);
+    assert(font != NULL && "Should be able to find Homerton.Medium");
+    font_losefont(font);
+
+    /* We should be able to report a non-existant font */
+    font = font_findfont("NonExistant.Font.Name", 16*16, 16*16);
+    assert(font == NULL && "Should not be able to find non-existant font");
+}
+
+
+int main(int argc, char *argv[])
+{
+    test_find();
+
+    return 0;
+}
