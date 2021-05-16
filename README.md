@@ -45,7 +45,10 @@ The following properties are defined:
 * `pre.border.fore-colour`: Defines the colour of the 3D effect fore colour, or `none` to not use any
 * `pre.border.opposite-colour`: Defines the colour of the 3D effect opposite colour, or `none` to not use any
 * `quote.padding.top`/`quote.padding.bottom`: Defines the space around a block quote
-* `quote.padding.inset`: Defines the inset horizontally of the block quote.
+* `quote.padding.inset`: Defines the inset horizontally of the block quote to the quote bar.
+* `quote.padding.offset`: Defines the offset horizontally from the inset point to the text of the block quote's body.
+* `quote.bar.width`: Defines the width of the quote bar.
+* `quote.bar.colour`: Defines the colour of the quote bar.
 * `logo.POSITION`: Defines an image to place in a given position (see below)
 * `logo.POSITION.inset`: Defines the gap around the outside of the image to leave.
 * `logo.POSITION.width`/`logo.POSITION.height`: Defines the width/height of the image (which will be limited by the size of the slide)
@@ -110,6 +113,7 @@ Any features not documented above are not supported, though partial support may 
 * HTML blocks.
 * Latex maths specifications.
 * HTML entities.
+* Nested quote blocks don't work as expected.
 
 The incremental slide format (two hyphens, `--`) used by Remark is not supported by the tool.
 

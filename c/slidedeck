@@ -454,7 +454,7 @@ int slidedeck_addspan_image(slidedeck_t *deck, const char *name)
 
 /*************************************************** Gerph *********
  Function:      slidedeck_render_*
- Description:   Change the render properties for a render property
+ Description:   Change the render properties for a block
  Parameters:    deck-> the slide deck to add a block to
                 state = 1 to enable italic, 0 to disable
  Returns:       1 if failed, 0 if successful

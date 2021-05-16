@@ -13,6 +13,7 @@ logo.bottom-left.inset: 1em
 slidenumber.position: top-right
 slidenumber.padding: 1em
 quote.font: Zapfino
+quote.bar.colour: #44CC44
 
 # Stuff
 
@@ -23,7 +24,7 @@ Smiley: [😀]
 
 * List - `πρ`
 
-* ***`Tech`***: New stuff
+* ***`Tech`***: New [stuff](stuff.html)
 
 ```
 Preformatted text.
@@ -46,6 +47,7 @@ font: bar
     - Nested
 2. ~Final item~
 3. How about some `code` in the mix?
+4. HTML <font color="red">colours</font>.
 
 ---
 template: first
