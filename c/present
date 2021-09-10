@@ -544,6 +544,7 @@ int main(int argc, char *argv[])
     slides_t *slides;
     int start_slide = 0;
     int is_list = 0;
+    int save_native = 0;
     char *save_prefix = NULL;
 
     if (argc > 1)
@@ -556,14 +557,16 @@ int main(int argc, char *argv[])
         {
             is_list = 1;
         }
-        else if (strcmp(argv[2], "-save") == 0)
+        else if (strcmp(argv[2], "-save") == 0 ||
+                 strcmp(argv[2], "-save-native") == 0)
         {
             if (argc < 4)
             {
-                printf("Syntax: %s <file> -save <prefix>\n", argv[0]);
+                printf("Syntax: %s <file> -save|-save-native <prefix>\n", argv[0]);
                 return 1;
             }
             save_prefix = argv[3];
+            save_native = (strcmp(argv[2], "-save-native") == 0);
         }
         else
         {
@@ -630,7 +633,9 @@ int main(int argc, char *argv[])
             _kernel_oserror *err;
             slides_select(slides, n);
             slides_show(slides);
-            sprintf(cli, "Screensave %s%03i", save_prefix, n);
+            sprintf(cli, "Screensave %s %s%03i",
+                    save_native ? "-native" : "",
+                    save_prefix, n);
             if (!_kernel_oscli(cli))
             {
                 err = _kernel_last_oserror();
