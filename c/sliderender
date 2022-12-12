@@ -1409,6 +1409,11 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     }
 
     render->family_marginal = sliderender_prepare_family(render, "marginal", &fontdefault_marginal);
+    if (!render->font_body)
+    {
+        dprintf("FAILED: Cannot initialise the font family for marginal\n");
+        goto failed;
+    }
 
     render->font_body = fontfamily_get_font(render->family_body, FONTFAMILY_STYLE_BASE);
     if (!render->font_body)
