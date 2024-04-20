@@ -594,7 +594,7 @@ static void sliderender_span_image(sliderender_t *render,
         }
         else
         {
-            dprintf("Image bbox: %i x %i\n", width, height);
+            dprintf("Image block space: %i,%i - %i,%i\n", bbox.x0, bbox.y0, bbox.x1, bbox.y1);
 
             if (flags & TBADD_PAINT)
             {
@@ -1409,7 +1409,7 @@ int sliderender_set_slide(sliderender_t *render, int slidenumber)
     }
 
     render->family_marginal = sliderender_prepare_family(render, "marginal", &fontdefault_marginal);
-    if (!render->font_body)
+    if (!render->family_marginal)
     {
         dprintf("FAILED: Cannot initialise the font family for marginal\n");
         goto failed;
@@ -1606,7 +1606,7 @@ static int sliderender_render_background(sliderender_t *render)
         }
         else
         {
-            dprintf("Logo '%s' at %i,%i - %i,%i; inset %i", simage->name, bbox.x0, bbox.y0, bbox.x1, bbox.y1, simage->inset);
+            dprintf("Logo '%s' at %i,%i - %i,%i; inset %i\n", simage->name, bbox.x0, bbox.y0, bbox.x1, bbox.y1, simage->inset);
 
             if (image_render_tofit(simage->data, &bbox, simage->inset))
             {
