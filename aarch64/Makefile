@@ -17,7 +17,8 @@ USE_FUNC_SIGNATURE ?= 1
 DIS = ~/projects/RO/pyromaniac/utils/riscos-dumpi --arm64
 CROSS_ROOT = ${shell echo $$CROSS_ROOT}
 
-DEFAULT_GOAL = ${TARGET},ff8
+DEFAULT_TARGETS =	test_border \
+					test_colours \
 
 # Remove the flags that might make code think it's compiling for linux system.
 CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux__
@@ -27,6 +28,9 @@ CFLAGS += -D__riscos -D__riscos64
 
 # Allow us to build without assuming the standard library is present
 CFLAGS += -nostdlib -ffreestanding -march=armv8-a+nofp
+
+# Add the exports directory to those things we'll build with
+CFLAGS += -Iriscos_headers
 
 # Options to allow function signatures to appear RISC OS-like
 ifeq (${USE_FUNC_SIGNATURE},1)
@@ -39,7 +43,12 @@ CFLAGS += -O1
 # Options for this build
 CFLAGS += 
 
-all: ${DEFAULT_GOAL}
+all: local_headers
+	for i in ${DEFAULT_TARGETS} ; do make $$i,ff8 TARGET=$$i ; done
+
+local_headers:
+	mkdir -p riscos_headers
+	for hdr in ${CEXPORT_DIR}/h/* ; do cp "$$hdr" "riscos_headers/$$(basename "$$hdr").h" ; done
 
 shell: dockcross-linux-arm64
 	./dockcross-linux-arm64 bash
@@ -57,11 +66,11 @@ ifneq ($(filter-out all shell dockcross-linux-arm64 clean,${MAKECMDGOALS}),)
 # The command wasn't one of our invocation commands above
 .PHONY: ${MAKECMDGOALS}
 ${MAKECMDGOALS}: dockcross-linux-arm64
-	cd .. ; aarch64/dockcross-linux-arm64 bash -c "cd aarch64 && make ${MAKECMDGOALS} TARGET=${TARGET}"
+	cd .. ; aarch64/dockcross-linux-arm64 -- bash -c "cd aarch64 && make ${MAKECMDGOALS} TARGET=${TARGET}"
 else
 .PHONY: ${DEFAULT_GOAL}
 ${DEFAULT_GOAL}: dockcross-linux-arm64
-	cd .. ; aarch64/dockcross-linux-arm64 bash -c "cd aarch64 && make ${DEFAULT_GOAL} TARGET=${TARGET}"
+	cd .. ; aarch64/dockcross-linux-arm64 -- bash -c "cd aarch64 && make TARGET=${TARGET}"
 endif
 
 else
@@ -72,7 +81,7 @@ RT_OBJS = 	malloc.o \
 
 OBJS = 	${RT_OBJS}
 
-ifeq (${TARGET},border)
+ifeq (${TARGET},test_border)
 OBJS += font.o \
 		vdu5.o \
 		vdushape.o \
@@ -80,6 +89,15 @@ OBJS += font.o \
 		border.o \
 		test_border.o
 endif
+ifeq (${TARGET},test_colours)
+OBJS += font.o \
+		vdu5.o \
+		vdushape.o \
+		gcontext.o \
+		colours.o \
+		test_colours.o
+endif
+
 
 %.o: %.c
 	aarch64-unknown-linux-gnu-gcc ${CFLAGS} -c -o $@ $?
