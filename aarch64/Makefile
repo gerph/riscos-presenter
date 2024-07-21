@@ -10,15 +10,18 @@
 #	__acorn
 #	__arm
 
-TARGET = present64
+TARGET ?= present64
 
 USE_FUNC_SIGNATURE ?= 1
 
 DIS = ~/projects/RO/pyromaniac/utils/riscos-dumpi --arm64
 CROSS_ROOT = ${shell echo $$CROSS_ROOT}
 
-DEFAULT_TARGETS =	test_border \
-					test_colours \
+ALL_TARGETS =	test_border \
+				test_colours \
+				test_gcontext \
+				test_font \
+				test_screen
 
 # Remove the flags that might make code think it's compiling for linux system.
 CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux__
@@ -43,8 +46,11 @@ CFLAGS += -O1
 # Options for this build
 CFLAGS += 
 
+targetted: local_headers
+	make ${TARGET},ff8 TARGET=${TARGET}
+
 all: local_headers
-	for i in ${DEFAULT_TARGETS} ; do make $$i,ff8 TARGET=$$i ; done
+	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i ; done
 
 local_headers:
 	mkdir -p riscos_headers
@@ -79,7 +85,7 @@ RT_OBJS = 	malloc.o \
 			clib.o \
 			clib-kernel.o
 
-OBJS = 	${RT_OBJS}
+OBJS =	${RT_OBJS}
 
 ifeq (${TARGET},test_border)
 OBJS += font.o \
@@ -96,6 +102,24 @@ OBJS += font.o \
 		gcontext.o \
 		colours.o \
 		test_colours.o
+endif
+ifeq (${TARGET},test_gcontext)
+OBJS += font.o \
+		vdu5.o \
+		vdushape.o \
+		gcontext.o \
+		test_gcontext.o
+endif
+ifeq (${TARGET},test_font)
+OBJS += font.o \
+		gcontext.o \
+		vdushape.o \
+		vdu5.o \
+		test_font.o
+endif
+ifeq (${TARGET},test_screen)
+OBJS +=	screen.o \
+		test_screen.o
 endif
 
 

@@ -18,7 +18,11 @@ void test_find(void)
 }
 
 
+#ifdef __riscos64
+int start(void)
+#else
 int main(int argc, char *argv[])
+#endif
 {
     test_find();
 

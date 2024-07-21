@@ -5,6 +5,7 @@
  * Date:     16 Jan 2006
  ******************************************************************/
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -238,7 +239,7 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
   {
     char *endp;
     int width;
-    int block[9];
+    int32_t block[9];
     block[0]=0;
     block[1]=0;
     block[2]=0;

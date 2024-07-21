@@ -9,6 +9,7 @@
 .global os_inkey
 .global os_write0
 .global os_newline
+.global os_generateerror
 .global os_byte_out1
 .global _kernel_swi
 
@@ -104,10 +105,18 @@ os_byte_out1:
     LDP     x29, x30, [sp], #16
     RET
 
+os_generateerror:
+    STP     x29, x30, [sp, #-16]!
+    MOV     x10, #0x2B                  // OS_GenerateError
+    SVC     #0
+    LDP     x29, x30, [sp], #16
+    MOV     x0, #1                      // If OS_GenerateError returns, we jump to the exit code
+    B       exit
+
 // _kernel_swi(int swinum, inregs, outregs)
 _kernel_swi:
     STP     x29, x30, [sp, #-16]!
-    MOV     x10, x0                     // SWI number
+    ORR     x10, x0, #0x20000           // SWI number with X bit set
     MOV     x11, x2
 
 // Initialise registers
