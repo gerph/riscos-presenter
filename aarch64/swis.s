@@ -8,6 +8,7 @@
 .global os_setcolour
 .global os_inkey
 .global os_write0
+.global os_writen
 .global os_newline
 .global os_generateerror
 .global os_byte_out1
@@ -88,6 +89,13 @@ os_write0:
     LDP     x29, x30, [sp], #16
     RET
 
+os_writen:
+    STP     x29, x30, [sp, #-16]!
+    MOV     x10, #0x46                  // OS_WriteN
+    SVC     #0
+    LDP     x29, x30, [sp], #16
+    RET
+
 os_newline:
     STP     x29, x30, [sp, #-16]!
     MOV     x10, #0x3                   // OS_NewLine
@@ -157,10 +165,10 @@ _kernel_swi_no_error:
     BEQ     _kernel_swi_out_regs_done
 
     STP     w0, w1, [x11], #8
-    STP     w2, w6, [x11], #8
-    STP     w4, w7, [x11], #8
-    STP     w6, w8, [x11], #8
-    STP     w8, w9, [x11], #8
+    STP     w2, w3, [x11], #8
+    STP     w4, w5, [x11], #8
+    STP     w6, w7, [x11], #8
+    STP     w8, w8, [x11], #8
 
 _kernel_swi_out_regs_done:
 

@@ -23,7 +23,7 @@ char *strdup(const char *x);
                n = number of CHARACTERS to copy
  Returns:      pointer to new string
  ******************************************************************/
-char *strndup(const char *str,int n);
+char *strndup(const char *str,size_t n);
 
 /*********************************************** <c> Gerph *********
  Function:     stricmp

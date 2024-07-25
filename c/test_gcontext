@@ -25,9 +25,7 @@ int main(int argc, char *argv[])
     f = text_find(FONT_NAME, FONT_SIZE, FONT_SIZE);
     if (((int)f) == -1)
         f = text_find(FONT_ALTNAME, FONT_SIZE, FONT_SIZE);
-#ifndef __riscos64
     printf("Font handle: %p\n", f);
-#endif
     end = text_paintattrib(f, 64+16, 320-128,  640-16, 320-16,
                            "hello ", -1,
                            0x4444FF00, 0xFFFFFF00, 0);

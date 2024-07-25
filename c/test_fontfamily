@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "swis.h"
+
 #include "gcontext.h"
 #include "textblock.h"
 #include "fontfamily.h"
@@ -27,7 +29,11 @@ void test_create(void)
 }
 
 
-int main(int argc, char *argv[])
+#ifdef __riscos64
+int start(void)
+#else
+int main(void)
+#endif
 {
     fontfamily_t family;
     textblock_t textblock;
@@ -88,5 +94,9 @@ int main(int argc, char *argv[])
 
     fontfamily_destroy(family);
 
+#ifdef __riscos64
+    os_readc();
+#else
     getchar();
+#endif
 }

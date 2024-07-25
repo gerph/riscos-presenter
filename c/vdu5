@@ -34,16 +34,16 @@
  ******************************************************************/
 font_t vdu5_findfont(const char *name, int xsize, int ysize)
 {
-  unsigned long composite;
-  unsigned long xeig, yeig;
+  uint32_t composite;
+  uint32_t xeig, yeig;
 #define POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS (8)
   xsize = xsize * 8 / POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS / 16;
   ysize = ysize * 8 / POINT_SIZE_MAPS_TO_REGULAR_CHARACTERS / 16;
   _swix(OS_ReadModeVariable, _INR(0,1)|_OUT(2), -1, 4, &xeig);
   _swix(OS_ReadModeVariable, _INR(0,1)|_OUT(2), -1, 5, &yeig);
   composite = (xeig<<28) | (yeig<<24) |
-              (((unsigned long)xsize & 1023) << 12) |
-              ((unsigned long)ysize & 1023);
+              (((uint32_t)xsize & 1023) << 12) |
+              ((uint32_t)ysize & 1023);
   dprintf("Find VDU font: xeig=%lu, yeig=%lu, xsize=%i, ysize=%i\n", xeig, yeig, xsize, ysize);
   return (void*)composite;
 }
@@ -69,11 +69,11 @@ void vdu5_losefont(font_t fh)
 bounds_t vdu5_getem(font_t fh)
 {
   bounds_t bounds;
-  unsigned long composite = (unsigned long) fh;
-  unsigned long xeig = (composite>>28) & 0xF;
-  unsigned long yeig = (composite>>24) & 0xF;
-  unsigned long xsize = (composite>>12) & 0xFFF;
-  unsigned long ysize = (composite>>0) & 0xFFF;
+  uint32_t composite = (uint32_t) fh;
+  uint32_t xeig = (composite>>28) & 0xF;
+  uint32_t yeig = (composite>>24) & 0xF;
+  uint32_t xsize = (composite>>12) & 0xFFF;
+  uint32_t ysize = (composite>>0) & 0xFFF;
 
   bounds.width = xsize;
   bounds.height = ysize;
@@ -96,11 +96,11 @@ void vdu5_getstringsize(font_t fh, stringbounds_t *bounds,
                         int xlimit,
                         const char *str, int strsize, char split_char)
 {
-  unsigned long composite = (unsigned long) fh;
-  unsigned long xeig = (composite>>28) & 0xF;
-  unsigned long yeig = (composite>>24) & 0xF;
-  unsigned long xsize = (composite>>12) & 0xFFF;
-  unsigned long ysize = (composite>>0) & 0xFFF;
+  uint32_t composite = (uint32_t) fh;
+  uint32_t xeig = (composite>>28) & 0xF;
+  uint32_t yeig = (composite>>24) & 0xF;
+  uint32_t xsize = (composite>>12) & 0xFFF;
+  uint32_t ysize = (composite>>0) & 0xFFF;
   int len;
 
   if (strsize == -1)
@@ -164,14 +164,14 @@ void vdu5_getstringsize(font_t fh, stringbounds_t *bounds,
  Returns:      coords_t for the end position
  ******************************************************************/
 coords_t vdu5_paint(font_t fh, int x, int y,
-                    unsigned long bg, unsigned long fg,
+                    uint32_t bg, uint32_t fg,
                     const char *str, int strsize)
 {
-  unsigned long composite = (unsigned long) fh;
-  unsigned long xeig = (composite>>28) & 0xF;
-  unsigned long yeig = (composite>>24) & 0xF;
-  unsigned long xsize = (composite>>12) & 0xFFF;
-  unsigned long ysize = (composite>>0) & 0xFFF;
+  uint32_t composite = (uint32_t) fh;
+  uint32_t xeig = (composite>>28) & 0xF;
+  uint32_t yeig = (composite>>24) & 0xF;
+  uint32_t xsize = (composite>>12) & 0xFFF;
+  uint32_t ysize = (composite>>0) & 0xFFF;
   coords_t end;
   static char seq[] = {
     5, 23,17, 7,6,0,0, 0,0,0,0, 0, 4
@@ -222,11 +222,11 @@ coords_t vdu5_paint(font_t fh, int x, int y,
  ******************************************************************/
 coords_t vdu5_paintattrib(font_t fh, int x0, int y0, int x1, int y1,
                           const char *str, int strsize,
-                          unsigned long bg, unsigned long fg,
-                          unsigned long attr)
+                          uint32_t bg, uint32_t fg,
+                          uint32_t attr)
 {
-    unsigned long composite = (unsigned long) fh;
-    unsigned long ysize = (composite>>0) & 0xFFF;
+    uint32_t composite = (uint32_t) fh;
+    uint32_t ysize = (composite>>0) & 0xFFF;
     coords_t end;
 
     /* Correct for the _paint function wanting the baseline */

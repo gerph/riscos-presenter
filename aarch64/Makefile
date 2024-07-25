@@ -21,7 +21,9 @@ ALL_TARGETS =	test_border \
 				test_colours \
 				test_gcontext \
 				test_font \
-				test_screen
+				test_screen \
+				test_textblock \
+				test_fontfamily \
 
 # Remove the flags that might make code think it's compiling for linux system.
 CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux__
@@ -50,7 +52,7 @@ targetted: local_headers
 	make ${TARGET},ff8 TARGET=${TARGET}
 
 all: local_headers
-	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i ; done
+	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
 
 local_headers:
 	mkdir -p riscos_headers
@@ -120,6 +122,25 @@ endif
 ifeq (${TARGET},test_screen)
 OBJS +=	screen.o \
 		test_screen.o
+endif
+ifeq (${TARGET},test_textblock)
+OBJS += font.o \
+        vdu5.o \
+        vdushape.o \
+        gcontext.o \
+        textblock.o \
+        test_textblock.o
+endif
+ifeq (${TARGET},test_fontfamily)
+OBJS += font.o \
+        vdu5.o \
+        vdushape.o \
+        gcontext.o \
+        textblock.o \
+        str.o \
+        fontmapif.o \
+        fontfamily.o \
+        test_fontfamily.o
 endif
 
 
