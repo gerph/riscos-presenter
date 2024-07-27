@@ -20,22 +20,16 @@
 #include "file.h"
 
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     char *in_filename = "file/md";
     const char *mddata;
     slidedeck_t *deck;
 
-#ifndef __riscos64
     if (argc > 1)
     {
         in_filename = argv[1];
     }
-#endif
 
 #ifdef FORTIFY
     Fortify_EnterScope();

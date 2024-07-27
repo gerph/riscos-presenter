@@ -6,11 +6,7 @@
 #include "gcontext.h"
 #include "colours.h"
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     gcontext_initvdu(1);
 

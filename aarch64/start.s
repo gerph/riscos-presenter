@@ -1,7 +1,7 @@
 .text
 
 .global _start
-.global exit
+.global _exit
 
 
 .balign 4
@@ -68,9 +68,9 @@ _start:
         ADD     x2, x1, x2
         ADD     x2, x2, x4
 
-        BL      start
+        BL      __main
 
-exit:
+_exit:
         MOV     x2, x0
         ADR     x0, return_error
         LDR     x1, abex

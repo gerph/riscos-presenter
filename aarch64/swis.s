@@ -168,7 +168,7 @@ _kernel_swi_no_error:
     STP     w2, w3, [x11], #8
     STP     w4, w5, [x11], #8
     STP     w6, w7, [x11], #8
-    STP     w8, w8, [x11], #8
+    STP     w8, w9, [x11], #8
 
 _kernel_swi_out_regs_done:
 

@@ -4,11 +4,7 @@
 #include "screen.h"
 
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     bbox_t bbox;
     bounds_t bounds;

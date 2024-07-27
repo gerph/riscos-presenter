@@ -10,11 +10,7 @@
 //#define FONT_NAME "Optima.Regular"
 #define FONT_ALTNAME "Homerton.Medium"
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     void *f;
     coords_t end;

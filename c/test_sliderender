@@ -33,11 +33,7 @@
 #endif
 
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     char *in_filename = "file/md";
     const char *mddata;
@@ -48,7 +44,6 @@ int main(int argc, char *argv[])
     bounds_t screen;
     int n;
 
-#ifndef __riscos64
     if (argc > 1)
     {
         in_filename = argv[1];
@@ -57,7 +52,6 @@ int main(int argc, char *argv[])
     {
         start_slide = atoi(argv[2]);
     }
-#endif
 
 #ifdef FORTIFY
     Fortify_EnterScope();

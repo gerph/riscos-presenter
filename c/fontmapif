@@ -20,7 +20,7 @@
 #include "fontmapif.h"
 
 /* Define this to debug this file */
-//#undef DEBUG
+#undef DEBUG
 //#define DEBUG
 
 #ifdef DEBUG

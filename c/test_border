@@ -4,11 +4,7 @@
 #include "gcontext.h"
 #include "border.h"
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(void)
-#endif
 {
   int i=0;
   gcontext_initvdu(1);

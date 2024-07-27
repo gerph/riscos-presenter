@@ -29,11 +29,7 @@ void test_create(void)
 }
 
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(void)
-#endif
 {
     fontfamily_t family;
     textblock_t textblock;

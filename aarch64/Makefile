@@ -10,7 +10,7 @@
 #	__acorn
 #	__arm
 
-TARGET ?= present64
+TARGET ?= present
 
 USE_FUNC_SIGNATURE ?= 1
 
@@ -25,8 +25,11 @@ ALL_TARGETS =	test_border \
 				test_textblock \
 				test_fontfamily \
 				test_mdparse \
+				test_slidedeck \
 				test_slidemd \
 				test_sliderender \
+				test_image \
+				present
 
 OMIT =			\
 
@@ -93,9 +96,11 @@ else
 
 RT_OBJS = 	malloc.o \
 			clib.o \
+			clib-main.o \
 			clib-kernel.o \
 			strtol.o \
-			strtod.o
+			strtod.o \
+			str.o \
 
 # md4c build setup
 VPATH = md4c/src/riscos/aarch64
@@ -159,7 +164,6 @@ OBJS += font.o \
         vdushape.o \
         gcontext.o \
         textblock.o \
-        str.o \
         fontmapif.o \
         fontfamily.o
 
@@ -171,7 +175,6 @@ OBJS += ${MD_LIB} \
 endif
 ifeq (${TARGET},test_slidemd)
 OBJS += ${MD_LIB} \
-		str.o \
 		optlist.o \
 		slidedeck.o \
 		slidedeck_debug.o \
@@ -180,6 +183,15 @@ OBJS += ${MD_LIB} \
 		mdnames.o
 
 endif
+
+ifeq (${TARGET},test_slidedeck)
+OBJS += ${MD_LIB} \
+		optlist.o \
+		slidedeck.o \
+		slidedeck_debug.o \
+
+endif
+
 ifeq (${TARGET},test_sliderender)
 OBJS += ${MD_LIB} \
 		font.o \
@@ -189,7 +201,6 @@ OBJS += ${MD_LIB} \
 		textblock.o \
 		fontfamily.o \
 		fontmapif.o \
-		str.o \
 		optlist.o \
 		slidedeck.o \
 		slidedeck_debug.o \
@@ -202,6 +213,45 @@ OBJS += ${MD_LIB} \
 		border.o \
 		image.o \
 		mdnames.o
+
+endif
+ifeq (${TARGET},test_image)
+OBJS += ${MD_LIB} \
+		font.o \
+		vdu5.o \
+		vdushape.o \
+		gcontext.o \
+		image.o \
+		file.o \
+
+endif
+
+ifeq (${TARGET},present)
+OBJS += ${MD_LIB} \
+			font.o \
+			vdu5.o \
+			vdushape.o \
+			gcontext.o \
+			textblock.o \
+			fontfamily.o \
+			fontmapif.o \
+			optlist.o \
+			slidedeck.o \
+			slidedeck_index.o \
+			slidedeck_debug.o \
+			position.o \
+			slidemd.o \
+			file.o \
+			sliderender.o \
+			colours.o \
+			screen.o \
+			border.o \
+			image.o \
+			mdnames.o \
+			cursors.o \
+			input.o \
+			hourglass.o \
+			banks.o \
 
 endif
 

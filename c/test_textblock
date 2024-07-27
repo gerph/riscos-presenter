@@ -10,11 +10,7 @@
 #define FONT_NAME2 "Optima.Regular"
 #define FONT_ALTNAME "Homerton.Medium"
 
-#ifdef __riscos64
-int start(void)
-#else
 int main(void)
-#endif
 {
     void *f;
     void *f2;
