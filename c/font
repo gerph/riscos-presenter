@@ -36,7 +36,7 @@
 #define FONT_OSTOY(x) ((x)*Font_OSUnit)
 
 struct font_s {
-    int handle;
+    int32_t handle;
     int32_t xsize, ysize;
     int32_t ascent, descent;
 
@@ -55,17 +55,23 @@ struct font_s {
 font_t font_findfont(const char *fontname, int xsize, int ysize)
 {
   _kernel_oserror *err;
-  font_t font = calloc(1, sizeof(*font));
-  if (font == 0)
-    return NULL;
+  font_t font;
+  int32_t handle;
   err = _swix(Font_FindFont, _INR(1,5)|_OUT(0), fontname, xsize, ysize, 0, 0,
-                                                &font->handle);
+                                                &handle);
   if (err)
   {
     dprintf("FAILED: Could not find font %s\n", fontname);
     free(font);
     return NULL;
   }
+  font = calloc(1, sizeof(*font));
+  if (font == NULL)
+  {
+    _swix(Font_LoseFont, _IN(0), handle);
+    return NULL;
+  }
+  font->handle = handle;
   font->xsize = xsize;
   font->ysize = ysize;
   font->ascent = 0;

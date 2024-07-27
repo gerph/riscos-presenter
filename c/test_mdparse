@@ -284,7 +284,11 @@ const char *file_read(const char *filename)
 }
 
 
+#ifdef __riscos64
+int start(void)
+#else
 int main(int argc, char *argv[])
+#endif
 {
     char *in_filename = "file/md";
     const char *mddata;

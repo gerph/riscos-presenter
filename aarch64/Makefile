@@ -24,6 +24,12 @@ ALL_TARGETS =	test_border \
 				test_screen \
 				test_textblock \
 				test_fontfamily \
+				test_mdparse \
+				test_slidemd \
+				test_sliderender \
+
+OMIT =			\
+
 
 # Remove the flags that might make code think it's compiling for linux system.
 CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux__
@@ -32,10 +38,11 @@ CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux_
 CFLAGS += -D__riscos -D__riscos64
 
 # Allow us to build without assuming the standard library is present
-CFLAGS += -nostdlib -ffreestanding -march=armv8-a+nofp
+CFLAGS += -nostdlib -ffreestanding -march=armv8-a
+#CFLAGS += -nostdlib -ffreestanding -march=armv8-a+nofp
 
 # Add the exports directory to those things we'll build with
-CFLAGS += -Iriscos_headers
+CFLAGS += -Iriscos_headers/C/ -Iriscos_headers/Lib/
 
 # Options to allow function signatures to appear RISC OS-like
 ifeq (${USE_FUNC_SIGNATURE},1)
@@ -55,8 +62,9 @@ all: local_headers
 	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
 
 local_headers:
-	mkdir -p riscos_headers
-	for hdr in ${CEXPORT_DIR}/h/* ; do cp "$$hdr" "riscos_headers/$$(basename "$$hdr").h" ; done
+	mkdir -p riscos_headers/C/
+	for hdr in ${CEXPORT_DIR}/h/* ; do cp "$$hdr" "riscos_headers/C/$$(basename "$$hdr").h" ; done
+	#for hdrdir in ${LIB_DIR}/* ; do mkdir -p "riscos_headers/Lib/$$(basename "$$hdrdir")" ; for hdr in "$$hdrdir/h"/* ; do cp "$$hdr" "riscos_headers/Lib/$$(basename "$$hdrdir")/$$(basename "$$hdr").h" ; done ; done
 
 shell: dockcross-linux-arm64
 	./dockcross-linux-arm64 bash
@@ -85,51 +93,65 @@ else
 
 RT_OBJS = 	malloc.o \
 			clib.o \
-			clib-kernel.o
+			clib-kernel.o \
+			strtol.o \
+			strtod.o
 
-OBJS =	${RT_OBJS}
+# md4c build setup
+VPATH = md4c/src/riscos/aarch64
+CFLAGS += -Imd4c/src/riscos/aarch64
+
+MD_LIB = 	md4c/src/riscos/aarch64/md4c.o \
+			md4c/src/riscos/aarch64/entity.o
+
+MD_LIB_UNUSED = \
+			md4c/src/riscos/aarch64/md4c-html.o \
+
+
+OBJS =	${RT_OBJS} \
+		${TARGET}.o
 
 ifeq (${TARGET},test_border)
 OBJS += font.o \
 		vdu5.o \
 		vdushape.o \
 		gcontext.o \
-		border.o \
-		test_border.o
+		border.o
+
 endif
 ifeq (${TARGET},test_colours)
 OBJS += font.o \
 		vdu5.o \
 		vdushape.o \
 		gcontext.o \
-		colours.o \
-		test_colours.o
+		colours.o
+
 endif
 ifeq (${TARGET},test_gcontext)
 OBJS += font.o \
 		vdu5.o \
 		vdushape.o \
-		gcontext.o \
-		test_gcontext.o
+		gcontext.o
+
 endif
 ifeq (${TARGET},test_font)
 OBJS += font.o \
 		gcontext.o \
 		vdushape.o \
-		vdu5.o \
-		test_font.o
+		vdu5.o
+
 endif
 ifeq (${TARGET},test_screen)
 OBJS +=	screen.o \
-		test_screen.o
+
 endif
 ifeq (${TARGET},test_textblock)
 OBJS += font.o \
         vdu5.o \
         vdushape.o \
         gcontext.o \
-        textblock.o \
-        test_textblock.o
+        textblock.o
+
 endif
 ifeq (${TARGET},test_fontfamily)
 OBJS += font.o \
@@ -139,8 +161,48 @@ OBJS += font.o \
         textblock.o \
         str.o \
         fontmapif.o \
-        fontfamily.o \
-        test_fontfamily.o
+        fontfamily.o
+
+endif
+ifeq (${TARGET},test_mdparse)
+OBJS += ${MD_LIB} \
+		mdnames.o \
+
+endif
+ifeq (${TARGET},test_slidemd)
+OBJS += ${MD_LIB} \
+		str.o \
+		optlist.o \
+		slidedeck.o \
+		slidedeck_debug.o \
+		slidemd.o \
+		file.o \
+		mdnames.o
+
+endif
+ifeq (${TARGET},test_sliderender)
+OBJS += ${MD_LIB} \
+		font.o \
+		vdu5.o \
+		vdushape.o \
+		gcontext.o \
+		textblock.o \
+		fontfamily.o \
+		fontmapif.o \
+		str.o \
+		optlist.o \
+		slidedeck.o \
+		slidedeck_debug.o \
+		position.o \
+		slidemd.o \
+		file.o \
+		sliderender.o \
+		colours.o \
+		screen.o \
+		border.o \
+		image.o \
+		mdnames.o
+
 endif
 
 
