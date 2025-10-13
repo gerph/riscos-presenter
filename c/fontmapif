@@ -5,6 +5,7 @@
  * Date:    17 Sep 2020
  ******************************************************************/
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
