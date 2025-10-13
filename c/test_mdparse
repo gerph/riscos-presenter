@@ -262,17 +262,32 @@ const char *file_read(const char *filename)
 {
     char *content;
     long size;
+    long pos;
     FILE *f = fopen(filename, "rb");
     if (f == NULL)
         return NULL;
 
-    fseek(f, 0, SEEK_END);
+    pos = fseek(f, 0, SEEK_END);
+    if (pos == -1)
+    {
+        printf("Couldn't seek to end of file\n");
+        exit(1);
+    }
     size = ftell(f);
+    if (size == -1)
+    {
+        printf("Failed to read the size of the file!\n");
+        fclose(f);
+        exit(1);
+    }
     fseek(f, 0, SEEK_SET);
+
+    printf("File is %i bytes\n", size);
 
     content = malloc(size + 1);
     if (content == NULL)
     {
+        printf("Failed to allocate space\n");
         fclose(f);
         return NULL;
     }
@@ -288,6 +303,11 @@ int main(int argc, char *argv[])
 {
     char *in_filename = "file/md";
     const char *mddata;
+
+    if (argc > 1)
+    {
+        in_filename = argv[1];
+    }
 
     mddata = file_read(in_filename);
     assert(mddata);
