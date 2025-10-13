@@ -90,9 +90,5 @@ int main(void)
 
     fontfamily_destroy(family);
 
-#ifdef __riscos64
-    os_readc();
-#else
     getchar();
-#endif
 }

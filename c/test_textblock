@@ -80,9 +80,5 @@ int main(void)
     text_lose(f);
     text_lose(f2);
 
-#ifdef __riscos64
-    os_readc();
-#else
     getchar();
-#endif
 }

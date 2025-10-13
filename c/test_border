@@ -17,10 +17,6 @@ int main(void)
     /* border_drawsimple(i, 16, x,y, 256, 256, 0x80808000, COLOUR_NONE); */
     border_drawsimple(i, 16, x,y, 256, 256, COLOUR_RGB(0,255,0), COLOUR_RGB(255,0,0));
   }
-#ifdef __riscos64
-  os_readc();
-#else
   getchar();
-#endif
   return 0;
 }

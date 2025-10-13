@@ -19,9 +19,5 @@ int main(int argc, char *argv[])
     rect_fill(colours_parse("rgb(50%,22%,47%)", -1), 224, 128,  224+32, 128+32);    /* (br) */
     rect_fill(colours_parse("rgb(129,57,121)", -1), 224, 224,  224+32, 224+32);     /* (tr) */
 
-#ifdef __riscos64
-    os_readc();
-#else
     getchar();
-#endif
 }
