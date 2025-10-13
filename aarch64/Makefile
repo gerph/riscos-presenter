@@ -70,6 +70,8 @@ MD_LIB = 	md4c.o \
 MD_LIB_UNUSED = \
 			md4c-html.o \
 
+# RISC OS headers
+CFLAGS += -Iriscos_headers
 
 OBJS =	${TARGET}.o
 
