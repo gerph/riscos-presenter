@@ -13,7 +13,7 @@
 TARGET ?= present
 
 # Version of the C library to use to build
-CLIB_VERSION = 0.19
+CLIB_VERSION = 0.20
 
 VPATH = . md4c/src
 
