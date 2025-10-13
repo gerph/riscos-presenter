@@ -45,9 +45,12 @@ clean:
 .PHONY: tools
 
 tools:
+	mkdir -p tmp
+	wget -O tmp/clib${CLIB_VERSION}.zip https://github.com/gerph/riscos64-clib/releases/download/v${CLIB_VERSION}/RISCOS64-CLib-${CLIB_VERSION}.zip
+	cd tmp ; unzip clib${CLIB_VERSION}.zip
 	mkdir -p tools
-	wget -O tools/clib${CLIB_VERSION}.zip https://github.com/gerph/riscos64-clib/releases/download/v${CLIB_VERSION}/RISCOS64-CLib-${CLIB_VERSION}.zip
-	cd tools ; unzip tools/clib${CLIB_VERSION}.zip
+	tmp/bin/robuild64 install tools
+	rm -rf tmp
 
 
 TOOLS ?= tools
