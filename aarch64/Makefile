@@ -12,6 +12,9 @@
 
 TARGET ?= present
 
+# Version of the C library to use to build
+CLIB_VERSION = 0.19
+
 VPATH = . md4c/src
 
 ALL_TARGETS =	test_border \
@@ -37,13 +40,23 @@ all:
 	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
 
 clean:
-	-rm -f *.o *.bin *,ff8 *.map
+	-rm -f *.o *.bin *,ff8 *.map tools
 
-CLIBDIR = /Users/charles/projects/RO/riscos64-simple-binaries/clib/export
+.PHONY: tools
 
-CC = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-cc
-AS = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-as
-LD = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-link
+tools:
+	mkdir -p tools
+	wget -O tools/clib${CLIB_VERSION}.zip https://github.com/gerph/riscos64-clib/releases/download/v${CLIB_VERSION}/RISCOS64-CLib-${CLIB_VERSION}.zip
+	cd tools ; unzip tools/clib${CLIB_VERSION}.zip
+
+
+TOOLS ?= tools
+CLIBDIR = ${TOOLS}/riscos64_resources
+
+
+CC = RISCOS64_RELDIRS=1 ${TOOLS}/riscos64-cc
+AS = RISCOS64_RELDIRS=1 ${TOOLS}/riscos64-as
+LD = RISCOS64_RELDIRS=1 ${TOOLS}/riscos64-link
 
 # md4c build setup
 CFLAGS += -Imd4c/src/
