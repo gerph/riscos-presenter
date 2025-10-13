@@ -28,22 +28,22 @@
 
 
 struct textblock_s {
-    int x0, y0, x1, y1;                 /* Region bounds */
-    int inset_left, inset_right;        /* Indentation sizes */
-    int width, height;                  /* Implicit values, from the above */
+    int32_t x0, y0, x1, y1;                 /* Region bounds */
+    int32_t inset_left, inset_right;        /* Indentation sizes */
+    int32_t width, height;                  /* Implicit values, from the above */
 
-    int xc, yc;                         /* Current offset within the region, for the top of the char, ie x0+xc, y1-yc */
-    int mark_xc, mark_yc;               /* Marker position for restoring state */
+    int32_t xc, yc;                         /* Current offset within the region, for the top of the char, ie x0+xc, y1-yc */
+    int32_t mark_xc, mark_yc;               /* Marker position for restoring state */
 
     /* User configurables */
-    unsigned long line_spacing;         /* 16.16 scaling for the lines */
+    uint32_t line_spacing;         /* 16.16 scaling for the lines */
 
     /* Configured/derived values */
-    int line_ascent;                    /* OS units to the baseline, once known */
-    int line_descent;                   /* OS units from baseline to the base of characters, once known */
+    int32_t line_ascent;                    /* OS units to the baseline, once known */
+    int32_t line_descent;                   /* OS units from baseline to the base of characters, once known */
 
     /* Informational */
-    int cx0, cy0, cx1, cy1;             /* Covering box - how much has been drawn (like ChangedBox) */
+    int32_t cx0, cy0, cx1, cy1;             /* Covering box - how much has been drawn (like ChangedBox) */
 };
 
 
@@ -58,8 +58,8 @@ struct textblock_s {
                 line_spacing = 16.16 value for line spacing as a portion of line height
  Returns:       textblock_t handle for manipulating the text region
  ******************************************************************/
-textblock_t textblock_create(int x0, int y0, int x1, int y1,
-                             unsigned long line_spacing)
+textblock_t textblock_create(int32_t x0, int32_t y0, int32_t x1, int32_t y1,
+                             uint32_t line_spacing)
 {
     textblock_t textblock = calloc(1, sizeof(*textblock));
     if (textblock == NULL)
@@ -121,7 +121,7 @@ void textblock_newline(textblock_t textblock)
                 flags = TBCLEAR_* flags
  Returns:       none
  ******************************************************************/
-void textblock_clear(textblock_t textblock, unsigned long flags)
+void textblock_clear(textblock_t textblock, uint32_t flags)
 {
     switch (flags & TBCLEAR_TEXTMASK) {
 
@@ -188,8 +188,8 @@ void textblock_clear(textblock_t textblock, unsigned long flags)
  ******************************************************************/
 int textblock_add(textblock_t textblock, void *font,
                   const char *text,
-                  unsigned long bg, unsigned long fg,
-                  unsigned long flags)
+                  uint32_t bg, uint32_t fg,
+                  uint32_t flags)
 {
     const char *start_text = text;
     while (*text)
@@ -374,7 +374,7 @@ int textblock_extent(textblock_t textblock)
                 flags = TBREGION_* flags
  Returns:       none
  ******************************************************************/
-void textblock_region(textblock_t textblock, bbox_t *bbox, unsigned long flags)
+void textblock_region(textblock_t textblock, bbox_t *bbox, uint32_t flags)
 {
     switch (flags & TBREGION_WHERE_MASK)
     {
@@ -455,7 +455,7 @@ int textblock_linespacing(textblock_t textblock)
                 posp-> where to store the bbox of the space created
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
-int textblock_space(textblock_t textblock, int width, int height,
+int textblock_space(textblock_t textblock, int32_t width, int32_t height,
                     bbox_t *boxp)
 {
     int xspace = textblock->width - textblock->xc;
@@ -498,7 +498,7 @@ int textblock_space(textblock_t textblock, int width, int height,
                 posp-> where to store the coords of the bottom left
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
-int textblock_gap(textblock_t textblock, int height,
+int textblock_gap(textblock_t textblock, int32_t height,
                   coords_t *posp)
 {
     int y0;
@@ -526,7 +526,7 @@ int textblock_gap(textblock_t textblock, int height,
                 right = right inset in OS units
  Returns:       1 if successful, 0 if there is no room left
  ******************************************************************/
-int textblock_inset(textblock_t textblock, int left, int right)
+int textblock_inset(textblock_t textblock, int32_t left, int32_t right)
 {
     int xc = textblock->xc;
     int width = textblock->width - left - right;

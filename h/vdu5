@@ -64,7 +64,7 @@ void vdu5_getstringsize(font_t, stringbounds_t *bounds,
  Returns:      coords_t for the end position
  ******************************************************************/
 coords_t vdu5_paint(font_t font, int x, int y,
-                    unsigned long bg, unsigned long fg,
+                    uint32_t bg, uint32_t fg,
                     const char *str, int len);
 
 /*************************************************** Gerph *********
@@ -80,5 +80,5 @@ coords_t vdu5_paint(font_t font, int x, int y,
  ******************************************************************/
 coords_t vdu5_paintattrib(font_t, int x0, int y0, int x1, int y1,
                           const char *str, int strsize,
-                          unsigned long bg, unsigned long fg,
-                          unsigned long attr);
+                          uint32_t bg, uint32_t fg,
+                          uint32_t attr);

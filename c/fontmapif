@@ -6,6 +6,8 @@
  ******************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "swis.h"
 
 #ifdef FORTIFY
@@ -17,6 +19,43 @@
 #include "str.h"
 #include "fontmapif.h"
 
+/* Define this to debug this file */
+#undef DEBUG
+//#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (1) _swix(0x104,0), printf
+#else
+#define dprintf if (0) _swix(0x104,0), printf
+#endif
+
+
+/* If we don't have FontMap, try using a very rudimentary algorithm to
+ * font font names.
+ */
+#define FALLBACK_TO_SIMPLE_NAMES
+
+
+#ifdef FALLBACK_TO_SIMPLE_NAMES
+/*************************************************** Gerph *********
+ Function:      check_font
+ Description:   Check whether a given font exists
+ Parameters:    fontname-> the font name to check
+ Returns:       1 if exists, 0 if does not
+ ******************************************************************/
+static int check_font(const char *fontname)
+{
+    int32_t handle;
+    _kernel_oserror *err;
+    err = _swix(Font_FindFont, _INR(1,5)|_OUT(0), fontname, 16*16, 16*16, 0, 0,
+                                                  &handle);
+    dprintf("Check for font %s => %s\n", fontname, err ? "absent" : "present");
+    if (err)
+        return 0;
+    _swix(Font_LoseFont, _IN(0), handle);
+    return 1;
+}
+#endif
 
 /*************************************************** Gerph *********
  Function:      fontmap_makefont
@@ -52,13 +91,116 @@ static const char *fontmap_makefont(const char *font,
  ******************************************************************/
 const char *fontmap_makefont_italic(const char *font)
 {
-    return fontmap_makefont(font, fmi_italic, fmw_dontcare, fms_dontcare);
+    const char *newfont;
+    newfont = fontmap_makefont(font, fmi_italic, fmw_dontcare, fms_dontcare);
+#ifdef FALLBACK_TO_SIMPLE_NAMES
+    if (newfont == NULL)
+    {
+        char name[256];
+        if (strstr(font, ".Italic") != NULL ||
+            strstr(font, ".Oblique") != NULL)
+            return strdup(font); /* Already italic */
+
+        sprintf(name, "%s.Italic", font);
+        if (check_font(name))
+            return strdup(name);
+
+        sprintf(name, "%s.Oblique", font);
+        if (check_font(name))
+            return strdup(name);
+    }
+#endif
+    return newfont;
 }
 const char *fontmap_makefont_bold(const char *font)
 {
-    return fontmap_makefont(font, fmi_dontcare, fmw_bold, fms_dontcare);
+    const char *newfont;
+    newfont = fontmap_makefont(font, fmi_dontcare, fmw_bold, fms_dontcare);
+#ifdef FALLBACK_TO_SIMPLE_NAMES
+    if (newfont == NULL)
+    {
+        char basename[256];
+        char *p;
+        char name[256];
+        if (strstr(font, ".Bold") != NULL ||
+            strstr(font, ".Heavy") != NULL)
+            return strdup(font); /* Already bold */
+
+        strcpy(basename, font);
+        p = strstr(basename, ".Regular");
+        if (p)
+        {
+            *p = '\0';
+        }
+        else
+        {
+            p = strstr(basename, ".Medium");
+            if (p)
+                *p = '\0';
+        }
+
+        sprintf(name, "%s.Bold", basename);
+        if (check_font(name))
+            return strdup(name);
+
+        sprintf(name, "%s.Heavy", basename);
+        if (check_font(name))
+            return strdup(name);
+
+    }
+#endif
+    return newfont;
 }
 const char *fontmap_makefont_bolditalic(const char *font)
 {
-    return fontmap_makefont(font, fmi_italic, fmw_bold, fms_dontcare);
+    const char *newfont;
+    newfont = fontmap_makefont(font, fmi_italic, fmw_bold, fms_dontcare);
+#ifdef FALLBACK_TO_SIMPLE_NAMES
+    if (newfont == NULL)
+    {
+        char basename[256];
+        char *p;
+        char name[256];
+        if (strstr(font, ".Bold") != NULL ||
+            strstr(font, ".Heavy") != NULL)
+        {
+            /* Already bold! */
+            strcpy(basename, font);
+        }
+        else
+        {
+            strcpy(basename, font);
+            p = strstr(basename, ".Regular");
+            if (p)
+            {
+                *p = '\0';
+            }
+            else
+            {
+                p = strstr(basename, ".Medium");
+                if (p)
+                    *p = '\0';
+            }
+
+            sprintf(name, "%s.Bold", basename);
+            if (check_font(name))
+                strcpy(basename, name);
+            else
+            {
+                sprintf(name, "%s.Heavy", basename);
+                if (check_font(name))
+                    strcpy(basename, name);
+            }
+        }
+
+        sprintf(name, "%s.Italic", basename);
+        if (check_font(name))
+            return strdup(name);
+
+        sprintf(name, "%s.Oblique", basename);
+        if (check_font(name))
+            return strdup(name);
+    }
+#endif
+    return newfont;
 }

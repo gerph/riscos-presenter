@@ -10,7 +10,7 @@
 #define FONT_NAME2 "Optima.Regular"
 #define FONT_ALTNAME "Homerton.Medium"
 
-int main(int argc, char *argv[])
+int main(void)
 {
     void *f;
     void *f2;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
             textblock_add(textblock, f2, "1.",
                           0x4444FF00, 0xFFFFFF00, flags);
 
-            textblock_inset(textblock, em.width * 1.5, em.width * 1.5);
+            textblock_inset(textblock, (em.width * 3) / 2, (em.width * 3) / 2);
             textblock_add(textblock, f2, "Text which wraps to the next line",
                           0x4444FF00, 0xFFFFFF00, flags);
         }

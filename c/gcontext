@@ -35,7 +35,7 @@ gcontext_t gcontext;
                x1,y1 = top right
  Returns:      none
  ******************************************************************/
-static void gcontext_generic_rectoutline(unsigned long colour,
+static void gcontext_generic_rectoutline(uint32_t colour,
                                          int x0, int y0, int x1, int y1)
 {
     line_start(colour);
@@ -70,26 +70,26 @@ void gcontext_initvdu(int fonts)
                                            const char *, int, char))(vdu5_getstringsize);
     gcontext.text_getemsize = vdu5_getem;
     gcontext.text_paint = (coords_t(*)(font_t,int,int,
-                                       unsigned long,unsigned long,
+                                       uint32_t,uint32_t,
                                        const char *,int))(vdu5_paint);
     gcontext.text_paintattrib = (coords_t(*)(font_t,int,int,int,int,
                                              const char *,int,
-                                             unsigned long,unsigned long,
-                                             unsigned long))(vdu5_paintattrib);
+                                             uint32_t,uint32_t,
+                                             uint32_t))(vdu5_paintattrib);
   }
   else
   {
-    gcontext.text_findfont = (font_t(*)(const char *, int, int))font_findfont;
+    gcontext.text_findfont = (font_t(*)(const char *, int32_t, int32_t))font_findfont;
     gcontext.text_losefont = (void(*)(font_t))font_losefont;
-    gcontext.text_getstringsize = (void(*)(font_t, stringbounds_t *, int,
-                                           const char *, int, char))(font_getstringsize);
+    gcontext.text_getstringsize = (void(*)(font_t, stringbounds_t *, int32_t,
+                                           const char *, int32_t, char))(font_getstringsize);
     gcontext.text_getemsize = font_getem;
     gcontext.text_paint = (coords_t(*)(font_t,int,int,
-                                       unsigned long,unsigned long,
+                                       uint32_t,uint32_t,
                                        const char *,int))(font_paint);
-    gcontext.text_paintattrib = (coords_t(*)(font_t,int,int,int,int,
-                                             const char *,int,unsigned long,unsigned long,
-                                             unsigned long))(font_paintattrib);
+    gcontext.text_paintattrib = (coords_t(*)(font_t,int32_t,int32_t,int32_t,int32_t,
+                                             const char *,int32_t,uint32_t,uint32_t,
+                                             uint32_t))(font_paintattrib);
   }
 #ifdef DEBUG_FILL
   gcontext.fill_start = gcontext_vdu_fill_start;

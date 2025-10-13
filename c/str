@@ -34,7 +34,7 @@ char *(strdup)(char const *x)
                n = number of CHARACTERS to copy
  Returns:      pointer to new string
  ******************************************************************/
-char *(strndup)(char const *str,int n)
+char *(strndup)(char const *str, size_t n)
 {
   char *s=malloc(n+1);
   if (s!=NULL)
@@ -57,11 +57,20 @@ int stricmp(const char *str1, const char *str2)
 {
   char one,two;
   int  index;
-  int  len=strlen(str1); /* speeds things up a tad */
-  for(index=0; index<=len; index++)
+  while (*str1 || *str2)
   {
+#ifdef __riscos64
+    one = *str1++;
+    if (one >= 'A' && one <= 'Z')
+        one += 32;
+
+    two = *str2++;
+    if (two >= 'A' && two <= 'Z')
+        two += 32;
+#else
     one=tolower(*str1++);
     two=tolower(*str2++);
+#endif
     if (one!=two)
     {
       if (one<two)

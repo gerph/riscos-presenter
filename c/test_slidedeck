@@ -50,4 +50,6 @@ int main(int argc, char *argv[])
     slidedeck_dump(deck);
 
     slidedeck_destroy(deck);
+
+    return 0;
 }

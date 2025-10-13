@@ -18,6 +18,11 @@
 /* Define this to debug the code */
 /* #define DEBUG */
 
+/* Define this to improve performance by putting the `id` field inside
+ * the opt block, reducing allocations to just 2 blocks per option.
+ */
+#define IN_BLOCK_ID
+
 /*********************************************** <c> Gerph *********
  Function:     opt_create
  Description:  Creates a opt block with nothing in it
@@ -86,15 +91,34 @@ int opt_change(optval *opt,char const *data)
  ******************************************************************/
 int opt_add(opts *opt,char const *id,char const *data)
 {
+#ifdef IN_BLOCK_ID
+  int idlen = strlen(id);
+  optval *noptval=malloc(sizeof(optval) + idlen + 1);
+#else
   optval *noptval=malloc(sizeof(optval));
+#endif
   if (noptval==NULL) return 1; /* failed */
   noptval->next=NULL;         /* not linked to anything */
+
+#ifdef IN_BLOCK_ID
+  strcpy((char *)(noptval + 1), id);
+  noptval->id = (char *)(noptval + 1);
+#else
   noptval->id=strdup(id); /* copy the optval */
   if (noptval->id==NULL)
   { free(noptval); return 1; } /* failed */
+#endif
+
   noptval->value=strdup(data); /* copy the optval */
   if (noptval->value==NULL)
-  { free(noptval->id); free(noptval); return 1; } /* failed */
+  {
+#ifdef IN_BLOCK_ID
+#else
+    free(noptval->id);
+#endif
+    free(noptval);
+    return 1;
+   } /* failed */
   if (opt->head==NULL)
   {
     opt->head=noptval;
@@ -147,7 +171,10 @@ optval *opt_remove(opts *top,optval *opt)
     if (cur==opt)
     {
       free(cur->value);       /* free optval itself */
+#ifdef IN_BLOCK_ID
+#else
       free(cur->id);          /* free optval itself */
+#endif
       free(cur);              /* and free the block */
       if (last==NULL) top->head=next;
       else last->next=next;    /* relink us */
@@ -176,7 +203,10 @@ opts *opt_destroy(opts *opt)
   {
     last=cur; cur=cur->next; /* move on to next */
     free(last->value);       /* free optval itself */
+#ifdef IN_BLOCK_ID
+#else
     free(last->id);          /* free optval itself */
+#endif
     free(last);              /* and free the block */
   }
   free(opt);

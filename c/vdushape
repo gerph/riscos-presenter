@@ -38,7 +38,7 @@
                x1,y1 = top right
  Returns:      none
  ******************************************************************/
-void gcontext_vdu_rectfill(unsigned long colour,
+void gcontext_vdu_rectfill(uint32_t colour,
                            int x0, int y0, int x1, int y1)
 {
 #ifdef DEBUG_RECTASX
@@ -61,7 +61,7 @@ void gcontext_vdu_rectfill(unsigned long colour,
                x2,y2 = third
  Returns:      none
  ******************************************************************/
-void gcontext_vdu_trifill(unsigned long colour,
+void gcontext_vdu_trifill(uint32_t colour,
                           int x0, int y0, int x1, int y1, int x2, int y2)
 {
   gcol(colour);
@@ -76,7 +76,7 @@ void gcontext_vdu_trifill(unsigned long colour,
  Parameters:   col = the colour to draw with
  Returns:      none
  ******************************************************************/
-void gcontext_vdu_linestart(unsigned long colour)
+void gcontext_vdu_linestart(uint32_t colour)
 {
   gcol(colour);
 }
@@ -106,7 +106,7 @@ void gcontext_vdu_line(int x0, int y0, int x1, int y1)
 
 
 /* Fill routines only for debugging */
-void gcontext_vdu_fill_start(unsigned long fill_colour)
+void gcontext_vdu_fill_start(uint32_t fill_colour)
 {
   gcol(fill_colour);
 }

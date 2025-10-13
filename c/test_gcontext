@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "swis.h"
+
 #include "gcontext.h"
 
 #define FONT_SIZE 22*16

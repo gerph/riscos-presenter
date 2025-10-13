@@ -220,7 +220,10 @@ int fontfamily_populate(fontfamily_t family)
         {
             /* We couldn't get the bold/slant font, so let's try to just get bold, if we generated one (otherwise fail) */
             if (new_font == regular_font)
+            {
+                dprintf("Failed to populate style for bold-slant of '%s' - giving up\n", new_font);
                 return 1;
+            }
 
             dprintf("Failed to populate style for bold-slant of '%s'\n", new_font);
             free((char *)new_font);

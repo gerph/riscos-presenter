@@ -18,7 +18,7 @@
                ysize = the size (points * 16)
  Returns:      font handle, or NULL if could not claim
  ******************************************************************/
-font_t font_findfont(const char *fontname, int xsize, int ysize);
+font_t font_findfont(const char *fontname, int32_t xsize, int32_t ysize);
 
 /*************************************************** Gerph *********
  Function:     font_losefont
@@ -49,8 +49,8 @@ bounds_t font_getem(font_t font);
  Returns:      none
  ******************************************************************/
 void font_getstringsize(font_t handle, stringbounds_t *bounds,
-                        int xlimit,
-                        const char *str, int len, char split_char);
+                        int32_t xlimit,
+                        const char *str, int32_t len, char split_char);
 
 /*************************************************** Gerph *********
  Function:     font_paint
@@ -64,8 +64,8 @@ void font_getstringsize(font_t handle, stringbounds_t *bounds,
                len = the number of characters to plot, or -1 for all
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t font_paint(font_t font, int x, int y,
-                    unsigned long bg, unsigned long fg,
+coords_t font_paint(font_t font, int32_t x, int32_t y,
+                    uint32_t bg, uint32_t fg,
                     const char *str, int len);
 
 /*************************************************** Gerph *********
@@ -81,7 +81,7 @@ coords_t font_paint(font_t font, int x, int y,
  ******************************************************************/
 coords_t font_paintattrib(font_t fonthandle, int x0, int y0, int x1, int y1,
                           const char *str, int len,
-                          unsigned long bg, unsigned long fg,
-                          unsigned long attrib);
+                          uint32_t bg, uint32_t fg,
+                          uint32_t attrib);
 
 #endif

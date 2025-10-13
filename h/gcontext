@@ -8,6 +8,8 @@
 #ifndef GCONTEXT_H
 #define GCONTEXT_H
 
+#include <stdint.h>
+
 #define FONTATTRIB_ALIGN_HLEFT   (0<<0)
 #define FONTATTRIB_ALIGN_HCENTRE (1<<0)
 #define FONTATTRIB_ALIGN_HRIGHT  (2<<0)
@@ -22,46 +24,46 @@
 #define COLOUR_RGB(r,g,b) (((r)<<8) | ((g)<<16) | ((b)<<24))
 
 typedef struct coords_s {
-  int x;
-  int y;
+  int32_t x;
+  int32_t y;
 } coords_t;
 
 typedef struct bounds_s {
-  int width;
-  int height;
+  int32_t width;
+  int32_t height;
 } bounds_t;
 
 typedef struct bbox_s {
-  int x0, y0;
-  int x1, y1;
+  int32_t x0, y0;
+  int32_t x1, y1;
 } bbox_t;
 
 typedef struct stringbounds_s {
-  int ascent, descent;
-  int lbearing, rbearing;
-  int xoffset;
-  int charoffset;
+  int32_t ascent, descent;
+  int32_t lbearing, rbearing;
+  int32_t xoffset;
+  int32_t charoffset;
 } stringbounds_t;
 
 typedef struct font_s *font_t;
 
 
 typedef struct gcontext_s {
-  void (*rectangle_fill)(unsigned long colour,
-                         int x0, int y0, int x1, int y1);
-  void (*rectangle_outline)(unsigned long colour,
-                            int x0, int y0, int x1, int y1);
+  void (*rectangle_fill)(uint32_t colour,
+                         int32_t x0, int32_t y0, int32_t x1, int32_t y1);
+  void (*rectangle_outline)(uint32_t colour,
+                            int32_t x0, int32_t y0, int32_t x1, int32_t y1);
 
-  void (*triangle_fill)(unsigned long colour,
-                        int x0, int y0, int x1, int y1, int x2, int y2);
+  void (*triangle_fill)(uint32_t colour,
+                        int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
 
-  void (*line_start)(unsigned long line_colour);
-  void (*line_line)(int x0, int y0, int x1, int y1);
+  void (*line_start)(uint32_t line_colour);
+  void (*line_line)(int32_t x0, int32_t y0, int32_t x1, int32_t y1);
   void (*line_end)(void);
 
-  void (*fill_start)(unsigned long fill_colour);
-  void (*fill_move)(int x, int y);
-  void (*fill_line)(int x, int y);
+  void (*fill_start)(uint32_t fill_colour);
+  void (*fill_move)(int32_t x, int32_t y);
+  void (*fill_line)(int32_t x, int32_t y);
   void (*fill_close)(void);
   void (*fill_end)(void);
 
@@ -69,21 +71,21 @@ typedef struct gcontext_s {
   void (*text_losefont)(font_t handle);
 
   void (*text_getstringsize)(font_t, stringbounds_t *bounds,
-                             int xlimit,
+                             int32_t xlimit,
                              const char *str, int strsize, char split_char);
 
   bounds_t (*text_getemsize)(font_t);
 
   coords_t (*text_paint)(font_t handle,
-                         int xb, int yb,
-                         unsigned long bg, unsigned long fg,
+                         int32_t xb, int32_t yb,
+                         uint32_t bg, uint32_t fg,
                          const char *str, int strsize);
 
   coords_t (*text_paintattrib)(font_t handle,
-                               int x, int y, int x1, int y1,
+                               int32_t x, int32_t y, int32_t x1, int32_t y1,
                                const char *str, int strsize,
-                               unsigned long bg, unsigned long fg,
-                               unsigned long attrib);
+                               uint32_t bg, uint32_t fg,
+                               uint32_t attrib);
 } gcontext_t;
 
 extern gcontext_t gcontext;

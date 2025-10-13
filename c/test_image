@@ -39,10 +39,10 @@ int main(int argc, char *argv[])
 
     rect_fill(COLOUR_RGB(64,64,64), 0,0, 1280, 1024);
 
-//    draw_image(COLOUR_RGB(64,64,192), "gerph-black/jpeg", 64, 64,  640, 320); /* blue rectangle */
+    draw_image(COLOUR_RGB(64,64,192), "gerph-black/jpeg", 64, 64,  640, 320); /* blue rectangle */
 
 //    draw_image(COLOUR_RGB(255,0,0), "gerphlogo", 64, 360,  640, 640); /* red rectangle */
-    draw_image(COLOUR_RGB(192,64,64), "rgbcircles", 64, 360,  640, 640); /* red rectangle */
+//    draw_image(COLOUR_RGB(192,64,64), "rgbcircles", 64, 360,  640, 640); /* red rectangle */
 
     getchar();
 }

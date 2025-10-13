@@ -5,6 +5,7 @@
  * Date:     16 Jan 2006
  ******************************************************************/
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,9 +36,9 @@
 #define FONT_OSTOY(x) ((x)*Font_OSUnit)
 
 struct font_s {
-    int handle;
-    int xsize, ysize;
-    int ascent, descent;
+    int32_t handle;
+    int32_t xsize, ysize;
+    int32_t ascent, descent;
 
     bounds_t em; /* This is the width and height of an em */
 };
@@ -54,17 +55,23 @@ struct font_s {
 font_t font_findfont(const char *fontname, int xsize, int ysize)
 {
   _kernel_oserror *err;
-  font_t font = calloc(1, sizeof(*font));
-  if (font == 0)
-    return NULL;
+  font_t font;
+  int32_t handle;
   err = _swix(Font_FindFont, _INR(1,5)|_OUT(0), fontname, xsize, ysize, 0, 0,
-                                                &font->handle);
+                                                &handle);
   if (err)
   {
     dprintf("FAILED: Could not find font %s\n", fontname);
     free(font);
     return NULL;
   }
+  font = calloc(1, sizeof(*font));
+  if (font == NULL)
+  {
+    _swix(Font_LoseFont, _IN(0), handle);
+    return NULL;
+  }
+  font->handle = handle;
   font->xsize = xsize;
   font->ysize = ysize;
   font->ascent = 0;
@@ -103,7 +110,7 @@ void font_losefont(font_t font)
  Returns:      coords_t for the end position
  ******************************************************************/
 coords_t font_paint(font_t font, int x, int y,
-                    unsigned long bg, unsigned long fg,
+                    uint32_t bg, uint32_t fg,
                     const char *str, int len)
 {
   _kernel_oserror *err;
@@ -186,7 +193,7 @@ bounds_t font_getem(font_t font)
  Returns:      none
  ******************************************************************/
 void font_getstringsize(font_t font, stringbounds_t *bounds,
-                        int xlimit,
+                        int32_t xlimit,
                         const char *str, int len, char split_char)
 {
   _kernel_oserror *err;
@@ -236,9 +243,9 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
 
   /* Obtain the size of the string */
   {
-    char *endp;
-    int width;
-    int block[9];
+    char *endp = NULL;
+    int32_t width = 0;
+    int32_t block[9];
     block[0]=0;
     block[1]=0;
     block[2]=0;
@@ -283,14 +290,14 @@ void font_getstringsize(font_t font, stringbounds_t *bounds,
                attrib = the attributes to use
  Returns:      coords_t for the end position
  ******************************************************************/
-coords_t font_paintattrib(font_t font, int x0, int y0, int x1, int y1,
-                          const char *str, int len,
-                          unsigned long bg, unsigned long fg,
-                          unsigned long attrib)
+coords_t font_paintattrib(font_t font, int32_t x0, int32_t y0, int32_t x1, int32_t y1,
+                          const char *str, int32_t len,
+                          uint32_t bg, uint32_t fg,
+                          uint32_t attrib)
 {
   stringbounds_t bounds;
-  int strwidth, strheight;
-  int x,y;
+  int32_t strwidth, strheight;
+  int32_t x,y;
   coords_t end = {0};
 
   font_getstringsize(font, &bounds, -1, str, len, 0);
@@ -342,7 +349,7 @@ retry_left:
   }
   /* x,y now the left of the baseline to plot at */
 
-  dprintf("Plot string %p at %i, %i (bg=%08lx, fg=%08lx)\n", str, x, y, bg, fg);
+  dprintf("Plot string %p at %i, %i (bg=%08lx, fg=%08lx) -> %i, %i\n", str, x, y, bg, fg, end.x, end.y);
 
   font_paint(font, x, y, bg, fg, str, len);
 

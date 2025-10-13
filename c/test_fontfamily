@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "swis.h"
+
 #include "gcontext.h"
 #include "textblock.h"
 #include "fontfamily.h"
@@ -27,7 +29,7 @@ void test_create(void)
 }
 
 
-int main(int argc, char *argv[])
+int main(void)
 {
     fontfamily_t family;
     textblock_t textblock;
