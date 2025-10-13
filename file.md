@@ -35,6 +35,8 @@ Second line
 
 Image: ![my picture](rgbcircles (20x20))
 
+Image: ![my picture](gerph-black/jpeg (20x20))
+
 ---
 name: second
 class: foo

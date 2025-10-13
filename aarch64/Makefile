@@ -12,10 +12,7 @@
 
 TARGET ?= present
 
-USE_FUNC_SIGNATURE ?= 1
-
-DIS = ~/projects/RO/pyromaniac/utils/riscos-dumpi --arm64
-CROSS_ROOT = ${shell echo $$CROSS_ROOT}
+VPATH = . md4c/src
 
 ALL_TARGETS =	test_border \
 				test_colours \
@@ -33,88 +30,32 @@ ALL_TARGETS =	test_border \
 
 OMIT =			\
 
-
-# Remove the flags that might make code think it's compiling for linux system.
-CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux__
-
-# Add the definitions to indicate that we're compiling for RISC OS
-CFLAGS += -D__riscos -D__riscos64
-
-# Allow us to build without assuming the standard library is present
-CFLAGS += -nostdlib -ffreestanding -march=armv8-a
-#CFLAGS += -nostdlib -ffreestanding -march=armv8-a+nofp
-
-# Add the exports directory to those things we'll build with
-CFLAGS += -Iriscos_headers/C/ -Iriscos_headers/Lib/
-
-# Options to allow function signatures to appear RISC OS-like
-ifeq (${USE_FUNC_SIGNATURE},1)
-CFLAGS += -fpatchable-function-entry=20,20
-endif
-
-# Optimisation options
-CFLAGS += -O1
-
-# Options for this build
-CFLAGS += 
-
-targetted: local_headers
+targetted:
 	make ${TARGET},ff8 TARGET=${TARGET}
 
-all: local_headers
+all:
 	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
-
-local_headers:
-	mkdir -p riscos_headers/C/
-	for hdr in ${CEXPORT_DIR}/h/* ; do cp "$$hdr" "riscos_headers/C/$$(basename "$$hdr").h" ; done
-	#for hdrdir in ${LIB_DIR}/* ; do mkdir -p "riscos_headers/Lib/$$(basename "$$hdrdir")" ; for hdr in "$$hdrdir/h"/* ; do cp "$$hdr" "riscos_headers/Lib/$$(basename "$$hdrdir")/$$(basename "$$hdr").h" ; done ; done
-
-shell: dockcross-linux-arm64
-	./dockcross-linux-arm64 bash
-
-dockcross-linux-arm64:
-	docker run --rm dockcross/linux-arm64:20240529-0dade71 > dockcross-linux-arm64
-	chmod +x dockcross-linux-arm64
 
 clean:
 	-rm -f *.o *.bin *,ff8 *.map
 
-ifeq (${CROSS_ROOT},)
-# If we're outside the docker container, re-run ourselves inside the container
-ifneq ($(filter-out all shell dockcross-linux-arm64 clean,${MAKECMDGOALS}),)
-# The command wasn't one of our invocation commands above
-.PHONY: ${MAKECMDGOALS}
-${MAKECMDGOALS}: dockcross-linux-arm64
-	cd .. ; aarch64/dockcross-linux-arm64 -- bash -c "cd aarch64 && make ${MAKECMDGOALS} TARGET=${TARGET}"
-else
-.PHONY: ${DEFAULT_GOAL}
-${DEFAULT_GOAL}: dockcross-linux-arm64
-	cd .. ; aarch64/dockcross-linux-arm64 -- bash -c "cd aarch64 && make TARGET=${TARGET}"
-endif
+CLIBDIR = /Users/charles/projects/RO/riscos64-simple-binaries/clib/export
 
-else
-
-RT_OBJS = 	malloc.o \
-			clib.o \
-			clib-main.o \
-			clib-kernel.o \
-			strtol.o \
-			strtod.o \
-			str.o \
+CC = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-cc
+AS = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-as
+LD = RISCOS64_RELDIRS=1 ${CLIBDIR}/bin/robuild64 riscos64-link
 
 # md4c build setup
-VPATH = md4c/src/riscos/aarch64
-CFLAGS += -Imd4c/src/riscos/aarch64
+CFLAGS += -Imd4c/src/
 
-MD_LIB = 	md4c/src/riscos/aarch64/md4c.o \
-			md4c/src/riscos/aarch64/entity.o
+MD_LIB = 	md4c.o \
+			entity.o
 
 MD_LIB_UNUSED = \
-			md4c/src/riscos/aarch64/md4c-html.o \
+			md4c-html.o \
 
 
-OBJS =	${RT_OBJS} \
-		${TARGET}.o
+OBJS =	${TARGET}.o
 
 ifeq (${TARGET},test_border)
 OBJS += font.o \
@@ -257,24 +198,13 @@ endif
 
 
 %.o: %.c
-	aarch64-unknown-linux-gnu-gcc ${CFLAGS} -c -o $@ $?
+	${CC} ${CFLAGS} -c -o $@ $?
 
-${TARGET}.bin: start.o swis.o link.lnk ${OBJS}
-	aarch64-unknown-linux-gnu-ld start.o swis.o ${OBJS} -T link.lnk -o $@
+%.o: md4c/src/%.c
+	${CC} ${CFLAGS} -c -o $@ $?
 
-${TARGET}.map: start.o swis.o link.lnk ${OBJS}
-	aarch64-unknown-linux-gnu-ld start.o swis.o ${OBJS} -T link.lnk -Map $@ -o /dev/null
+%.o: %.s
+	${AS} ${AFLAGS} -o $@ $?
 
-ifeq (${USE_FUNC_SIGNATURE},1)
-${TARGET},ff8: ${TARGET}.bin ${TARGET}.map
-	aarch64-unknown-linux-gnu-objcopy -O binary -j .text ${TARGET}.bin $@
-	python riscos_symbols.py ${TARGET}.map ${TARGET},ff8
-else
-${TARGET},ff8: ${TARGET}.bin
-	aarch64-unknown-linux-gnu-objcopy -O binary -j .text ${TARGET}.bin $@
-endif
-
-start.o: start.s
-	aarch64-unknown-linux-gnu-gcc ${CFLAGS} -c -o $@ $?
-
-endif
+${TARGET},ff8: ${OBJS}
+	${LD} -aif ${OBJS} -lcrt -o $@
