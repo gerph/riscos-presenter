@@ -57,8 +57,7 @@ int stricmp(const char *str1, const char *str2)
 {
   char one,two;
   int  index;
-  int  len=strlen(str1); /* speeds things up a tad */
-  for(index=0; index<=len; index++)
+  while (*str1 || *str2)
   {
 #ifdef __riscos64
     one = *str1++;
