@@ -14,6 +14,7 @@ TARGET ?= present
 
 # Version of the C library to use to build
 CLIB_VERSION = 0.20
+CLIB_URL = https://github.com/gerph/riscos64-simple-binaries/releases/download/v${CLIB_VERSION}/RISCOS64-CLib-${CLIB_VERSION}.zip
 
 VPATH = . md4c/src
 
@@ -40,21 +41,23 @@ all:
 	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
 
 clean:
-	-rm -f *.o *.bin *,ff8 *.map tools
+	-rm -rf *.o *.a *.bin *,ff8 *.map tools clib
 
 .PHONY: tools
 
-tools:
-	mkdir -p tmp
-	wget -O tmp/clib${CLIB_VERSION}.zip https://github.com/gerph/riscos64-clib/releases/download/v${CLIB_VERSION}/RISCOS64-CLib-${CLIB_VERSION}.zip
-	cd tmp ; unzip clib${CLIB_VERSION}.zip
+tools: clib/libcrt.a
 	mkdir -p tools
-	tmp/bin/robuild64 install tools
-	rm -rf tmp
-
+	clib/bin/robuild64 install tools
 
 TOOLS ?= tools
 CLIBDIR = ${TOOLS}/riscos64_resources
+
+clib/clib-${CLIB_VERSION}.zip:
+	mkdir -p clib
+	wget -O clib/clib-${CLIB_VERSION}.zip "${CLIB_URL}"
+
+clib/libcrt.a: clib/clib-${CLIB_VERSION}.zip
+	cd clib && unzip -o clib-${CLIB_VERSION}.zip && touch libcrt.a
 
 
 CC = RISCOS64_RELDIRS=1 ${TOOLS}/riscos64-cc
