@@ -11,9 +11,9 @@ on:
   push:
     branches: ["*"]
     tags: ["v*"]
-  # Pull request events happen on pull request state transitions, so we probably don't want this here.
-  #pull_request:
-  #  branches: ["*"]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: ["*"]
 
 jobs:
   build-riscos64:
