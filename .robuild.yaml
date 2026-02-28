@@ -1,0 +1,64 @@
+%YAML 1.0
+---
+
+# RISC OS build file to execute on https://build.riscos.online/
+
+# Source is optional (NYI), and should be a URL to source the content from
+#source: <url>
+
+# Defines a list of jobs which will be performed.
+# Only 1 job will currently be executed.
+jobs:
+  build:
+    # Env defines system variables which will be used within the environment.
+    # Multiple variables may be assigned.
+    env:
+      "Sys$Environment": ROBuild
+      "BUILD32": 1
+
+      # Faster building using the host toolchain
+      "Alias$AMU": "HostAMU %*0"
+
+    # Directory to change to before running script
+    #dir: <working directory>
+
+    # Commands which should be executed to perform the build.
+    # The build will terminate if any command returns a non-0 return code or an error.
+    script:
+
+      - echo
+      - echo *** Set up exports sharing ***
+      - cdir Exports
+      - SetEval Build$Dir CANONICALISE "@.Exports"
+
+      - echo
+      - echo *** Build the MD4C library ***
+      - dir aarch64.md4c.src.riscos
+      - amu export
+
+      - up
+      - up
+      - up
+      - up
+
+      - echo
+      - echo *** Build the components ***
+      - amu -f MakefileGContext,fe1
+      - amu -f MakefileBorder,fe1
+      - amu -f MakefileTextBlock,fe1
+      - amu -f MakefileFontFamily,fe1
+      - amu -f MakefileSlidedeck,fe1
+      - amu -f MakefileMD,fe1
+      - amu -f MakefileSlideMD,fe1
+      - amu -f MakefileSlideRender,fe1
+
+      - echo
+      - echo *** SUCCESS ***
+
+    # Outputs from the build are defined in artifacts
+    # These are a list of artifacts to report directories or files.
+    # Only a single item is currently supported.
+    artifacts:
+      # Each element of the artifacts should have a path key, which gives the file or
+      # directory to return.
+      - path: Artifacts
